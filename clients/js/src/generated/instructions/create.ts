@@ -85,8 +85,8 @@ export function create(
 
   // Program ID.
   const programId = context.programs.getPublicKey(
-    'mplProjectName',
-    'MyProgram1111111111111111111111111111111111'
+    'tokenRecipes',
+    '6EgVKvZu2V6cpZzarvDHuyeJwa1NB2ujj8hXY98pQpLE'
   );
 
   // Resolved inputs.

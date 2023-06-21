@@ -1,6 +1,6 @@
-# Mpl Project Name
+# Token Recipes
 
-My project description
+Transform tokens into other tokens via predefined recipes.
 
 ## Building
 

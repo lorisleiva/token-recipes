@@ -1,8 +1,8 @@
 import { UmiPlugin } from '@metaplex-foundation/umi';
-import { createMplProjectNameProgram } from './generated';
+import { createTokenRecipesProgram } from './generated';
 
-export const mplProjectName = (): UmiPlugin => ({
+export const tokenRecipes = (): UmiPlugin => ({
   install(umi) {
-    umi.programs.add(createMplProjectNameProgram(), false);
+    umi.programs.add(createTokenRecipesProgram(), false);
   },
 });

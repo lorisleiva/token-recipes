@@ -1,6 +1,6 @@
-# Contributing to Mpl Project Name
+# Contributing to Token Recipes
 
-This is a quick guide to help you contribute to Mpl Project Name.
+This is a quick guide to help you contribute to Token Recipes.
 
 ## Getting started
 
