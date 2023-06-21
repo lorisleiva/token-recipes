@@ -22,6 +22,7 @@ import {
 import {
   Serializer,
   array,
+  mapSerializer,
   publicKey as publicKeySerializer,
   struct,
 } from '@metaplex-foundation/umi/serializers';
@@ -51,7 +52,6 @@ export type RecipeAccountData = {
 };
 
 export type RecipeAccountDataArgs = {
-  key: KeyArgs;
   authority: PublicKey;
   status: RecipeStatusArgs;
   inputs: Array<IngredientInputArgs>;
@@ -69,15 +69,18 @@ export function getRecipeAccountDataSerializer(): Serializer<
 export function getRecipeAccountDataSerializer(
   _context: object = {}
 ): Serializer<RecipeAccountDataArgs, RecipeAccountData> {
-  return struct<RecipeAccountData>(
-    [
-      ['key', getKeySerializer()],
-      ['authority', publicKeySerializer()],
-      ['status', getRecipeStatusSerializer()],
-      ['inputs', array(getIngredientInputSerializer())],
-      ['outputs', array(getIngredientOutputSerializer())],
-    ],
-    { description: 'RecipeAccountData' }
+  return mapSerializer<RecipeAccountDataArgs, any, RecipeAccountData>(
+    struct<RecipeAccountData>(
+      [
+        ['key', getKeySerializer()],
+        ['authority', publicKeySerializer()],
+        ['status', getRecipeStatusSerializer()],
+        ['inputs', array(getIngredientInputSerializer())],
+        ['outputs', array(getIngredientOutputSerializer())],
+      ],
+      { description: 'RecipeAccountData' }
+    ),
+    (value) => ({ ...value, key: Key.Recipe })
   ) as Serializer<RecipeAccountDataArgs, RecipeAccountData>;
 }
 
@@ -172,5 +175,6 @@ export function getRecipeGpaBuilder(
       inputs: [34, array(getIngredientInputSerializer())],
       outputs: [null, array(getIngredientOutputSerializer())],
     })
-    .deserializeUsing<Recipe>((account) => deserializeRecipe(account));
+    .deserializeUsing<Recipe>((account) => deserializeRecipe(account))
+    .whereField('key', Key.Recipe);
 }

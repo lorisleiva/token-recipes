@@ -21,7 +21,9 @@ import {
 } from '@metaplex-foundation/umi';
 import {
   Serializer,
+  mapSerializer,
   publicKey as publicKeySerializer,
+  string,
   struct,
   u32,
 } from '@metaplex-foundation/umi/serializers';
@@ -37,7 +39,6 @@ export type DelegatedIngredientAccountData = {
 };
 
 export type DelegatedIngredientAccountDataArgs = {
-  key: KeyArgs;
   mint: PublicKey;
   authority: PublicKey;
   counter: number;
@@ -60,14 +61,21 @@ export function getDelegatedIngredientAccountDataSerializer(
   DelegatedIngredientAccountDataArgs,
   DelegatedIngredientAccountData
 > {
-  return struct<DelegatedIngredientAccountData>(
-    [
-      ['key', getKeySerializer()],
-      ['mint', publicKeySerializer()],
-      ['authority', publicKeySerializer()],
-      ['counter', u32()],
-    ],
-    { description: 'DelegatedIngredientAccountData' }
+  return mapSerializer<
+    DelegatedIngredientAccountDataArgs,
+    any,
+    DelegatedIngredientAccountData
+  >(
+    struct<DelegatedIngredientAccountData>(
+      [
+        ['key', getKeySerializer()],
+        ['mint', publicKeySerializer()],
+        ['authority', publicKeySerializer()],
+        ['counter', u32()],
+      ],
+      { description: 'DelegatedIngredientAccountData' }
+    ),
+    (value) => ({ ...value, key: Key.DelegatedIngredient })
   ) as Serializer<
     DelegatedIngredientAccountDataArgs,
     DelegatedIngredientAccountData
@@ -171,9 +179,51 @@ export function getDelegatedIngredientGpaBuilder(
     })
     .deserializeUsing<DelegatedIngredient>((account) =>
       deserializeDelegatedIngredient(account)
-    );
+    )
+    .whereField('key', Key.DelegatedIngredient);
 }
 
 export function getDelegatedIngredientSize(): number {
   return 69;
+}
+
+export function findDelegatedIngredientPda(
+  context: Pick<Context, 'eddsa' | 'programs'>,
+  seeds: {
+    /** The mint address of the ingredient */
+    mint: PublicKey;
+  }
+): Pda {
+  const programId = context.programs.getPublicKey(
+    'tokenRecipes',
+    '6EgVKvZu2V6cpZzarvDHuyeJwa1NB2ujj8hXY98pQpLE'
+  );
+  return context.eddsa.findPda(programId, [
+    string({ size: 'variable' }).serialize('delegated_ingredient'),
+    publicKeySerializer().serialize(seeds.mint),
+  ]);
+}
+
+export async function fetchDelegatedIngredientFromSeeds(
+  context: Pick<Context, 'eddsa' | 'programs' | 'rpc'>,
+  seeds: Parameters<typeof findDelegatedIngredientPda>[1],
+  options?: RpcGetAccountOptions
+): Promise<DelegatedIngredient> {
+  return fetchDelegatedIngredient(
+    context,
+    findDelegatedIngredientPda(context, seeds),
+    options
+  );
+}
+
+export async function safeFetchDelegatedIngredientFromSeeds(
+  context: Pick<Context, 'eddsa' | 'programs' | 'rpc'>,
+  seeds: Parameters<typeof findDelegatedIngredientPda>[1],
+  options?: RpcGetAccountOptions
+): Promise<DelegatedIngredient | null> {
+  return safeFetchDelegatedIngredient(
+    context,
+    findDelegatedIngredientPda(context, seeds),
+    options
+  );
 }

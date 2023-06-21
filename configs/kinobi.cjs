@@ -11,25 +11,28 @@ const kinobi = k.createFromIdls([path.join(idlDir, "token_recipes.json")]);
 // Update accounts.
 kinobi.update(
   new k.UpdateAccountsVisitor({
-    myPdaAccount: {
+    ingredient: {
       seeds: [
-        k.stringConstantSeed("myPdaAccount"),
-        k.programSeed(),
-        k.publicKeySeed("authority", "The address of the authority"),
-        k.stringSeed("name", "The name of the account"),
+        k.stringConstantSeed("ingredient"),
+        k.publicKeySeed("mint", "The mint address of the ingredient"),
+        k.publicKeySeed("recipe", "The address of the recipe"),
       ],
     },
-    // ...
+    delegatedIngredient: {
+      seeds: [
+        k.stringConstantSeed("delegated_ingredient"),
+        k.publicKeySeed("mint", "The mint address of the ingredient"),
+      ],
+    },
   })
 );
 
 // Update instructions.
 kinobi.update(
   new k.UpdateInstructionsVisitor({
-    create: {
-      bytesCreatedOnChain: k.bytesFromAccount("myAccount"),
+    createRecipe: {
+      bytesCreatedOnChain: k.bytesFromNumber(1 + 32 + 1 + 4 + 4),
     },
-    // ...
   })
 );
 
@@ -37,8 +40,9 @@ kinobi.update(
 const key = (name) => ({ field: "key", value: k.vEnum("Key", name) });
 kinobi.update(
   new k.SetAccountDiscriminatorFromFieldVisitor({
-    myAccount: key("MyAccount"),
-    myPdaAccount: key("MyPdaAccount"),
+    recipe: key("Recipe"),
+    ingredient: key("Ingredient"),
+    delegatedIngredient: key("DelegatedIngredient"),
   })
 );
 

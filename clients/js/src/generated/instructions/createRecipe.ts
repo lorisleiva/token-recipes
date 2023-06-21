@@ -7,6 +7,7 @@
  */
 
 import {
+  ACCOUNT_HEADER_SIZE,
   AccountMeta,
   Context,
   Pda,
@@ -118,7 +119,7 @@ export function createRecipe(
   const data = getCreateRecipeInstructionDataSerializer().serialize({});
 
   // Bytes Created On Chain.
-  const bytesCreatedOnChain = 0;
+  const bytesCreatedOnChain = 42 + ACCOUNT_HEADER_SIZE;
 
   return transactionBuilder([
     { instruction: { keys, programId, data }, signers, bytesCreatedOnChain },
