@@ -45,6 +45,10 @@ fn create(accounts: &[AccountInfo]) -> ProgramResult {
         msg!("Invalid system program account");
         return Err(TokenRecipesError::InvalidInstructionAccount.into());
     }
+    if !recipe.data_is_empty() {
+        msg!("Recipe account should not already be initialized");
+        return Err(TokenRecipesError::InvalidInstructionAccount.into());
+    }
 
     // Fetch the space and minimum lamports required for rent exemption.
     let space: usize = Recipe::INITIAL_LEN;
