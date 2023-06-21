@@ -1876,21 +1876,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "token-recipes"
-version = "0.1.0"
-dependencies = [
- "assert_matches",
- "borsh",
- "num-derive",
- "num-traits",
- "shank",
- "solana-program",
- "solana-program-test",
- "solana-sdk",
- "thiserror",
-]
-
-[[package]]
 name = "nix"
 version = "0.24.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4277,6 +4262,21 @@ name = "tinyvec_macros"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cda74da7e1a664f795bb1f8a87ec406fb89a02522cf6e50620d016add6dbbf5c"
+
+[[package]]
+name = "token-recipes"
+version = "0.1.0"
+dependencies = [
+ "assert_matches",
+ "borsh",
+ "num-derive",
+ "num-traits",
+ "shank",
+ "solana-program",
+ "solana-program-test",
+ "solana-sdk",
+ "thiserror",
+]
 
 [[package]]
 name = "tokio"

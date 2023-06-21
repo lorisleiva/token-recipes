@@ -1,6 +1,6 @@
 use crate::error::TokenRecipesError;
-use crate::instruction::{CreateArgs, TokenRecipesInstruction};
-use crate::state::{Key, MyAccount, MyData};
+use crate::instruction::TokenRecipesInstruction;
+use crate::state::{Key, Recipe, RecipeStatus};
 use borsh::BorshDeserialize;
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
@@ -23,18 +23,18 @@ impl Processor {
         let instruction: TokenRecipesInstruction =
             TokenRecipesInstruction::try_from_slice(instruction_data)?;
         match instruction {
-            TokenRecipesInstruction::Create(args) => {
-                msg!("Instruction: Create");
-                create(accounts, args)
+            TokenRecipesInstruction::CreateRecipe => {
+                msg!("Instruction: CreateRecipe");
+                create(accounts)
             }
         }
     }
 }
 
-fn create(accounts: &[AccountInfo], args: CreateArgs) -> ProgramResult {
+fn create(accounts: &[AccountInfo]) -> ProgramResult {
     // Accounts.
     let account_info_iter = &mut accounts.iter();
-    let address = next_account_info(account_info_iter)?;
+    let recipe = next_account_info(account_info_iter)?;
     let authority = next_account_info(account_info_iter)?;
     let payer = next_account_info(account_info_iter)?;
     let system_program = next_account_info(account_info_iter)?;
@@ -42,33 +42,33 @@ fn create(accounts: &[AccountInfo], args: CreateArgs) -> ProgramResult {
 
     // Guards.
     if *system_program.key != system_program::id() {
-        return Err(TokenRecipesError::InvalidSystemProgram.into());
+        msg!("Invalid system program account");
+        return Err(TokenRecipesError::InvalidInstructionAccount.into());
     }
 
     // Fetch the space and minimum lamports required for rent exemption.
-    let space: usize = MyAccount::LEN;
+    let space: usize = Recipe::INITIAL_LEN;
     let lamports: u64 = rent.minimum_balance(space);
 
     // CPI to the System Program.
     invoke(
         &system_instruction::create_account(
             payer.key,
-            address.key,
+            recipe.key,
             lamports,
             space as u64,
             &crate::id(),
         ),
-        &[payer.clone(), address.clone(), system_program.clone()],
+        &[payer.clone(), recipe.clone(), system_program.clone()],
     )?;
 
-    let my_account = MyAccount {
-        key: Key::MyAccount,
+    let recipe_account = Recipe {
+        key: Key::Recipe,
         authority: *authority.key,
-        data: MyData {
-            foo: args.foo,
-            bar: args.bar,
-        },
+        status: RecipeStatus::Paused,
+        inputs: vec![],
+        outputs: vec![],
     };
 
-    my_account.save(address)
+    recipe_account.save(recipe)
 }

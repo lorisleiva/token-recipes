@@ -11,24 +11,27 @@ use crate::error::TokenRecipesError;
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
 pub enum Key {
     Uninitialized,
-    MyAccount,
-    MyPdaAccount,
+    Recipe,
+    Ingredient,
+    DelegatedIngredient,
 }
 
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, ShankAccount)]
-pub struct MyAccount {
+pub struct Recipe {
     pub key: Key,
     pub authority: Pubkey,
-    pub data: MyData,
+    pub status: RecipeStatus,
+    pub inputs: Vec<IngredientInput>,
+    pub outputs: Vec<IngredientOutput>,
 }
 
-impl MyAccount {
-    pub const LEN: usize = 1 + 32 + MyData::LEN;
+impl Recipe {
+    pub const INITIAL_LEN: usize = 1 + 32 + 1 + 4 + 4;
 
     pub fn load(account: &AccountInfo) -> Result<Self, ProgramError> {
         let mut bytes: &[u8] = &(*account.data).borrow();
-        MyAccount::deserialize(&mut bytes).map_err(|error| {
+        Recipe::deserialize(&mut bytes).map_err(|error| {
             msg!("Error: {}", error);
             TokenRecipesError::DeserializationError.into()
         })
@@ -47,17 +50,52 @@ impl MyAccount {
 
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, ShankAccount)]
-pub struct MyPdaAccount {
+pub struct Ingredient {
     pub key: Key,
-    pub bump: u8,
+    pub mint: Pubkey,
+    pub recipe: Pubkey,
+}
+// TODO: seeds helper.
+
+#[repr(C)]
+#[derive(Clone, BorshSerialize, BorshDeserialize, Debug, ShankAccount)]
+pub struct DelegatedIngredient {
+    pub key: Key,
+    pub mint: Pubkey,
+    pub authority: Pubkey,
+    pub counter: u32,
+}
+// TODO: seeds helper.
+
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
+pub enum RecipeStatus {
+    Paused,
+    Active,
 }
 
-#[derive(Clone, BorshSerialize, BorshDeserialize, Debug)]
-pub struct MyData {
-    pub foo: u16,
-    pub bar: u32,
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
+pub struct IngredientInput {
+    pub mint: Pubkey,
+    pub amount: u64,
 }
 
-impl MyData {
-    pub const LEN: usize = 2 + 4;
+impl IngredientInput {
+    pub const LEN: usize = 32 + 8;
+}
+
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
+pub struct IngredientOutput {
+    pub mint: Pubkey,
+    pub amount: u64,
+    pub max_supply: u64,
+}
+
+impl IngredientOutput {
+    pub const LEN: usize = 32 + 8 + 8;
+}
+
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
+pub enum IngredientType {
+    Input,
+    Output,
 }

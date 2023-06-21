@@ -8,15 +8,15 @@ use thiserror::Error;
 
 #[derive(Error, Clone, Debug, Eq, PartialEq, FromPrimitive)]
 pub enum TokenRecipesError {
-    /// 0 - Invalid System Program
-    #[error("Invalid System Program")]
-    InvalidSystemProgram,
-    /// 1 - Error deserializing account
-    #[error("Error deserializing account")]
+    /// 0 - Error deserializing an account
+    #[error("Error deserializing an account")]
     DeserializationError,
-    /// 2 - Error serializing account
-    #[error("Error serializing account")]
+    /// 1 - Error serializing an account
+    #[error("Error serializing an account")]
     SerializationError,
+    /// 2 - Invalid instruction account
+    #[error("Invalid instruction account")]
+    InvalidInstructionAccount,
 }
 
 impl PrintProgramError for TokenRecipesError {
