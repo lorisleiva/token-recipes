@@ -3,19 +3,19 @@
   "name": "token_recipes",
   "instructions": [
     {
-      "name": "Create",
+      "name": "CreateRecipe",
       "accounts": [
         {
-          "name": "address",
+          "name": "recipe",
           "isMut": true,
           "isSigner": true,
-          "desc": "The address of the new account"
+          "desc": "The address of the new recipe account"
         },
         {
           "name": "authority",
           "isMut": false,
           "isSigner": false,
-          "desc": "The authority of the new account"
+          "desc": "The authority of the new recipe account"
         },
         {
           "name": "payer",
@@ -30,14 +30,7 @@
           "desc": "The system program"
         }
       ],
-      "args": [
-        {
-          "name": "createArgs",
-          "type": {
-            "defined": "CreateArgs"
-          }
-        }
-      ],
+      "args": [],
       "discriminant": {
         "type": "u8",
         "value": 0
@@ -46,7 +39,7 @@
   ],
   "accounts": [
     {
-      "name": "MyAccount",
+      "name": "Recipe",
       "type": {
         "kind": "struct",
         "fields": [
@@ -61,16 +54,32 @@
             "type": "publicKey"
           },
           {
-            "name": "data",
+            "name": "status",
             "type": {
-              "defined": "MyData"
+              "defined": "RecipeStatus"
+            }
+          },
+          {
+            "name": "inputs",
+            "type": {
+              "vec": {
+                "defined": "IngredientInput"
+              }
+            }
+          },
+          {
+            "name": "outputs",
+            "type": {
+              "vec": {
+                "defined": "IngredientOutput"
+              }
             }
           }
         ]
       }
     },
     {
-      "name": "MyPdaAccount",
+      "name": "Ingredient",
       "type": {
         "kind": "struct",
         "fields": [
@@ -81,8 +90,38 @@
             }
           },
           {
-            "name": "bump",
-            "type": "u8"
+            "name": "mint",
+            "type": "publicKey"
+          },
+          {
+            "name": "recipe",
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DelegatedIngredient",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "defined": "Key"
+            }
+          },
+          {
+            "name": "mint",
+            "type": "publicKey"
+          },
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "counter",
+            "type": "u32"
           }
         ]
       }
@@ -90,33 +129,61 @@
   ],
   "types": [
     {
-      "name": "CreateArgs",
+      "name": "AddIngredientArgs",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "foo",
-            "type": "u16"
+            "name": "amount",
+            "type": "u64"
           },
           {
-            "name": "bar",
-            "type": "u32"
+            "name": "ingredientType",
+            "type": {
+              "defined": "IngredientType"
+            }
+          },
+          {
+            "name": "maxSupply",
+            "type": {
+              "option": "u64"
+            }
           }
         ]
       }
     },
     {
-      "name": "MyData",
+      "name": "IngredientInput",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "foo",
-            "type": "u16"
+            "name": "mint",
+            "type": "publicKey"
           },
           {
-            "name": "bar",
-            "type": "u32"
+            "name": "amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "IngredientOutput",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "mint",
+            "type": "publicKey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "maxSupply",
+            "type": "u64"
           }
         ]
       }
@@ -130,10 +197,41 @@
             "name": "Uninitialized"
           },
           {
-            "name": "MyAccount"
+            "name": "Recipe"
           },
           {
-            "name": "MyPdaAccount"
+            "name": "Ingredient"
+          },
+          {
+            "name": "DelegatedIngredient"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RecipeStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Paused"
+          },
+          {
+            "name": "Active"
+          }
+        ]
+      }
+    },
+    {
+      "name": "IngredientType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Input"
+          },
+          {
+            "name": "Output"
           }
         ]
       }
@@ -142,18 +240,18 @@
   "errors": [
     {
       "code": 0,
-      "name": "InvalidSystemProgram",
-      "msg": "Invalid System Program"
+      "name": "DeserializationError",
+      "msg": "Error deserializing an account"
     },
     {
       "code": 1,
-      "name": "DeserializationError",
-      "msg": "Error deserializing account"
+      "name": "SerializationError",
+      "msg": "Error serializing an account"
     },
     {
       "code": 2,
-      "name": "SerializationError",
-      "msg": "Error serializing account"
+      "name": "InvalidInstructionAccount",
+      "msg": "Invalid instruction account"
     }
   ],
   "metadata": {

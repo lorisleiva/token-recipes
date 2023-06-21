@@ -7,7 +7,6 @@
  */
 
 import {
-  ACCOUNT_HEADER_SIZE,
   AccountMeta,
   Context,
   Pda,
@@ -20,18 +19,15 @@ import {
   Serializer,
   mapSerializer,
   struct,
-  u16,
-  u32,
   u8,
 } from '@metaplex-foundation/umi/serializers';
-import { getMyAccountSize } from '../accounts';
 import { addAccountMeta, addObjectProperty } from '../shared';
 
 // Accounts.
-export type CreateInstructionAccounts = {
-  /** The address of the new account */
-  address: Signer;
-  /** The authority of the new account */
+export type CreateRecipeInstructionAccounts = {
+  /** The address of the new recipe account */
+  recipe: Signer;
+  /** The authority of the new recipe account */
   authority?: PublicKey | Pda;
   /** The account paying for the storage fees */
   payer?: Signer;
@@ -40,45 +36,37 @@ export type CreateInstructionAccounts = {
 };
 
 // Data.
-export type CreateInstructionData = {
-  discriminator: number;
-  foo: number;
-  bar: number;
-};
+export type CreateRecipeInstructionData = { discriminator: number };
 
-export type CreateInstructionDataArgs = { foo: number; bar: number };
+export type CreateRecipeInstructionDataArgs = {};
 
-/** @deprecated Use `getCreateInstructionDataSerializer()` without any argument instead. */
-export function getCreateInstructionDataSerializer(
+/** @deprecated Use `getCreateRecipeInstructionDataSerializer()` without any argument instead. */
+export function getCreateRecipeInstructionDataSerializer(
   _context: object
-): Serializer<CreateInstructionDataArgs, CreateInstructionData>;
-export function getCreateInstructionDataSerializer(): Serializer<
-  CreateInstructionDataArgs,
-  CreateInstructionData
+): Serializer<CreateRecipeInstructionDataArgs, CreateRecipeInstructionData>;
+export function getCreateRecipeInstructionDataSerializer(): Serializer<
+  CreateRecipeInstructionDataArgs,
+  CreateRecipeInstructionData
 >;
-export function getCreateInstructionDataSerializer(
+export function getCreateRecipeInstructionDataSerializer(
   _context: object = {}
-): Serializer<CreateInstructionDataArgs, CreateInstructionData> {
-  return mapSerializer<CreateInstructionDataArgs, any, CreateInstructionData>(
-    struct<CreateInstructionData>(
-      [
-        ['discriminator', u8()],
-        ['foo', u16()],
-        ['bar', u32()],
-      ],
-      { description: 'CreateInstructionData' }
-    ),
+): Serializer<CreateRecipeInstructionDataArgs, CreateRecipeInstructionData> {
+  return mapSerializer<
+    CreateRecipeInstructionDataArgs,
+    any,
+    CreateRecipeInstructionData
+  >(
+    struct<CreateRecipeInstructionData>([['discriminator', u8()]], {
+      description: 'CreateRecipeInstructionData',
+    }),
     (value) => ({ ...value, discriminator: 0 })
-  ) as Serializer<CreateInstructionDataArgs, CreateInstructionData>;
+  ) as Serializer<CreateRecipeInstructionDataArgs, CreateRecipeInstructionData>;
 }
 
-// Args.
-export type CreateInstructionArgs = CreateInstructionDataArgs;
-
 // Instruction.
-export function create(
+export function createRecipe(
   context: Pick<Context, 'programs' | 'identity' | 'payer'>,
-  input: CreateInstructionAccounts & CreateInstructionArgs
+  input: CreateRecipeInstructionAccounts
 ): TransactionBuilder {
   const signers: Signer[] = [];
   const keys: AccountMeta[] = [];
@@ -91,9 +79,8 @@ export function create(
 
   // Resolved inputs.
   const resolvedAccounts = {
-    address: [input.address, true] as const,
+    recipe: [input.recipe, true] as const,
   };
-  const resolvingArgs = {};
   addObjectProperty(
     resolvedAccounts,
     'authority',
@@ -121,18 +108,17 @@ export function create(
           false,
         ] as const)
   );
-  const resolvedArgs = { ...input, ...resolvingArgs };
 
-  addAccountMeta(keys, signers, resolvedAccounts.address, false);
+  addAccountMeta(keys, signers, resolvedAccounts.recipe, false);
   addAccountMeta(keys, signers, resolvedAccounts.authority, false);
   addAccountMeta(keys, signers, resolvedAccounts.payer, false);
   addAccountMeta(keys, signers, resolvedAccounts.systemProgram, false);
 
   // Data.
-  const data = getCreateInstructionDataSerializer().serialize(resolvedArgs);
+  const data = getCreateRecipeInstructionDataSerializer().serialize({});
 
   // Bytes Created On Chain.
-  const bytesCreatedOnChain = getMyAccountSize() + ACCOUNT_HEADER_SIZE;
+  const bytesCreatedOnChain = 0;
 
   return transactionBuilder([
     { instruction: { keys, programId, data }, signers, bytesCreatedOnChain },

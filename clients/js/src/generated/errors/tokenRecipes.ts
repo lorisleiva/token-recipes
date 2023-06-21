@@ -15,44 +15,44 @@ type ProgramErrorConstructor = new (
 const codeToErrorMap: Map<number, ProgramErrorConstructor> = new Map();
 const nameToErrorMap: Map<string, ProgramErrorConstructor> = new Map();
 
-/** InvalidSystemProgram: Invalid System Program */
-export class InvalidSystemProgramError extends ProgramError {
-  readonly name: string = 'InvalidSystemProgram';
+/** DeserializationError: Error deserializing an account */
+export class DeserializationErrorError extends ProgramError {
+  readonly name: string = 'DeserializationError';
 
   readonly code: number = 0x0; // 0
 
   constructor(program: Program, cause?: Error) {
-    super('Invalid System Program', program, cause);
+    super('Error deserializing an account', program, cause);
   }
 }
-codeToErrorMap.set(0x0, InvalidSystemProgramError);
-nameToErrorMap.set('InvalidSystemProgram', InvalidSystemProgramError);
+codeToErrorMap.set(0x0, DeserializationErrorError);
+nameToErrorMap.set('DeserializationError', DeserializationErrorError);
 
-/** DeserializationError: Error deserializing account */
-export class DeserializationErrorError extends ProgramError {
-  readonly name: string = 'DeserializationError';
+/** SerializationError: Error serializing an account */
+export class SerializationErrorError extends ProgramError {
+  readonly name: string = 'SerializationError';
 
   readonly code: number = 0x1; // 1
 
   constructor(program: Program, cause?: Error) {
-    super('Error deserializing account', program, cause);
+    super('Error serializing an account', program, cause);
   }
 }
-codeToErrorMap.set(0x1, DeserializationErrorError);
-nameToErrorMap.set('DeserializationError', DeserializationErrorError);
+codeToErrorMap.set(0x1, SerializationErrorError);
+nameToErrorMap.set('SerializationError', SerializationErrorError);
 
-/** SerializationError: Error serializing account */
-export class SerializationErrorError extends ProgramError {
-  readonly name: string = 'SerializationError';
+/** InvalidInstructionAccount: Invalid instruction account */
+export class InvalidInstructionAccountError extends ProgramError {
+  readonly name: string = 'InvalidInstructionAccount';
 
   readonly code: number = 0x2; // 2
 
   constructor(program: Program, cause?: Error) {
-    super('Error serializing account', program, cause);
+    super('Invalid instruction account', program, cause);
   }
 }
-codeToErrorMap.set(0x2, SerializationErrorError);
-nameToErrorMap.set('SerializationError', SerializationErrorError);
+codeToErrorMap.set(0x2, InvalidInstructionAccountError);
+nameToErrorMap.set('InvalidInstructionAccount', InvalidInstructionAccountError);
 
 /**
  * Attempts to resolve a custom program error from the provided error code.
