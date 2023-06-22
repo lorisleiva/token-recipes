@@ -1,12 +1,15 @@
 use crate::{
-    error::TokenRecipesError,
-    state::recipe::{IngredientInput, IngredientOutput, IngredientType, Recipe},
+    assertions::{assert_account_key, assert_program_owner, assert_same_pubkeys, assert_signer},
+    state::{
+        key::Key,
+        recipe::{IngredientInput, IngredientOutput, IngredientType, Recipe},
+    },
     utils::realloc_account,
 };
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
     entrypoint::ProgramResult,
-    msg, system_program,
+    system_program,
 };
 
 pub(crate) fn add_ingredient(
@@ -24,23 +27,12 @@ pub(crate) fn add_ingredient(
     let system_program = next_account_info(account_info_iter)?;
 
     // Guards.
-    if *system_program.key != system_program::id() {
-        msg!("Invalid system program account");
-        return Err(TokenRecipesError::InvalidInstructionAccount.into());
-    }
-    if *recipe.owner != crate::id() {
-        msg!("Recipe account must be owned by the token-recipes program");
-        return Err(TokenRecipesError::InvalidInstructionAccount.into());
-    }
+    assert_program_owner("system_program", system_program, &system_program::id())?;
+    assert_program_owner("recipe", recipe, &crate::id())?;
+    assert_account_key("recipe", recipe, Key::Recipe)?;
     let mut recipe_account = Recipe::load(recipe)?;
-    if recipe_account.authority != *authority.key {
-        msg!("Recipe account must be owner by the provided authority");
-        return Err(TokenRecipesError::InvalidInstructionAccount.into());
-    }
-    if !authority.is_signer {
-        msg!("The recipe authority must sign the transaction");
-        return Err(TokenRecipesError::InvalidInstructionAccount.into());
-    }
+    assert_same_pubkeys("authority", authority, &recipe_account.authority)?;
+    assert_signer("authority", authority)?;
 
     // Find the new space for the recipe account.
     let space: usize = match ingredient_type {

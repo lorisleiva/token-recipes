@@ -1,5 +1,5 @@
 use crate::{
-    error::TokenRecipesError,
+    assertions::{assert_empty, assert_program_owner},
     state::{
         key::Key,
         recipe::{Recipe, RecipeStatus},
@@ -9,7 +9,7 @@ use crate::{
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
     entrypoint::ProgramResult,
-    msg, system_program,
+    system_program,
 };
 
 pub(crate) fn create_recipe(accounts: &[AccountInfo]) -> ProgramResult {
@@ -21,14 +21,8 @@ pub(crate) fn create_recipe(accounts: &[AccountInfo]) -> ProgramResult {
     let system_program = next_account_info(account_info_iter)?;
 
     // Guards.
-    if *system_program.key != system_program::id() {
-        msg!("Invalid system program account");
-        return Err(TokenRecipesError::InvalidInstructionAccount.into());
-    }
-    if !recipe.data_is_empty() {
-        msg!("Recipe account should not already be initialized");
-        return Err(TokenRecipesError::InvalidInstructionAccount.into());
-    }
+    assert_program_owner("system_program", system_program, &system_program::id())?;
+    assert_empty("recipe", recipe)?;
 
     // Create the recipe account.
     create_account(

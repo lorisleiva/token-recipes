@@ -41,18 +41,113 @@ export class SerializationErrorError extends ProgramError {
 codeToErrorMap.set(0x1, SerializationErrorError);
 nameToErrorMap.set('SerializationError', SerializationErrorError);
 
-/** InvalidInstructionAccount: Invalid instruction account */
-export class InvalidInstructionAccountError extends ProgramError {
-  readonly name: string = 'InvalidInstructionAccount';
+/** InvalidProgramOwner: Invalid program owner. This likely mean the provided account does not exist */
+export class InvalidProgramOwnerError extends ProgramError {
+  readonly name: string = 'InvalidProgramOwner';
 
   readonly code: number = 0x2; // 2
 
   constructor(program: Program, cause?: Error) {
-    super('Invalid instruction account', program, cause);
+    super(
+      'Invalid program owner. This likely mean the provided account does not exist',
+      program,
+      cause
+    );
   }
 }
-codeToErrorMap.set(0x2, InvalidInstructionAccountError);
-nameToErrorMap.set('InvalidInstructionAccount', InvalidInstructionAccountError);
+codeToErrorMap.set(0x2, InvalidProgramOwnerError);
+nameToErrorMap.set('InvalidProgramOwner', InvalidProgramOwnerError);
+
+/** InvalidPda: Invalid PDA derivation */
+export class InvalidPdaError extends ProgramError {
+  readonly name: string = 'InvalidPda';
+
+  readonly code: number = 0x3; // 3
+
+  constructor(program: Program, cause?: Error) {
+    super('Invalid PDA derivation', program, cause);
+  }
+}
+codeToErrorMap.set(0x3, InvalidPdaError);
+nameToErrorMap.set('InvalidPda', InvalidPdaError);
+
+/** ExpectedEmptyAccount: Expected empty account */
+export class ExpectedEmptyAccountError extends ProgramError {
+  readonly name: string = 'ExpectedEmptyAccount';
+
+  readonly code: number = 0x4; // 4
+
+  constructor(program: Program, cause?: Error) {
+    super('Expected empty account', program, cause);
+  }
+}
+codeToErrorMap.set(0x4, ExpectedEmptyAccountError);
+nameToErrorMap.set('ExpectedEmptyAccount', ExpectedEmptyAccountError);
+
+/** ExpectedSignerAccount: Expected signer account */
+export class ExpectedSignerAccountError extends ProgramError {
+  readonly name: string = 'ExpectedSignerAccount';
+
+  readonly code: number = 0x5; // 5
+
+  constructor(program: Program, cause?: Error) {
+    super('Expected signer account', program, cause);
+  }
+}
+codeToErrorMap.set(0x5, ExpectedSignerAccountError);
+nameToErrorMap.set('ExpectedSignerAccount', ExpectedSignerAccountError);
+
+/** ExpectedWritableAccount: Expected writable account */
+export class ExpectedWritableAccountError extends ProgramError {
+  readonly name: string = 'ExpectedWritableAccount';
+
+  readonly code: number = 0x6; // 6
+
+  constructor(program: Program, cause?: Error) {
+    super('Expected writable account', program, cause);
+  }
+}
+codeToErrorMap.set(0x6, ExpectedWritableAccountError);
+nameToErrorMap.set('ExpectedWritableAccount', ExpectedWritableAccountError);
+
+/** AccountMismatch: Account mismatch */
+export class AccountMismatchError extends ProgramError {
+  readonly name: string = 'AccountMismatch';
+
+  readonly code: number = 0x7; // 7
+
+  constructor(program: Program, cause?: Error) {
+    super('Account mismatch', program, cause);
+  }
+}
+codeToErrorMap.set(0x7, AccountMismatchError);
+nameToErrorMap.set('AccountMismatch', AccountMismatchError);
+
+/** InvalidDataSize: Invalid data size */
+export class InvalidDataSizeError extends ProgramError {
+  readonly name: string = 'InvalidDataSize';
+
+  readonly code: number = 0x8; // 8
+
+  constructor(program: Program, cause?: Error) {
+    super('Invalid data size', program, cause);
+  }
+}
+codeToErrorMap.set(0x8, InvalidDataSizeError);
+nameToErrorMap.set('InvalidDataSize', InvalidDataSizeError);
+
+/** InvalidAccountKey: Invalid account key */
+export class InvalidAccountKeyError extends ProgramError {
+  readonly name: string = 'InvalidAccountKey';
+
+  readonly code: number = 0x9; // 9
+
+  constructor(program: Program, cause?: Error) {
+    super('Invalid account key', program, cause);
+  }
+}
+codeToErrorMap.set(0x9, InvalidAccountKeyError);
+nameToErrorMap.set('InvalidAccountKey', InvalidAccountKeyError);
 
 /**
  * Attempts to resolve a custom program error from the provided error code.
