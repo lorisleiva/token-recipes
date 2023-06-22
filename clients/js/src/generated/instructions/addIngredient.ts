@@ -16,6 +16,7 @@ import {
   Signer,
   TransactionBuilder,
   none,
+  publicKey,
   transactionBuilder,
 } from '@metaplex-foundation/umi';
 import {
@@ -26,6 +27,7 @@ import {
   u64,
   u8,
 } from '@metaplex-foundation/umi/serializers';
+import { findDelegatedIngredientPda, findIngredientPda } from '../accounts';
 import { addAccountMeta, addObjectProperty } from '../shared';
 import {
   IngredientType,
@@ -39,6 +41,10 @@ export type AddIngredientInstructionAccounts = {
   recipe: PublicKey | Pda;
   /** The mint account of the ingredient */
   mint: PublicKey | Pda;
+  /** The ingredient PDA to discover their recipes */
+  ingredientPda?: PublicKey | Pda;
+  /** The delegated ingredient PDA for output ingredients that takes over the mint authority */
+  delegatedIngredientPda?: PublicKey | Pda;
   /** The authority of the recipe account and the mint authority of the ingredient if it's an output ingredient */
   authority?: Signer;
   /** The account paying for the storage fees */
@@ -103,7 +109,7 @@ export type AddIngredientInstructionArgs = AddIngredientInstructionDataArgs;
 
 // Instruction.
 export function addIngredient(
-  context: Pick<Context, 'programs' | 'identity' | 'payer'>,
+  context: Pick<Context, 'programs' | 'eddsa' | 'identity' | 'payer'>,
   input: AddIngredientInstructionAccounts & AddIngredientInstructionArgs
 ): TransactionBuilder {
   const signers: Signer[] = [];
@@ -121,6 +127,31 @@ export function addIngredient(
     mint: [input.mint, true] as const,
   };
   const resolvingArgs = {};
+  addObjectProperty(
+    resolvedAccounts,
+    'ingredientPda',
+    input.ingredientPda
+      ? ([input.ingredientPda, true] as const)
+      : ([
+          findIngredientPda(context, {
+            mint: publicKey(input.mint, false),
+            recipe: publicKey(input.recipe, false),
+          }),
+          true,
+        ] as const)
+  );
+  addObjectProperty(
+    resolvedAccounts,
+    'delegatedIngredientPda',
+    input.delegatedIngredientPda
+      ? ([input.delegatedIngredientPda, true] as const)
+      : ([
+          findDelegatedIngredientPda(context, {
+            mint: publicKey(input.mint, false),
+          }),
+          true,
+        ] as const)
+  );
   addObjectProperty(
     resolvedAccounts,
     'authority',
@@ -152,6 +183,8 @@ export function addIngredient(
 
   addAccountMeta(keys, signers, resolvedAccounts.recipe, false);
   addAccountMeta(keys, signers, resolvedAccounts.mint, false);
+  addAccountMeta(keys, signers, resolvedAccounts.ingredientPda, false);
+  addAccountMeta(keys, signers, resolvedAccounts.delegatedIngredientPda, false);
   addAccountMeta(keys, signers, resolvedAccounts.authority, false);
   addAccountMeta(keys, signers, resolvedAccounts.payer, false);
   addAccountMeta(keys, signers, resolvedAccounts.systemProgram, false);

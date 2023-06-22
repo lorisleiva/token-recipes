@@ -33,6 +33,16 @@ kinobi.update(
     createRecipe: {
       bytesCreatedOnChain: k.bytesFromNumber(1 + 32 + 1 + 4 + 4),
     },
+    addIngredient: {
+      accounts: {
+        ingredientPda: {
+          defaultsTo: k.pdaDefault("ingredient"),
+        },
+        delegatedIngredientPda: {
+          defaultsTo: k.pdaDefault("delegatedIngredient"),
+        },
+      },
+    },
   })
 );
 

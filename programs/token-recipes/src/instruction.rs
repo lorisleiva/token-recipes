@@ -23,9 +23,12 @@ pub enum TokenRecipesInstruction {
     /// if no other recipe uses this mint as an output ingredient.
     #[account(0, writable, name="recipe", desc = "The address of the recipe account")]
     #[account(1, writable, name="mint", desc = "The mint account of the ingredient")]
-    #[account(2, signer, name="authority", desc = "The authority of the recipe account and the mint authority of the ingredient if it's an output ingredient")]
-    #[account(3, writable, signer, name="payer", desc = "The account paying for the storage fees")]
-    #[account(4, name="system_program", desc = "The system program")]
+    #[account(2, writable, name="ingredient_record", desc = "The ingredient record PDA to discover their recipes")]
+    #[account(3, optional, writable, name="delegated_ingredient", desc = "The delegated ingredient PDA for output ingredients that takes over the mint authority")]
+    #[account(4, signer, name="authority", desc = "The authority of the recipe account and the mint authority of the ingredient if it's an output ingredient")]
+    #[account(5, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(6, name="system_program", desc = "The system program")]
+    #[default_optional_accounts]
     AddIngredient {
         /// The amount of tokens required if it's an input ingredient or minted otherwise.
         amount: u64,
@@ -53,6 +56,8 @@ pub fn create_recipe(recipe: &Pubkey, authority: &Pubkey, payer: &Pubkey) -> Ins
 pub fn add_ingredient(
     recipe: &Pubkey,
     mint: &Pubkey,
+    ingredient_record: &Pubkey,
+    delegated_ingredient: Option<&Pubkey>,
     authority: &Pubkey,
     payer: &Pubkey,
     amount: u64,
@@ -62,6 +67,8 @@ pub fn add_ingredient(
     let accounts = vec![
         AccountMeta::new_readonly(*recipe, false),
         AccountMeta::new_readonly(*mint, false),
+        AccountMeta::new(*ingredient_record, false),
+        AccountMeta::new(*delegated_ingredient.unwrap_or(&crate::id()), false),
         AccountMeta::new_readonly(*authority, true),
         AccountMeta::new(*payer, true),
         AccountMeta::new_readonly(solana_program::system_program::ID, false),

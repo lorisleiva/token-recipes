@@ -1,9 +1,10 @@
 use crate::{
     assertions::{
-        assert_account_key, assert_data_size, assert_program_owner, assert_same_pubkeys,
-        assert_signer, assert_writable,
+        assert_account_key, assert_data_size, assert_empty, assert_pda, assert_program_owner,
+        assert_same_pubkeys, assert_signer, assert_writable,
     },
     state::{
+        ingredient::IngredientRecord,
         key::Key,
         recipe::{IngredientInput, IngredientOutput, IngredientType, Recipe},
     },
@@ -25,6 +26,8 @@ pub(crate) fn add_ingredient(
     let account_info_iter = &mut accounts.iter();
     let recipe = next_account_info(account_info_iter)?;
     let mint = next_account_info(account_info_iter)?;
+    let ingredient_record = next_account_info(account_info_iter)?;
+    let delegated_ingredient = next_account_info(account_info_iter)?;
     let authority = next_account_info(account_info_iter)?;
     let payer = next_account_info(account_info_iter)?;
     let system_program = next_account_info(account_info_iter)?;
@@ -39,6 +42,35 @@ pub(crate) fn add_ingredient(
     assert_writable("mint", mint)?;
     assert_program_owner("mint", mint, &spl_token::ID)?;
     assert_data_size("mint", mint, 82)?; // 165 for token
+
+    // Check: ingredient_record.
+    assert_writable("ingredient_record", ingredient_record)?;
+    assert_empty("ingredient_record", ingredient_record)?;
+    assert_pda(
+        "ingredient_record",
+        ingredient_record,
+        &crate::id(),
+        &IngredientRecord::seeds(mint.key, recipe.key),
+    )?;
+
+    // Check: delegated_ingredient.
+    if matches!(ingredient_type, IngredientType::Output) {
+        assert_writable("delegated_ingredient", delegated_ingredient)?;
+        assert_pda(
+            "delegated_ingredient",
+            delegated_ingredient,
+            &crate::id(),
+            &["delegated_ingredient".as_bytes(), mint.key.as_ref()],
+        )?;
+        if !delegated_ingredient.data_is_empty() {
+            assert_program_owner("delegated_ingredient", delegated_ingredient, &crate::id())?;
+            assert_account_key(
+                "delegated_ingredient",
+                delegated_ingredient,
+                Key::DelegatedIngredient,
+            )?;
+        }
+    }
 
     // Check: authority.
     assert_same_pubkeys("authority", authority, &recipe_account.authority)?;
@@ -74,8 +106,18 @@ pub(crate) fn add_ingredient(
             max_supply: max_supply.unwrap_or(u64::MAX),
         }),
     }
-    recipe_account.save(recipe)
+    recipe_account.save(recipe)?;
 
-    // TODO: Create the ingredient PDA.
+    // Create the ingredient PDA.
+    IngredientRecord {
+        key: Key::Ingredient,
+        ingredient_type,
+        mint: *mint.key,
+        recipe: *recipe.key,
+    }
+    .save(ingredient_record)?;
+
     // TODO: Create the delegated ingredient PDA.
+
+    Ok(())
 }
