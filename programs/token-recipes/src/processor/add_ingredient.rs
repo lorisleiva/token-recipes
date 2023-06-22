@@ -1,6 +1,6 @@
 use crate::{
     assertions::{
-        assert_account_key, assert_data_size, assert_empty, assert_pda, assert_program_owner,
+        assert_account_key, assert_data_size, assert_pda, assert_program_owner,
         assert_same_pubkeys, assert_signer, assert_writable,
     },
     error::TokenRecipesError,
@@ -52,7 +52,6 @@ pub(crate) fn add_ingredient(
 
     // Check: ingredient_record.
     assert_writable("ingredient_record", ingredient_record)?;
-    assert_empty("ingredient_record", ingredient_record)?;
     let ingredient_record_bump = assert_pda(
         "ingredient_record",
         ingredient_record,

@@ -1,5 +1,9 @@
 import { Mint, createMint, fetchMint } from '@metaplex-foundation/mpl-toolbox';
-import { generateSigner, some } from '@metaplex-foundation/umi';
+import {
+  generateSigner,
+  some,
+  transactionBuilder,
+} from '@metaplex-foundation/umi';
 import test from 'ava';
 import {
   DelegatedIngredient,
@@ -128,7 +132,80 @@ test('it can add an ingredient output', async (t) => {
   });
 });
 
-// it can add an ingredient as both input and output
+test('it can add an ingredient as both input and output', async (t) => {
+  // Given an empty recipe.
+  const umi = await createUmi();
+  const recipe = generateSigner(umi);
+  await createRecipe(umi, { recipe }).sendAndConfirm(umi);
+
+  // And a mint account.
+  const mint = generateSigner(umi);
+  await createMint(umi, { mint }).sendAndConfirm(umi);
+
+  // When we add that mint as an ingredient input and output.
+  await transactionBuilder()
+    .add(
+      addIngredient(umi, {
+        recipe: recipe.publicKey,
+        mint: mint.publicKey,
+        ingredientType: IngredientType.Input,
+      })
+    )
+    .add(
+      addIngredient(umi, {
+        recipe: recipe.publicKey,
+        mint: mint.publicKey,
+        ingredientType: IngredientType.Output,
+      })
+    )
+    .sendAndConfirm(umi);
+
+  // Then the recipe account now contains that ingredient as both input and output.
+  t.like(await fetchRecipe(umi, recipe.publicKey), <Recipe>{
+    status: RecipeStatus.Paused,
+    inputs: <Array<IngredientInput>>[{ mint: mint.publicKey, amount: 1n }],
+    outputs: <Array<IngredientOutput>>[
+      {
+        mint: mint.publicKey,
+        amount: 1n,
+        maxSupply: BigInt('0xffffffffffffffff'),
+      },
+    ],
+  });
+
+  // And a new ingredient record account was created.
+  t.like(
+    await fetchIngredientRecordFromSeeds(umi, {
+      mint: mint.publicKey,
+      recipe: recipe.publicKey,
+    }),
+    <IngredientRecord>{
+      key: Key.IngredientRecord,
+      input: true,
+      output: true,
+      mint: mint.publicKey,
+      recipe: recipe.publicKey,
+    }
+  );
+
+  // And a new delegated ingredient account was created.
+  const [delegatedIngredient] = findDelegatedIngredientPda(umi, {
+    mint: mint.publicKey,
+  });
+  t.like(await fetchDelegatedIngredient(umi, delegatedIngredient), <
+    DelegatedIngredient
+  >{
+    key: Key.DelegatedIngredient,
+    mint: mint.publicKey,
+    counter: 1,
+  });
+
+  // And the mint authority was transferred to the delegated ingredient PDA.
+  t.like(await fetchMint(umi, mint.publicKey), <Mint>{
+    mintAuthority: some(delegatedIngredient),
+  });
+});
+
 // it increments the counter when adding the same ingredient output to another recipe
 // it can add a specific amount of an ingredient input and output
 // it can add a max supply to an ingredient output
