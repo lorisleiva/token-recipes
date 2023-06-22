@@ -54,6 +54,8 @@ export type AddIngredientInstructionAccounts = {
   payer?: Signer;
   /** The system program */
   systemProgram?: PublicKey | Pda;
+  /** The token program */
+  tokenProgram?: PublicKey | Pda;
 };
 
 // Data.
@@ -182,6 +184,19 @@ export function addIngredient(
           false,
         ] as const)
   );
+  addObjectProperty(
+    resolvedAccounts,
+    'tokenProgram',
+    input.tokenProgram
+      ? ([input.tokenProgram, false] as const)
+      : ([
+          context.programs.getPublicKey(
+            'splToken',
+            'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+          ),
+          false,
+        ] as const)
+  );
   const resolvedArgs = { ...input, ...resolvingArgs };
 
   addAccountMeta(keys, signers, resolvedAccounts.recipe, false);
@@ -191,6 +206,7 @@ export function addIngredient(
   addAccountMeta(keys, signers, resolvedAccounts.authority, false);
   addAccountMeta(keys, signers, resolvedAccounts.payer, false);
   addAccountMeta(keys, signers, resolvedAccounts.systemProgram, false);
+  addAccountMeta(keys, signers, resolvedAccounts.tokenProgram, false);
 
   // Data.
   const data =

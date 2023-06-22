@@ -16,9 +16,11 @@ use solana_program::{
     account_info::{next_account_info, AccountInfo},
     entrypoint::ProgramResult,
     msg,
+    program::invoke,
     pubkey::Pubkey,
     system_program,
 };
+use spl_token::instruction::{set_authority, AuthorityType};
 
 pub(crate) fn add_ingredient(
     accounts: &[AccountInfo],
@@ -35,6 +37,7 @@ pub(crate) fn add_ingredient(
     let authority = next_account_info(account_info_iter)?;
     let payer = next_account_info(account_info_iter)?;
     let system_program = next_account_info(account_info_iter)?;
+    let token_program = next_account_info(account_info_iter)?;
 
     // Check: recipe.
     assert_writable("recipe", recipe)?;
@@ -94,6 +97,9 @@ pub(crate) fn add_ingredient(
 
     // Check: system_program.
     assert_same_pubkeys("system_program", system_program, &system_program::id())?;
+
+    // Check: token_program.
+    assert_same_pubkeys("token_program", token_program, &spl_token::id())?;
 
     // Realloc the recipe account.
     let space: usize = match ingredient_type {
@@ -188,6 +194,17 @@ pub(crate) fn add_ingredient(
                     DelegatedIngredient::LEN,
                     &crate::id(),
                     Some(&[&seeds]),
+                )?;
+                invoke(
+                    &set_authority(
+                        token_program.key,
+                        mint.key,
+                        Some(delegated_ingredient.key),
+                        AuthorityType::MintTokens,
+                        authority.key,
+                        &[],
+                    )?,
+                    &[mint.clone(), authority.clone()],
                 )?;
                 DelegatedIngredient {
                     key: Key::DelegatedIngredient,

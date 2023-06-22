@@ -28,6 +28,7 @@ pub enum TokenRecipesInstruction {
     #[account(4, signer, name="authority", desc = "The authority of the recipe account and the mint authority of the ingredient if it's an output ingredient")]
     #[account(5, writable, signer, name="payer", desc = "The account paying for the storage fees")]
     #[account(6, name="system_program", desc = "The system program")]
+    #[account(7, name="token_program", desc = "The token program")]
     #[default_optional_accounts]
     AddIngredient {
         /// The amount of tokens required if it's an input ingredient or minted otherwise.
@@ -72,6 +73,7 @@ pub fn add_ingredient(
         AccountMeta::new_readonly(*authority, true),
         AccountMeta::new(*payer, true),
         AccountMeta::new_readonly(solana_program::system_program::ID, false),
+        AccountMeta::new_readonly(spl_token::id(), false),
     ];
     Instruction {
         program_id: crate::ID,

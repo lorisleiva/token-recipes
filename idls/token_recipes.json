@@ -81,6 +81,12 @@
           "isMut": false,
           "isSigner": false,
           "desc": "The system program"
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false,
+          "desc": "The token program"
         }
       ],
       "args": [
