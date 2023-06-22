@@ -60,7 +60,7 @@ pub fn assert_empty(account_name: &str, account: &AccountInfo) -> ProgramResult 
 
 /// Assert that the given account is a signer.
 pub fn assert_signer(account_name: &str, account: &AccountInfo) -> ProgramResult {
-    if account.is_signer {
+    if !account.is_signer {
         msg!(
             "Account \"{}\" [{}] must be a signer",
             account_name,
@@ -74,7 +74,7 @@ pub fn assert_signer(account_name: &str, account: &AccountInfo) -> ProgramResult
 
 /// Assert that the given account is writable.
 pub fn assert_writable(account_name: &str, account: &AccountInfo) -> ProgramResult {
-    if account.is_writable {
+    if !account.is_writable {
         msg!(
             "Account \"{}\" [{}] must be writable",
             account_name,

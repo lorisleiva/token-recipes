@@ -1,5 +1,8 @@
 use crate::{
-    assertions::{assert_account_key, assert_program_owner, assert_same_pubkeys, assert_signer},
+    assertions::{
+        assert_account_key, assert_program_owner, assert_same_pubkeys, assert_signer,
+        assert_writable,
+    },
     state::{
         key::Key,
         recipe::{IngredientInput, IngredientOutput, IngredientType, Recipe},
@@ -26,13 +29,25 @@ pub(crate) fn add_ingredient(
     let payer = next_account_info(account_info_iter)?;
     let system_program = next_account_info(account_info_iter)?;
 
-    // Guards.
-    assert_program_owner("system_program", system_program, &system_program::id())?;
+    // Check: recipe.
+    assert_writable("recipe", recipe)?;
     assert_program_owner("recipe", recipe, &crate::id())?;
     assert_account_key("recipe", recipe, Key::Recipe)?;
     let mut recipe_account = Recipe::load(recipe)?;
+
+    // Check: mint.
+    // TODO
+
+    // Check: authority.
     assert_same_pubkeys("authority", authority, &recipe_account.authority)?;
     assert_signer("authority", authority)?;
+
+    // Check: payer.
+    assert_writable("payer", payer)?;
+    assert_signer("payer", payer)?;
+
+    // Check: system_program.
+    assert_same_pubkeys("system_program", system_program, &system_program::id())?;
 
     // Find the new space for the recipe account.
     let space: usize = match ingredient_type {

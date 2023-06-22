@@ -1,5 +1,5 @@
 use crate::{
-    assertions::{assert_empty, assert_program_owner},
+    assertions::{assert_empty, assert_same_pubkeys, assert_signer, assert_writable},
     state::{
         key::Key,
         recipe::{Recipe, RecipeStatus},
@@ -20,9 +20,20 @@ pub(crate) fn create_recipe(accounts: &[AccountInfo]) -> ProgramResult {
     let payer = next_account_info(account_info_iter)?;
     let system_program = next_account_info(account_info_iter)?;
 
-    // Guards.
-    assert_program_owner("system_program", system_program, &system_program::id())?;
+    // Check: recipe.
+    assert_writable("recipe", recipe)?;
+    assert_signer("recipe", recipe)?;
     assert_empty("recipe", recipe)?;
+
+    // Check: authority.
+    // No check needed.
+
+    // Check: payer.
+    assert_writable("payer", payer)?;
+    assert_signer("payer", payer)?;
+
+    // Check: system_program.
+    assert_same_pubkeys("system_program", system_program, &system_program::id())?;
 
     // Create the recipe account.
     create_account(
