@@ -1,7 +1,7 @@
 use crate::{
     assertions::{
-        assert_account_key, assert_program_owner, assert_same_pubkeys, assert_signer,
-        assert_writable,
+        assert_account_key, assert_data_size, assert_program_owner, assert_same_pubkeys,
+        assert_signer, assert_writable,
     },
     state::{
         key::Key,
@@ -36,7 +36,9 @@ pub(crate) fn add_ingredient(
     let mut recipe_account = Recipe::load(recipe)?;
 
     // Check: mint.
-    // TODO
+    assert_writable("mint", mint)?;
+    assert_program_owner("mint", mint, &spl_token::ID)?;
+    assert_data_size("mint", mint, 82)?; // 165 for token
 
     // Check: authority.
     assert_same_pubkeys("authority", authority, &recipe_account.authority)?;

@@ -1,3 +1,4 @@
+import { createMint } from '@metaplex-foundation/mpl-toolbox';
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
 import {
@@ -18,8 +19,11 @@ test('it can add an ingredient input', async (t) => {
   const recipe = generateSigner(umi);
   await createRecipe(umi, { recipe }).sendAndConfirm(umi);
 
-  // When we add an ingredient input.
+  // And a mint account.
   const mint = generateSigner(umi);
+  await createMint(umi, { mint }).sendAndConfirm(umi);
+
+  // When we add that mint as an ingredient input.
   await addIngredient(umi, {
     recipe: recipe.publicKey,
     mint: mint.publicKey,
@@ -28,10 +32,12 @@ test('it can add an ingredient input', async (t) => {
     ingredientType: IngredientType.Input,
   }).sendAndConfirm(umi);
 
-  // Then a new recipe account was created with the correct data.
+  // Then the recipe account now contains that ingredient input.
   t.like(await fetchRecipe(umi, recipe.publicKey), <Recipe>{
     status: RecipeStatus.Paused,
     inputs: <Array<IngredientInput>>[{ mint: mint.publicKey, amount: 1n }],
     outputs: [] as Array<IngredientOutput>,
   });
+
+  // And...
 });
