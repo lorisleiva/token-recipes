@@ -19,8 +19,8 @@ pub struct IngredientRecord {
 impl IngredientRecord {
     pub const LEN: usize = 1 + 1 + 1 + 32 + 32;
 
-    pub fn seeds<'a>(mint: &'a Pubkey, recipe: &'a Pubkey) -> [&'a [u8]; 3] {
-        [
+    pub fn seeds<'a>(mint: &'a Pubkey, recipe: &'a Pubkey) -> Vec<&'a [u8]> {
+        vec![
             "ingredient_record".as_bytes(),
             mint.as_ref(),
             recipe.as_ref(),

@@ -18,8 +18,8 @@ pub struct DelegatedIngredient {
 impl DelegatedIngredient {
     pub const LEN: usize = 1 + 32 + 32 + 4;
 
-    pub fn seeds(mint: &Pubkey) -> [&[u8]; 2] {
-        ["delegated_ingredient".as_bytes(), mint.as_ref()]
+    pub fn seeds(mint: &Pubkey) -> Vec<&[u8]> {
+        vec!["delegated_ingredient".as_bytes(), mint.as_ref()]
     }
 
     pub fn load(account: &AccountInfo) -> Result<Self, ProgramError> {

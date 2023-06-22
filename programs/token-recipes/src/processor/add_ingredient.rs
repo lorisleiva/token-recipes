@@ -15,7 +15,9 @@ use crate::{
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
     entrypoint::ProgramResult,
-    msg, system_program,
+    msg,
+    pubkey::Pubkey,
+    system_program,
 };
 
 pub(crate) fn add_ingredient(
@@ -119,18 +121,16 @@ pub(crate) fn add_ingredient(
     // Create the ingredient PDA if it doesn't exist.
     let mut ingredient_record_account = match ingredient_record.data_is_empty() {
         true => {
+            let mut seeds = IngredientRecord::seeds(mint.key, recipe.key);
+            let bump = [ingredient_record_bump];
+            seeds.push(&bump);
             create_account(
                 ingredient_record,
                 payer,
                 system_program,
                 IngredientRecord::LEN,
                 &crate::id(),
-                Some(&[&[
-                    "ingredient_record".as_bytes(),
-                    mint.key.as_ref(),
-                    recipe.key.as_ref(),
-                    &[ingredient_record_bump],
-                ]]),
+                Some(&[&seeds]),
             )?;
             IngredientRecord {
                 key: Key::IngredientRecord,
@@ -173,7 +173,34 @@ pub(crate) fn add_ingredient(
     }
     ingredient_record_account.save(ingredient_record)?;
 
-    // TODO: Create the delegated ingredient PDA.
+    // Create or increment the delegated ingredient PDA for output ingredients.
+    if matches!(&ingredient_type, IngredientType::Output) {
+        let mut delegated_ingredient_account = match delegated_ingredient.data_is_empty() {
+            true => {
+                let mut seeds = DelegatedIngredient::seeds(mint.key);
+                let (_, bump) = Pubkey::find_program_address(&seeds, &crate::id());
+                let bump = [bump];
+                seeds.push(&bump);
+                create_account(
+                    delegated_ingredient,
+                    payer,
+                    system_program,
+                    DelegatedIngredient::LEN,
+                    &crate::id(),
+                    Some(&[&seeds]),
+                )?;
+                DelegatedIngredient {
+                    key: Key::DelegatedIngredient,
+                    mint: *mint.key,
+                    authority: *authority.key,
+                    counter: 0,
+                }
+            }
+            false => DelegatedIngredient::load(delegated_ingredient)?,
+        };
+        delegated_ingredient_account.counter += 1;
+        delegated_ingredient_account.save(delegated_ingredient)?;
+    }
 
     Ok(())
 }
