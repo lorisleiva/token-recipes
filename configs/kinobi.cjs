@@ -11,9 +11,9 @@ const kinobi = k.createFromIdls([path.join(idlDir, "token_recipes.json")]);
 // Update accounts.
 kinobi.update(
   new k.UpdateAccountsVisitor({
-    ingredient: {
+    ingredientRecord: {
       seeds: [
-        k.stringConstantSeed("ingredient"),
+        k.stringConstantSeed("ingredient_record"),
         k.publicKeySeed("mint", "The mint address of the ingredient"),
         k.publicKeySeed("recipe", "The address of the recipe"),
       ],
@@ -35,10 +35,10 @@ kinobi.update(
     },
     addIngredient: {
       accounts: {
-        ingredientPda: {
-          defaultsTo: k.pdaDefault("ingredient"),
+        ingredientRecord: {
+          defaultsTo: k.pdaDefault("ingredientRecord"),
         },
-        delegatedIngredientPda: {
+        delegatedIngredient: {
           defaultsTo: k.pdaDefault("delegatedIngredient"),
         },
       },

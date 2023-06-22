@@ -1,7 +1,4 @@
-use crate::{
-    error::TokenRecipesError,
-    state::{key::Key, recipe::IngredientType},
-};
+use crate::{error::TokenRecipesError, state::key::Key};
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
 use solana_program::{
@@ -13,7 +10,8 @@ use solana_program::{
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, ShankAccount)]
 pub struct IngredientRecord {
     pub key: Key,
-    pub ingredient_type: IngredientType,
+    pub input: bool,
+    pub output: bool,
     pub mint: Pubkey,
     pub recipe: Pubkey,
 }
@@ -22,7 +20,11 @@ impl IngredientRecord {
     pub const LEN: usize = 1 + 32 + 32;
 
     pub fn seeds<'a>(mint: &'a Pubkey, recipe: &'a Pubkey) -> [&'a [u8]; 3] {
-        ["ingredient".as_bytes(), mint.as_ref(), recipe.as_ref()]
+        [
+            "ingredient_record".as_bytes(),
+            mint.as_ref(),
+            recipe.as_ref(),
+        ]
     }
 
     pub fn load(account: &AccountInfo) -> Result<Self, ProgramError> {

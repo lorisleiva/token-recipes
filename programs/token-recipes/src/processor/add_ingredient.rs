@@ -4,7 +4,7 @@ use crate::{
         assert_same_pubkeys, assert_signer, assert_writable,
     },
     state::{
-        ingredient::IngredientRecord,
+        ingredient_record::IngredientRecord,
         key::Key,
         recipe::{IngredientInput, IngredientOutput, IngredientType, Recipe},
     },
@@ -52,6 +52,14 @@ pub(crate) fn add_ingredient(
         &crate::id(),
         &IngredientRecord::seeds(mint.key, recipe.key),
     )?;
+    if !ingredient_record.data_is_empty() {
+        assert_program_owner("ingredient_record", ingredient_record, &crate::id())?;
+        assert_account_key(
+            "ingredient_record",
+            ingredient_record,
+            Key::IngredientRecord,
+        )?;
+    }
 
     // Check: delegated_ingredient.
     if matches!(ingredient_type, IngredientType::Output) {
@@ -83,13 +91,11 @@ pub(crate) fn add_ingredient(
     // Check: system_program.
     assert_same_pubkeys("system_program", system_program, &system_program::id())?;
 
-    // Find the new space for the recipe account.
+    // Realloc the recipe account.
     let space: usize = match ingredient_type {
         IngredientType::Input => recipe.data_len() + IngredientInput::LEN,
         IngredientType::Output => recipe.data_len() + IngredientOutput::LEN,
     };
-
-    // Realloc the recipe account.
     realloc_account(recipe, payer, system_program, space)?;
 
     // Add the ingredient to the recipe account.
@@ -109,13 +115,14 @@ pub(crate) fn add_ingredient(
     recipe_account.save(recipe)?;
 
     // Create the ingredient PDA.
-    IngredientRecord {
-        key: Key::Ingredient,
-        ingredient_type,
+    let ingredient_record_account = IngredientRecord {
+        key: Key::IngredientRecord,
+        input: false,
+        output: false,
         mint: *mint.key,
         recipe: *recipe.key,
-    }
-    .save(ingredient_record)?;
+    };
+    ingredient_record_account.save(ingredient_record)?;
 
     // TODO: Create the delegated ingredient PDA.
 

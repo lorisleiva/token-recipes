@@ -21,30 +21,27 @@ import {
 } from '@metaplex-foundation/umi';
 import {
   Serializer,
+  bool,
   publicKey as publicKeySerializer,
+  string,
   struct,
 } from '@metaplex-foundation/umi/serializers';
-import {
-  IngredientType,
-  IngredientTypeArgs,
-  Key,
-  KeyArgs,
-  getIngredientTypeSerializer,
-  getKeySerializer,
-} from '../types';
+import { Key, KeyArgs, getKeySerializer } from '../types';
 
 export type IngredientRecord = Account<IngredientRecordAccountData>;
 
 export type IngredientRecordAccountData = {
   key: Key;
-  ingredientType: IngredientType;
+  input: boolean;
+  output: boolean;
   mint: PublicKey;
   recipe: PublicKey;
 };
 
 export type IngredientRecordAccountDataArgs = {
   key: KeyArgs;
-  ingredientType: IngredientTypeArgs;
+  input: boolean;
+  output: boolean;
   mint: PublicKey;
   recipe: PublicKey;
 };
@@ -63,7 +60,8 @@ export function getIngredientRecordAccountDataSerializer(
   return struct<IngredientRecordAccountData>(
     [
       ['key', getKeySerializer()],
-      ['ingredientType', getIngredientTypeSerializer()],
+      ['input', bool()],
+      ['output', bool()],
       ['mint', publicKeySerializer()],
       ['recipe', publicKeySerializer()],
     ],
@@ -155,14 +153,16 @@ export function getIngredientRecordGpaBuilder(
   return gpaBuilder(context, programId)
     .registerFields<{
       key: KeyArgs;
-      ingredientType: IngredientTypeArgs;
+      input: boolean;
+      output: boolean;
       mint: PublicKey;
       recipe: PublicKey;
     }>({
       key: [0, getKeySerializer()],
-      ingredientType: [1, getIngredientTypeSerializer()],
-      mint: [2, publicKeySerializer()],
-      recipe: [34, publicKeySerializer()],
+      input: [1, bool()],
+      output: [2, bool()],
+      mint: [3, publicKeySerializer()],
+      recipe: [35, publicKeySerializer()],
     })
     .deserializeUsing<IngredientRecord>((account) =>
       deserializeIngredientRecord(account)
@@ -170,5 +170,49 @@ export function getIngredientRecordGpaBuilder(
 }
 
 export function getIngredientRecordSize(): number {
-  return 66;
+  return 67;
+}
+
+export function findIngredientRecordPda(
+  context: Pick<Context, 'eddsa' | 'programs'>,
+  seeds: {
+    /** The mint address of the ingredient */
+    mint: PublicKey;
+    /** The address of the recipe */
+    recipe: PublicKey;
+  }
+): Pda {
+  const programId = context.programs.getPublicKey(
+    'tokenRecipes',
+    '6EgVKvZu2V6cpZzarvDHuyeJwa1NB2ujj8hXY98pQpLE'
+  );
+  return context.eddsa.findPda(programId, [
+    string({ size: 'variable' }).serialize('ingredient_record'),
+    publicKeySerializer().serialize(seeds.mint),
+    publicKeySerializer().serialize(seeds.recipe),
+  ]);
+}
+
+export async function fetchIngredientRecordFromSeeds(
+  context: Pick<Context, 'eddsa' | 'programs' | 'rpc'>,
+  seeds: Parameters<typeof findIngredientRecordPda>[1],
+  options?: RpcGetAccountOptions
+): Promise<IngredientRecord> {
+  return fetchIngredientRecord(
+    context,
+    findIngredientRecordPda(context, seeds),
+    options
+  );
+}
+
+export async function safeFetchIngredientRecordFromSeeds(
+  context: Pick<Context, 'eddsa' | 'programs' | 'rpc'>,
+  seeds: Parameters<typeof findIngredientRecordPda>[1],
+  options?: RpcGetAccountOptions
+): Promise<IngredientRecord | null> {
+  return safeFetchIngredientRecord(
+    context,
+    findIngredientRecordPda(context, seeds),
+    options
+  );
 }

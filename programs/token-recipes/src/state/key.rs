@@ -4,6 +4,6 @@ use borsh::{BorshDeserialize, BorshSerialize};
 pub enum Key {
     Uninitialized,
     Recipe,
-    Ingredient,
+    IngredientRecord,
     DelegatedIngredient,
 }

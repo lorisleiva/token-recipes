@@ -11,7 +11,7 @@ import { Serializer, scalarEnum } from '@metaplex-foundation/umi/serializers';
 export enum Key {
   Uninitialized,
   Recipe,
-  Ingredient,
+  IngredientRecord,
   DelegatedIngredient,
 }
 

@@ -147,10 +147,12 @@
             }
           },
           {
-            "name": "ingredientType",
-            "type": {
-              "defined": "IngredientType"
-            }
+            "name": "input",
+            "type": "bool"
+          },
+          {
+            "name": "output",
+            "type": "bool"
           },
           {
             "name": "mint",
@@ -253,7 +255,7 @@
             "name": "Recipe"
           },
           {
-            "name": "Ingredient"
+            "name": "IngredientRecord"
           },
           {
             "name": "DelegatedIngredient"
