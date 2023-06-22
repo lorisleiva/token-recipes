@@ -3,17 +3,19 @@ use crate::{
         assert_account_key, assert_data_size, assert_empty, assert_pda, assert_program_owner,
         assert_same_pubkeys, assert_signer, assert_writable,
     },
+    error::TokenRecipesError,
     state::{
+        delegated_ingredient::DelegatedIngredient,
         ingredient_record::IngredientRecord,
         key::Key,
         recipe::{IngredientInput, IngredientOutput, IngredientType, Recipe},
     },
-    utils::realloc_account,
+    utils::{create_account, realloc_account},
 };
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
     entrypoint::ProgramResult,
-    system_program,
+    msg, system_program,
 };
 
 pub(crate) fn add_ingredient(
@@ -46,7 +48,7 @@ pub(crate) fn add_ingredient(
     // Check: ingredient_record.
     assert_writable("ingredient_record", ingredient_record)?;
     assert_empty("ingredient_record", ingredient_record)?;
-    assert_pda(
+    let ingredient_record_bump = assert_pda(
         "ingredient_record",
         ingredient_record,
         &crate::id(),
@@ -68,7 +70,7 @@ pub(crate) fn add_ingredient(
             "delegated_ingredient",
             delegated_ingredient,
             &crate::id(),
-            &["delegated_ingredient".as_bytes(), mint.key.as_ref()],
+            &DelegatedIngredient::seeds(mint.key),
         )?;
         if !delegated_ingredient.data_is_empty() {
             assert_program_owner("delegated_ingredient", delegated_ingredient, &crate::id())?;
@@ -114,14 +116,61 @@ pub(crate) fn add_ingredient(
     }
     recipe_account.save(recipe)?;
 
-    // Create the ingredient PDA.
-    let ingredient_record_account = IngredientRecord {
-        key: Key::IngredientRecord,
-        input: false,
-        output: false,
-        mint: *mint.key,
-        recipe: *recipe.key,
+    // Create the ingredient PDA if it doesn't exist.
+    let mut ingredient_record_account = match ingredient_record.data_is_empty() {
+        true => {
+            create_account(
+                ingredient_record,
+                payer,
+                system_program,
+                IngredientRecord::LEN,
+                &crate::id(),
+                Some(&[&[
+                    "ingredient_record".as_bytes(),
+                    mint.key.as_ref(),
+                    recipe.key.as_ref(),
+                    &[ingredient_record_bump],
+                ]]),
+            )?;
+            IngredientRecord {
+                key: Key::IngredientRecord,
+                input: false,
+                output: false,
+                mint: *mint.key,
+                recipe: *recipe.key,
+            }
+        }
+        false => IngredientRecord::load(ingredient_record)?,
     };
+
+    // Ensure the ingredient isn't already part of the recipe.
+    match (
+        &ingredient_type,
+        ingredient_record_account.input,
+        ingredient_record_account.output,
+    ) {
+        (IngredientType::Input, true, _) => {
+            msg!(
+                "Ingredient [{}] is already part of this recipe as an input.",
+                ingredient_record.key,
+            );
+            return Err(TokenRecipesError::IngredientAlreadyAdded.into());
+        }
+        (IngredientType::Output, _, true) => {
+            msg!(
+                "Ingredient [{}] is already part of this recipe as an output.",
+                ingredient_record.key,
+            );
+            return Err(TokenRecipesError::IngredientAlreadyAdded.into());
+        }
+        _ => (),
+    }
+
+    // Update and save the ingredient record.
+    match &ingredient_type {
+        IngredientType::Input => ingredient_record_account.input = true,
+        IngredientType::Output => ingredient_record_account.output = true,
+    }
     ingredient_record_account.save(ingredient_record)?;
 
     // TODO: Create the delegated ingredient PDA.

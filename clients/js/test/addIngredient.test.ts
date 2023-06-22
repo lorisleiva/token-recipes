@@ -4,12 +4,16 @@ import test from 'ava';
 import {
   IngredientInput,
   IngredientOutput,
+  IngredientRecord,
   IngredientType,
+  Key,
   Recipe,
   RecipeStatus,
   addIngredient,
   createRecipe,
+  fetchIngredientRecordFromSeeds,
   fetchRecipe,
+  findDelegatedIngredientPda,
 } from '../src';
 import { createUmi } from './_setup';
 
@@ -37,5 +41,24 @@ test('it can add an ingredient input', async (t) => {
     outputs: [] as Array<IngredientOutput>,
   });
 
-  // And...
+  // And a new ingredient record account was created.
+  t.like(
+    await fetchIngredientRecordFromSeeds(umi, {
+      mint: mint.publicKey,
+      recipe: recipe.publicKey,
+    }),
+    <IngredientRecord>{
+      key: Key.IngredientRecord,
+      input: true,
+      output: false,
+      mint: mint.publicKey,
+      recipe: recipe.publicKey,
+    }
+  );
+
+  // And no delegated ingredient account was created.
+  const [delegatedIngredient] = findDelegatedIngredientPda(umi, {
+    mint: mint.publicKey,
+  });
+  t.false(await umi.rpc.accountExists(delegatedIngredient));
 });

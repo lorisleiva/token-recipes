@@ -149,6 +149,19 @@ export class InvalidAccountKeyError extends ProgramError {
 codeToErrorMap.set(0x9, InvalidAccountKeyError);
 nameToErrorMap.set('InvalidAccountKey', InvalidAccountKeyError);
 
+/** IngredientAlreadyAdded: Ingredient already added */
+export class IngredientAlreadyAddedError extends ProgramError {
+  readonly name: string = 'IngredientAlreadyAdded';
+
+  readonly code: number = 0xa; // 10
+
+  constructor(program: Program, cause?: Error) {
+    super('Ingredient already added', program, cause);
+  }
+}
+codeToErrorMap.set(0xa, IngredientAlreadyAddedError);
+nameToErrorMap.set('IngredientAlreadyAdded', IngredientAlreadyAddedError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

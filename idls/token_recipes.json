@@ -342,6 +342,11 @@
       "code": 9,
       "name": "InvalidAccountKey",
       "msg": "Invalid account key"
+    },
+    {
+      "code": 10,
+      "name": "IngredientAlreadyAdded",
+      "msg": "Ingredient already added"
     }
   ],
   "metadata": {

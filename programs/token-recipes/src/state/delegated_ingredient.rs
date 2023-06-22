@@ -16,7 +16,7 @@ pub struct DelegatedIngredient {
 }
 
 impl DelegatedIngredient {
-    pub const LEN: usize = 1 + 32 + 32;
+    pub const LEN: usize = 1 + 32 + 32 + 4;
 
     pub fn seeds(mint: &Pubkey) -> [&[u8]; 2] {
         ["delegated_ingredient".as_bytes(), mint.as_ref()]

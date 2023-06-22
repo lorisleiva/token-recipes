@@ -38,6 +38,9 @@ pub enum TokenRecipesError {
     /// 9 - Invalid account key
     #[error("Invalid account key")]
     InvalidAccountKey,
+    /// 10 - Ingredient already added
+    #[error("Ingredient already added")]
+    IngredientAlreadyAdded,
 }
 
 impl PrintProgramError for TokenRecipesError {

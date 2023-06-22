@@ -42,6 +42,7 @@ pub(crate) fn create_recipe(accounts: &[AccountInfo]) -> ProgramResult {
         system_program,
         Recipe::INITIAL_LEN,
         &crate::id(),
+        None,
     )?;
 
     // Initialize the recipe account.

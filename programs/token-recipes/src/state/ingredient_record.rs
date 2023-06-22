@@ -17,7 +17,7 @@ pub struct IngredientRecord {
 }
 
 impl IngredientRecord {
-    pub const LEN: usize = 1 + 32 + 32;
+    pub const LEN: usize = 1 + 1 + 1 + 32 + 32;
 
     pub fn seeds<'a>(mint: &'a Pubkey, recipe: &'a Pubkey) -> [&'a [u8]; 3] {
         [
