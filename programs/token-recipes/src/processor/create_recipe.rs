@@ -1,3 +1,10 @@
+use crate::{
+    error::TokenRecipesError,
+    state::{
+        key::Key,
+        recipe::{Recipe, RecipeStatus},
+    },
+};
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
     entrypoint::ProgramResult,
@@ -6,11 +13,6 @@ use solana_program::{
     rent::Rent,
     system_instruction, system_program,
     sysvar::Sysvar,
-};
-
-use crate::{
-    error::TokenRecipesError,
-    state::{Key, Recipe, RecipeStatus},
 };
 
 pub(crate) fn create_recipe(accounts: &[AccountInfo]) -> ProgramResult {

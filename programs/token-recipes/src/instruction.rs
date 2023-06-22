@@ -1,4 +1,4 @@
-use crate::state::IngredientType;
+use crate::state::recipe::IngredientType;
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankInstruction;
 use solana_program::{

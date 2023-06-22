@@ -1,6 +1,6 @@
 use crate::{
     error::TokenRecipesError,
-    state::{IngredientInput, IngredientOutput, IngredientType, Recipe},
+    state::recipe::{IngredientInput, IngredientOutput, IngredientType, Recipe},
     utils::realloc_account,
 };
 use solana_program::{

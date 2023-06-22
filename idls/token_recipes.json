@@ -96,6 +96,54 @@
   ],
   "accounts": [
     {
+      "name": "DelegatedIngredient",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "defined": "Key"
+            }
+          },
+          {
+            "name": "mint",
+            "type": "publicKey"
+          },
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "counter",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Ingredient",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "defined": "Key"
+            }
+          },
+          {
+            "name": "mint",
+            "type": "publicKey"
+          },
+          {
+            "name": "recipe",
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
+    {
       "name": "Recipe",
       "type": {
         "kind": "struct",
@@ -131,54 +179,6 @@
                 "defined": "IngredientOutput"
               }
             }
-          }
-        ]
-      }
-    },
-    {
-      "name": "Ingredient",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "key",
-            "type": {
-              "defined": "Key"
-            }
-          },
-          {
-            "name": "mint",
-            "type": "publicKey"
-          },
-          {
-            "name": "recipe",
-            "type": "publicKey"
-          }
-        ]
-      }
-    },
-    {
-      "name": "DelegatedIngredient",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "key",
-            "type": {
-              "defined": "Key"
-            }
-          },
-          {
-            "name": "mint",
-            "type": "publicKey"
-          },
-          {
-            "name": "authority",
-            "type": "publicKey"
-          },
-          {
-            "name": "counter",
-            "type": "u32"
           }
         ]
       }
