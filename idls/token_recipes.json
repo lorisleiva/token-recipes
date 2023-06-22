@@ -41,13 +41,13 @@
       "accounts": [
         {
           "name": "recipe",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false,
           "desc": "The address of the recipe account"
         },
         {
           "name": "mint",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false,
           "desc": "The mint account of the ingredient"
         },

@@ -157,8 +157,8 @@ pub fn realloc<'a>(
 ) -> ProgramResult {
     let rent = Rent::get()?;
     let new_minimum_balance = rent.minimum_balance(new_size);
-
     let lamports_diff = new_minimum_balance.saturating_sub(target_account.lamports());
+
     invoke(
         &system_instruction::transfer(funding_account.key, target_account.key, lamports_diff),
         &[

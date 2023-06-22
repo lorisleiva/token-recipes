@@ -111,8 +111,8 @@ export function addIngredient(
 
   // Resolved inputs.
   const resolvedAccounts = {
-    recipe: [input.recipe, false] as const,
-    mint: [input.mint, false] as const,
+    recipe: [input.recipe, true] as const,
+    mint: [input.mint, true] as const,
   };
   const resolvingArgs = {};
   addObjectProperty(

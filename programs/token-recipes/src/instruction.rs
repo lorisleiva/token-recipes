@@ -32,8 +32,8 @@ pub enum TokenRecipesInstruction {
     /// CAREFUL: If the ingredient is an output, the mint authority will be transferred to the program.
     /// Removing the ingredient will transfer the mint authority back to the recipe authority if and only
     /// if no other recipe uses this mint as an output ingredient.
-    #[account(0, name="recipe", desc = "The address of the recipe account")]
-    #[account(1, name="mint", desc = "The mint account of the ingredient")]
+    #[account(0, writable, name="recipe", desc = "The address of the recipe account")]
+    #[account(1, writable, name="mint", desc = "The mint account of the ingredient")]
     #[account(2, signer, name="authority", desc = "The authority of the recipe account and the mint authority of the ingredient if it's an output ingredient")]
     #[account(3, writable, signer, name="payer", desc = "The account paying for the storage fees")]
     #[account(4, name="system_program", desc = "The system program")]
