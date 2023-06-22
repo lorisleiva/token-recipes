@@ -4,15 +4,12 @@ use crate::{
         key::Key,
         recipe::{Recipe, RecipeStatus},
     },
+    utils::create_account,
 };
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
     entrypoint::ProgramResult,
-    msg,
-    program::invoke,
-    rent::Rent,
-    system_instruction, system_program,
-    sysvar::Sysvar,
+    msg, system_program,
 };
 
 pub(crate) fn create_recipe(accounts: &[AccountInfo]) -> ProgramResult {
@@ -22,7 +19,6 @@ pub(crate) fn create_recipe(accounts: &[AccountInfo]) -> ProgramResult {
     let authority = next_account_info(account_info_iter)?;
     let payer = next_account_info(account_info_iter)?;
     let system_program = next_account_info(account_info_iter)?;
-    let rent = Rent::get()?;
 
     // Guards.
     if *system_program.key != system_program::id() {
@@ -34,29 +30,22 @@ pub(crate) fn create_recipe(accounts: &[AccountInfo]) -> ProgramResult {
         return Err(TokenRecipesError::InvalidInstructionAccount.into());
     }
 
-    // Fetch the space and minimum lamports required for rent exemption.
-    let space: usize = Recipe::INITIAL_LEN;
-    let lamports: u64 = rent.minimum_balance(space);
-
-    // CPI to the System Program.
-    invoke(
-        &system_instruction::create_account(
-            payer.key,
-            recipe.key,
-            lamports,
-            space as u64,
-            &crate::id(),
-        ),
-        &[payer.clone(), recipe.clone(), system_program.clone()],
+    // Create the recipe account.
+    create_account(
+        recipe,
+        payer,
+        system_program,
+        Recipe::INITIAL_LEN,
+        &crate::id(),
     )?;
 
-    let recipe_account = Recipe {
+    // Initialize the recipe account.
+    Recipe {
         key: Key::Recipe,
         authority: *authority.key,
         status: RecipeStatus::Paused,
         inputs: vec![],
         outputs: vec![],
-    };
-
-    recipe_account.save(recipe)
+    }
+    .save(recipe)
 }
