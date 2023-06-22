@@ -27,8 +27,6 @@ test('it can add an ingredient input', async (t) => {
   await addIngredient(umi, {
     recipe: recipe.publicKey,
     mint: mint.publicKey,
-    amount: 1,
-    maxSupply: null,
     ingredientType: IngredientType.Input,
   }).sendAndConfirm(umi);
 

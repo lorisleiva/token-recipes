@@ -46,6 +46,15 @@ kinobi.update(
   })
 );
 
+kinobi.update(
+  new k.SetStructDefaultValuesVisitor({
+    addIngredientInstructionData: {
+      amount: k.vScalar(1),
+      maxSupply: k.vNone(),
+    },
+  })
+);
+
 // Render JavaScript.
 const jsDir = path.join(clientDir, "js", "src", "generated");
 const prettier = require(path.join(clientDir, "js", ".prettierrc.json"));

@@ -15,6 +15,7 @@ import {
   PublicKey,
   Signer,
   TransactionBuilder,
+  none,
   transactionBuilder,
 } from '@metaplex-foundation/umi';
 import {
@@ -55,9 +56,9 @@ export type AddIngredientInstructionData = {
 };
 
 export type AddIngredientInstructionDataArgs = {
-  amount: number | bigint;
+  amount?: number | bigint;
   ingredientType: IngredientTypeArgs;
-  maxSupply: OptionOrNullable<number | bigint>;
+  maxSupply?: OptionOrNullable<number | bigint>;
 };
 
 /** @deprecated Use `getAddIngredientInstructionDataSerializer()` without any argument instead. */
@@ -85,7 +86,12 @@ export function getAddIngredientInstructionDataSerializer(
       ],
       { description: 'AddIngredientInstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 1 })
+    (value) => ({
+      ...value,
+      discriminator: 1,
+      amount: value.amount ?? 1,
+      maxSupply: value.maxSupply ?? none(),
+    })
   ) as Serializer<
     AddIngredientInstructionDataArgs,
     AddIngredientInstructionData

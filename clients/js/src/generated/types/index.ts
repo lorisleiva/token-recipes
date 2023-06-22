@@ -6,7 +6,6 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-export * from './addIngredientArgs';
 export * from './ingredientInput';
 export * from './ingredientOutput';
 export * from './ingredientType';
