@@ -7,5 +7,5 @@
  */
 
 export * from './delegatedIngredient';
-export * from './ingredient';
+export * from './ingredientRecord';
 export * from './recipe';
