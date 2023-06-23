@@ -255,13 +255,3 @@ test('it increments the counter when adding the same ingredient output to anothe
 // it cannot add an ingredient input that is already an input
 // it cannot add an ingredient output that is already an output
 // it cannot add an ingredient output if the authority is not its mint authority
-
-// Remove:
-
-// it can remove an ingredient input
-// it can remove an ingredient output
-// it decrements the counter when removing an ingredient output that is still used in another recipe
-// it can remove an ingredient that is both input and output
-
-// it cannot remove an ingredient from another recipe
-// it cannot remove an ingredient as the wrong authority
