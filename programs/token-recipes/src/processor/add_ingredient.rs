@@ -9,16 +9,14 @@ use crate::{
         key::Key,
         recipe::{IngredientInput, IngredientOutput, IngredientType, Recipe},
     },
-    utils::{create_account, realloc_account},
+    utils::{create_account, realloc_account, transfer_mint_authority},
 };
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
     entrypoint::ProgramResult,
-    program::invoke,
     pubkey::Pubkey,
     system_program,
 };
-use spl_token::instruction::{set_authority, AuthorityType};
 
 pub(crate) fn add_ingredient(
     accounts: &[AccountInfo],
@@ -168,16 +166,12 @@ pub(crate) fn add_ingredient(
                     &crate::id(),
                     Some(&[&seeds]),
                 )?;
-                invoke(
-                    &set_authority(
-                        token_program.key,
-                        mint.key,
-                        Some(delegated_ingredient.key),
-                        AuthorityType::MintTokens,
-                        authority.key,
-                        &[],
-                    )?,
-                    &[mint.clone(), authority.clone()],
+                transfer_mint_authority(
+                    mint,
+                    authority,
+                    delegated_ingredient,
+                    token_program,
+                    None,
                 )?;
                 DelegatedIngredient {
                     key: Key::DelegatedIngredient,

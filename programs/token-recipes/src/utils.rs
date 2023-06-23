@@ -7,6 +7,7 @@ use solana_program::{
     system_instruction,
     sysvar::Sysvar,
 };
+use spl_token::instruction::{set_authority, AuthorityType};
 
 /// Create a new account from the given size.
 #[inline(always)]
@@ -80,6 +81,31 @@ pub fn close_account<'a>(
 
     let mut src_data = target_account.data.borrow_mut();
     src_data.fill(0);
+
+    Ok(())
+}
+
+/// Close an account.
+#[inline(always)]
+pub fn transfer_mint_authority<'a>(
+    mint: &AccountInfo<'a>,
+    from: &AccountInfo<'a>,
+    to: &AccountInfo<'a>,
+    token_program: &AccountInfo<'a>,
+    signer_seeds: Option<&[&[&[u8]]]>,
+) -> ProgramResult {
+    invoke_signed(
+        &set_authority(
+            token_program.key,
+            mint.key,
+            Some(to.key),
+            AuthorityType::MintTokens,
+            from.key,
+            &[],
+        )?,
+        &[mint.clone(), from.clone()],
+        signer_seeds.unwrap_or(&[]),
+    )?;
 
     Ok(())
 }

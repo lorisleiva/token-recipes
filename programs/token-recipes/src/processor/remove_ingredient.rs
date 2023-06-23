@@ -9,16 +9,14 @@ use crate::{
         key::Key,
         recipe::{IngredientInput, IngredientOutput, IngredientType, Recipe},
     },
-    utils::{close_account, realloc_account},
+    utils::{close_account, realloc_account, transfer_mint_authority},
 };
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
     entrypoint::ProgramResult,
-    program::invoke_signed,
     pubkey::Pubkey,
     system_program,
 };
-use spl_token::instruction::{set_authority, AuthorityType};
 
 pub(crate) fn remove_ingredient(
     accounts: &[AccountInfo],
@@ -138,17 +136,12 @@ pub(crate) fn remove_ingredient(
                 let (_, bump) = Pubkey::find_program_address(&seeds, &crate::id());
                 let bump = [bump];
                 seeds.push(&bump);
-                invoke_signed(
-                    &set_authority(
-                        token_program.key,
-                        mint.key,
-                        Some(&delegated_ingredient_account.authority),
-                        AuthorityType::MintTokens,
-                        delegated_ingredient.key,
-                        &[],
-                    )?,
-                    &[mint.clone(), delegated_ingredient.clone()],
-                    &[&seeds],
+                transfer_mint_authority(
+                    mint,
+                    delegated_ingredient,
+                    authority,
+                    token_program,
+                    Some(&[&seeds]),
                 )?;
                 close_account(delegated_ingredient, payer)?;
             }
