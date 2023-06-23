@@ -27,21 +27,25 @@ kinobi.update(
   })
 );
 
+// Global default intruction accounts.
+kinobi.update(
+  new k.SetInstructionAccountDefaultValuesVisitor([
+    {
+      account: "ingredientRecord",
+      ...k.pdaDefault("ingredientRecord"),
+    },
+    {
+      account: "delegatedIngredient",
+      ...k.pdaDefault("delegatedIngredient"),
+    },
+  ])
+);
+
 // Update instructions.
 kinobi.update(
   new k.UpdateInstructionsVisitor({
     createRecipe: {
       bytesCreatedOnChain: k.bytesFromNumber(1 + 32 + 1 + 4 + 4),
-    },
-    addIngredient: {
-      accounts: {
-        ingredientRecord: {
-          defaultsTo: k.pdaDefault("ingredientRecord"),
-        },
-        delegatedIngredient: {
-          defaultsTo: k.pdaDefault("delegatedIngredient"),
-        },
-      },
     },
   })
 );
