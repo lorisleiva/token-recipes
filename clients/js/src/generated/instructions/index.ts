@@ -8,3 +8,4 @@
 
 export * from './addIngredient';
 export * from './createRecipe';
+export * from './removeIngredient';

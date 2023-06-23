@@ -65,3 +65,21 @@ pub fn realloc_account<'a>(
 
     Ok(())
 }
+
+/// Close an account.
+#[inline(always)]
+pub fn close_account<'a>(
+    target_account: &AccountInfo<'a>,
+    receiving_account: &AccountInfo<'a>,
+) -> ProgramResult {
+    let dest_starting_lamports = receiving_account.lamports();
+    **receiving_account.lamports.borrow_mut() = dest_starting_lamports
+        .checked_add(target_account.lamports())
+        .unwrap();
+    **target_account.lamports.borrow_mut() = 0;
+
+    let mut src_data = target_account.data.borrow_mut();
+    src_data.fill(0);
+
+    Ok(())
+}

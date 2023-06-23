@@ -18,6 +18,10 @@ pub struct DelegatedIngredient {
 impl DelegatedIngredient {
     pub const LEN: usize = 1 + 32 + 32 + 4;
 
+    pub fn should_be_closed(&mut self) -> bool {
+        self.counter == 0
+    }
+
     pub fn seeds(mint: &Pubkey) -> Vec<&[u8]> {
         vec!["delegated_ingredient".as_bytes(), mint.as_ref()]
     }

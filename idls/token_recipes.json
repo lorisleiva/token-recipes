@@ -112,6 +112,73 @@
         "type": "u8",
         "value": 1
       }
+    },
+    {
+      "name": "RemoveIngredient",
+      "accounts": [
+        {
+          "name": "recipe",
+          "isMut": true,
+          "isSigner": false,
+          "desc": "The address of the recipe account"
+        },
+        {
+          "name": "mint",
+          "isMut": true,
+          "isSigner": false,
+          "desc": "The mint account of the ingredient"
+        },
+        {
+          "name": "ingredientRecord",
+          "isMut": true,
+          "isSigner": false,
+          "desc": "The ingredient record PDA to discover their recipes"
+        },
+        {
+          "name": "delegatedIngredient",
+          "isMut": true,
+          "isSigner": false,
+          "desc": "The delegated ingredient PDA for output ingredients that takes over the mint authority",
+          "optional": true
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "desc": "The authority of the recipe account and the mint authority of the ingredient if it's an output ingredient"
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "desc": "The account paying for the storage fees"
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "desc": "The system program"
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false,
+          "desc": "The token program"
+        }
+      ],
+      "args": [
+        {
+          "name": "ingredientType",
+          "type": {
+            "defined": "IngredientType"
+          }
+        }
+      ],
+      "defaultOptionalAccounts": true,
+      "discriminant": {
+        "type": "u8",
+        "value": 2
+      }
     }
   ],
   "accounts": [
@@ -353,6 +420,11 @@
       "code": 10,
       "name": "IngredientAlreadyAdded",
       "msg": "Ingredient already added"
+    },
+    {
+      "code": 11,
+      "name": "MissingIngredient",
+      "msg": "Missing ingredient"
     }
   ],
   "metadata": {

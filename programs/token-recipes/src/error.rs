@@ -41,6 +41,9 @@ pub enum TokenRecipesError {
     /// 10 - Ingredient already added
     #[error("Ingredient already added")]
     IngredientAlreadyAdded,
+    /// 10 - Missing ingredient
+    #[error("Missing ingredient")]
+    MissingIngredient,
 }
 
 impl PrintProgramError for TokenRecipesError {

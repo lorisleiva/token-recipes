@@ -162,6 +162,19 @@ export class IngredientAlreadyAddedError extends ProgramError {
 codeToErrorMap.set(0xa, IngredientAlreadyAddedError);
 nameToErrorMap.set('IngredientAlreadyAdded', IngredientAlreadyAddedError);
 
+/** MissingIngredient: Missing ingredient */
+export class MissingIngredientError extends ProgramError {
+  readonly name: string = 'MissingIngredient';
+
+  readonly code: number = 0xb; // 11
+
+  constructor(program: Program, cause?: Error) {
+    super('Missing ingredient', program, cause);
+  }
+}
+codeToErrorMap.set(0xb, MissingIngredientError);
+nameToErrorMap.set('MissingIngredient', MissingIngredientError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

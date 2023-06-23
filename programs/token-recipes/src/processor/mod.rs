@@ -1,12 +1,16 @@
 use crate::{
     instruction::TokenRecipesInstruction,
-    processor::{add_ingredient::add_ingredient, create_recipe::create_recipe},
+    processor::{
+        add_ingredient::add_ingredient, create_recipe::create_recipe,
+        remove_ingredient::remove_ingredient,
+    },
 };
 use borsh::BorshDeserialize;
 use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg, pubkey::Pubkey};
 
 pub mod add_ingredient;
 pub mod create_recipe;
+pub mod remove_ingredient;
 
 pub struct Processor;
 impl Processor {
@@ -29,6 +33,10 @@ impl Processor {
             } => {
                 msg!("Instruction: AddIngredient");
                 add_ingredient(accounts, amount, ingredient_type, max_supply)
+            }
+            TokenRecipesInstruction::RemoveIngredient { ingredient_type } => {
+                msg!("Instruction: RemoveIngredient");
+                remove_ingredient(accounts, ingredient_type)
             }
         }
     }

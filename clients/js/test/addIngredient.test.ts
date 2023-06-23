@@ -206,7 +206,48 @@ test('it can add an ingredient as both input and output', async (t) => {
   });
 });
 
-// it increments the counter when adding the same ingredient output to another recipe
+test('it increments the counter when adding the same ingredient output to another recipe', async (t) => {
+  // Given an a mint account and 2 recipes.
+  const umi = await createUmi();
+  const mint = generateSigner(umi);
+  const recipeA = generateSigner(umi);
+  const recipeB = generateSigner(umi);
+  await createMint(umi, { mint })
+    .add(createRecipe(umi, { recipe: recipeA }))
+    .add(createRecipe(umi, { recipe: recipeB }))
+    .sendAndConfirm(umi);
+
+  // When we add that mint as an ingredient output to both recipes.
+  await transactionBuilder()
+    .add(
+      addIngredient(umi, {
+        recipe: recipeA.publicKey,
+        mint: mint.publicKey,
+        ingredientType: IngredientType.Output,
+      })
+    )
+    .add(
+      addIngredient(umi, {
+        recipe: recipeB.publicKey,
+        mint: mint.publicKey,
+        ingredientType: IngredientType.Output,
+      })
+    )
+    .sendAndConfirm(umi);
+
+  // Then the delegated ingredient PDA account has a counter of 2.
+  const [delegatedIngredient] = findDelegatedIngredientPda(umi, {
+    mint: mint.publicKey,
+  });
+  t.like(await fetchDelegatedIngredient(umi, delegatedIngredient), <
+    DelegatedIngredient
+  >{
+    key: Key.DelegatedIngredient,
+    mint: mint.publicKey,
+    counter: 2,
+  });
+});
+
 // it can add a specific amount of an ingredient input and output
 // it can add a max supply to an ingredient output
 

@@ -19,6 +19,56 @@ pub struct IngredientRecord {
 impl IngredientRecord {
     pub const LEN: usize = 1 + 1 + 1 + 32 + 32;
 
+    pub fn set_input(&mut self, value: bool) -> ProgramResult {
+        match (self.input == value, value) {
+            (true, true) => {
+                msg!(
+                    "Ingredient [{}] is already part of this recipe as an input.",
+                    self.mint
+                );
+                Err(TokenRecipesError::IngredientAlreadyAdded.into())
+            }
+            (true, false) => {
+                msg!(
+                    "Ingredient [{}] is not part of this recipe as an input.",
+                    self.mint,
+                );
+                Err(TokenRecipesError::MissingIngredient.into())
+            }
+            _ => {
+                self.input = value;
+                Ok(())
+            }
+        }
+    }
+
+    pub fn set_output(&mut self, value: bool) -> ProgramResult {
+        match (self.output == value, value) {
+            (true, true) => {
+                msg!(
+                    "Ingredient [{}] is already part of this recipe as an output.",
+                    self.mint
+                );
+                Err(TokenRecipesError::IngredientAlreadyAdded.into())
+            }
+            (true, false) => {
+                msg!(
+                    "Ingredient [{}] is not part of this recipe as an output.",
+                    self.mint,
+                );
+                Err(TokenRecipesError::MissingIngredient.into())
+            }
+            _ => {
+                self.output = value;
+                Ok(())
+            }
+        }
+    }
+
+    pub fn should_be_closed(&mut self) -> bool {
+        !self.input && !self.output
+    }
+
     pub fn seeds<'a>(mint: &'a Pubkey, recipe: &'a Pubkey) -> Vec<&'a [u8]> {
         vec![
             "ingredient_record".as_bytes(),

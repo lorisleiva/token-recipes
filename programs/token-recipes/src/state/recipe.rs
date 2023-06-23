@@ -20,6 +20,46 @@ pub struct Recipe {
 impl Recipe {
     pub const INITIAL_LEN: usize = 1 + 32 + 1 + 4 + 4;
 
+    pub fn add_ingredient_input(&mut self, ingredient: IngredientInput) {
+        self.inputs.push(ingredient);
+    }
+
+    pub fn add_ingredient_output(&mut self, ingredient: IngredientOutput) {
+        self.outputs.push(ingredient);
+    }
+
+    pub fn remove_ingredient_input(&mut self, mint: &Pubkey) -> ProgramResult {
+        match self.inputs.iter().position(|i| i.mint == *mint) {
+            Some(index) => {
+                self.inputs.remove(index);
+                Ok(())
+            }
+            None => {
+                msg!(
+                    "Ingredient [{}] is not part of this recipe as an input.",
+                    mint,
+                );
+                Err(TokenRecipesError::MissingIngredient.into())
+            }
+        }
+    }
+
+    pub fn remove_ingredient_output(&mut self, mint: &Pubkey) -> ProgramResult {
+        match self.outputs.iter().position(|i| i.mint == *mint) {
+            Some(index) => {
+                self.outputs.remove(index);
+                Ok(())
+            }
+            None => {
+                msg!(
+                    "Ingredient [{}] is not part of this recipe as an output.",
+                    mint,
+                );
+                Err(TokenRecipesError::MissingIngredient.into())
+            }
+        }
+    }
+
     pub fn load(account: &AccountInfo) -> Result<Self, ProgramError> {
         let mut bytes: &[u8] = &(*account.data).borrow();
         Recipe::deserialize(&mut bytes).map_err(|error| {

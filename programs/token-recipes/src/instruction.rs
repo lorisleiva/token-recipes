@@ -38,6 +38,24 @@ pub enum TokenRecipesInstruction {
         /// If the ingredient is an output, the maximum supply that can ever be minted.
         max_supply: Option<u64>,
     },
+
+    /// Removes an ingredient from a recipe.
+    /// This could be an input or output ingredient.
+    /// If the ingredient is an output and no other recipe uses this ingredient as an output,
+    /// the mint authority will be transferred back to the original authority.
+    #[account(0, writable, name="recipe", desc = "The address of the recipe account")]
+    #[account(1, writable, name="mint", desc = "The mint account of the ingredient")]
+    #[account(2, writable, name="ingredient_record", desc = "The ingredient record PDA to discover their recipes")]
+    #[account(3, optional, writable, name="delegated_ingredient", desc = "The delegated ingredient PDA for output ingredients that takes over the mint authority")]
+    #[account(4, signer, name="authority", desc = "The authority of the recipe account and the mint authority of the ingredient if it's an output ingredient")]
+    #[account(5, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(6, name="system_program", desc = "The system program")]
+    #[account(7, name="token_program", desc = "The token program")]
+    #[default_optional_accounts]
+    RemoveIngredient {
+        /// Whether the ingredient is an input or output.
+        ingredient_type: IngredientType,
+    },
 }
 
 pub fn create_recipe(recipe: &Pubkey, authority: &Pubkey, payer: &Pubkey) -> Instruction {
