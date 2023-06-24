@@ -61,8 +61,6 @@ pub(crate) fn add_ingredient(
     assert_writable("mint", mint)?;
     assert_program_owner("mint", mint, &spl_token::ID)?;
     assert_data_size("mint", mint, 82)?; // 165 for token
-    let mint_account = Mint::unpack(&mint.data.borrow())?;
-    assert_mint_authority("mint", mint, &mint_account, authority.key)?;
 
     // Check: ingredient_record.
     assert_writable("ingredient_record", ingredient_record)?;
@@ -158,6 +156,10 @@ pub(crate) fn add_ingredient(
 
         let mut delegated_ingredient_account = match delegated_ingredient.data_is_empty() {
             true => {
+                // Check: mint authority.
+                let mint_account = Mint::unpack(&mint.data.borrow())?;
+                assert_mint_authority("mint", mint, &mint_account, authority.key)?;
+
                 let mut seeds = DelegatedIngredient::seeds(mint.key);
                 let (_, bump) = Pubkey::find_program_address(&seeds, &crate::id());
                 let bump = [bump];
