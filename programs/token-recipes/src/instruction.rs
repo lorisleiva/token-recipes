@@ -56,6 +56,19 @@ pub enum TokenRecipesInstruction {
         /// Whether the ingredient is an input or output.
         ingredient_type: IngredientType,
     },
+
+    /// Activate a recipe.
+    #[account(0, writable, name="recipe", desc = "The address of the recipe account")]
+    #[account(1, signer, name="authority", desc = "The authority of the recipe account")]
+    ActivateRecipe,
+
+    /// Pause a recipe.
+    #[account(0, writable, name="recipe", desc = "The address of the recipe account")]
+    #[account(1, signer, name="authority", desc = "The authority of the recipe account")]
+    PauseRecipe,
+
+    // DeleteRecipe,
+    // Craft, (+ quantity)
 }
 
 pub fn create_recipe(recipe: &Pubkey, authority: &Pubkey, payer: &Pubkey) -> Instruction {

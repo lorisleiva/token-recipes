@@ -179,6 +179,50 @@
         "type": "u8",
         "value": 2
       }
+    },
+    {
+      "name": "ActivateRecipe",
+      "accounts": [
+        {
+          "name": "recipe",
+          "isMut": true,
+          "isSigner": false,
+          "desc": "The address of the recipe account"
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "desc": "The authority of the recipe account"
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 3
+      }
+    },
+    {
+      "name": "PauseRecipe",
+      "accounts": [
+        {
+          "name": "recipe",
+          "isMut": true,
+          "isSigner": false,
+          "desc": "The address of the recipe account"
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "desc": "The authority of the recipe account"
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 4
+      }
     }
   ],
   "accounts": [

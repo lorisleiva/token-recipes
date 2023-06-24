@@ -6,6 +6,8 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
+export * from './activateRecipe';
 export * from './addIngredient';
 export * from './createRecipe';
+export * from './pauseRecipe';
 export * from './removeIngredient';
