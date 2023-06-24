@@ -47,6 +47,11 @@ kinobi.update(
     createRecipe: {
       bytesCreatedOnChain: k.bytesFromNumber(1 + 32 + 1 + 4 + 4),
     },
+    craft: {
+      accounts: {
+        owner: { defaultsTo: k.identityDefault() },
+      },
+    },
   })
 );
 
@@ -65,6 +70,9 @@ kinobi.update(
     addIngredientInstructionData: {
       amount: k.vScalar(1),
       maxSupply: k.vNone(),
+    },
+    craftInstructionData: {
+      quantity: k.vScalar(1),
     },
   })
 );

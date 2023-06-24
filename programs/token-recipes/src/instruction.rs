@@ -77,7 +77,7 @@ pub enum TokenRecipesInstruction {
     #[account(2, writable, signer, name="payer", desc = "The account paying for the storage fees if we have to create associated token accounts")]
     #[account(3, name="system_program", desc = "The system program")]
     #[account(4, name="token_program", desc = "The token program")]
-    #[account(5, name="associated_token_program", desc = "The associated token program")]
+    #[account(5, name="ata_program", desc = "The associated token program")]
     Craft {
         /// The amount of recipes to craft.
         quantity: u64,

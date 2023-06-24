@@ -29,7 +29,7 @@ export type CraftInstructionAccounts = {
   /** The address of the recipe account */
   recipe: PublicKey | Pda;
   /** The owner of the token accounts */
-  owner: Signer;
+  owner?: Signer;
   /** The account paying for the storage fees if we have to create associated token accounts */
   payer?: Signer;
   /** The system program */
@@ -37,13 +37,13 @@ export type CraftInstructionAccounts = {
   /** The token program */
   tokenProgram?: PublicKey | Pda;
   /** The associated token program */
-  associatedTokenProgram: PublicKey | Pda;
+  ataProgram?: PublicKey | Pda;
 };
 
 // Data.
 export type CraftInstructionData = { discriminator: number; quantity: bigint };
 
-export type CraftInstructionDataArgs = { quantity: number | bigint };
+export type CraftInstructionDataArgs = { quantity?: number | bigint };
 
 /** @deprecated Use `getCraftInstructionDataSerializer()` without any argument instead. */
 export function getCraftInstructionDataSerializer(
@@ -64,7 +64,7 @@ export function getCraftInstructionDataSerializer(
       ],
       { description: 'CraftInstructionData' }
     ),
-    (value) => ({ ...value, discriminator: 5 })
+    (value) => ({ ...value, discriminator: 5, quantity: value.quantity ?? 1 })
   ) as Serializer<CraftInstructionDataArgs, CraftInstructionData>;
 }
 
@@ -73,7 +73,7 @@ export type CraftInstructionArgs = CraftInstructionDataArgs;
 
 // Instruction.
 export function craft(
-  context: Pick<Context, 'programs' | 'payer'>,
+  context: Pick<Context, 'programs' | 'identity' | 'payer'>,
   input: CraftInstructionAccounts & CraftInstructionArgs
 ): TransactionBuilder {
   const signers: Signer[] = [];
@@ -88,10 +88,15 @@ export function craft(
   // Resolved inputs.
   const resolvedAccounts = {
     recipe: [input.recipe, false] as const,
-    owner: [input.owner, false] as const,
-    associatedTokenProgram: [input.associatedTokenProgram, false] as const,
   };
   const resolvingArgs = {};
+  addObjectProperty(
+    resolvedAccounts,
+    'owner',
+    input.owner
+      ? ([input.owner, false] as const)
+      : ([context.identity, false] as const)
+  );
   addObjectProperty(
     resolvedAccounts,
     'payer',
@@ -125,6 +130,19 @@ export function craft(
           false,
         ] as const)
   );
+  addObjectProperty(
+    resolvedAccounts,
+    'ataProgram',
+    input.ataProgram
+      ? ([input.ataProgram, false] as const)
+      : ([
+          context.programs.getPublicKey(
+            'splAssociatedToken',
+            'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL'
+          ),
+          false,
+        ] as const)
+  );
   const resolvedArgs = { ...input, ...resolvingArgs };
 
   addAccountMeta(keys, signers, resolvedAccounts.recipe, false);
@@ -132,7 +150,7 @@ export function craft(
   addAccountMeta(keys, signers, resolvedAccounts.payer, false);
   addAccountMeta(keys, signers, resolvedAccounts.systemProgram, false);
   addAccountMeta(keys, signers, resolvedAccounts.tokenProgram, false);
-  addAccountMeta(keys, signers, resolvedAccounts.associatedTokenProgram, false);
+  addAccountMeta(keys, signers, resolvedAccounts.ataProgram, false);
 
   // Data.
   const data = getCraftInstructionDataSerializer().serialize(resolvedArgs);

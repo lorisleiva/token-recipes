@@ -258,7 +258,7 @@
           "desc": "The token program"
         },
         {
-          "name": "associatedTokenProgram",
+          "name": "ataProgram",
           "isMut": false,
           "isSigner": false,
           "desc": "The associated token program"

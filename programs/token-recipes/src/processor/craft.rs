@@ -22,7 +22,7 @@ pub(crate) fn craft(accounts: &[AccountInfo], quantity: u64) -> ProgramResult {
     let payer = next_account_info(account_info_iter)?;
     let system_program = next_account_info(account_info_iter)?;
     let token_program = next_account_info(account_info_iter)?;
-    let associated_token_program = next_account_info(account_info_iter)?;
+    let ata_program = next_account_info(account_info_iter)?;
 
     // Check: recipe.
     assert_program_owner("recipe", recipe, &crate::id())?;
@@ -42,10 +42,10 @@ pub(crate) fn craft(accounts: &[AccountInfo], quantity: u64) -> ProgramResult {
     // Check: token_program.
     assert_same_pubkeys("token_program", token_program, &spl_token::id())?;
 
-    // Check: associated_token_program.
+    // Check: ata_program.
     assert_same_pubkeys(
-        "associated_token_program",
-        associated_token_program,
+        "ata_program",
+        ata_program,
         &spl_associated_token_account::id(),
     )?;
 
