@@ -425,6 +425,11 @@
       "code": 11,
       "name": "MissingIngredient",
       "msg": "Missing ingredient"
+    },
+    {
+      "code": 12,
+      "name": "InvalidMintAuthority",
+      "msg": "Invalid Mint Authority"
     }
   ],
   "metadata": {

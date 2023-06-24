@@ -3,6 +3,7 @@ use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
     pubkey::Pubkey,
 };
+use spl_token::state::Mint;
 
 /// Assert that the given account is owned by the given program.
 pub fn assert_program_owner(
@@ -135,4 +136,35 @@ pub fn assert_account_key(account_name: &str, account: &AccountInfo, key: Key) -
     } else {
         Ok(())
     }
+}
+
+/// Assert that the given account matches the mint authority of the given mint account.
+pub fn assert_mint_authority(
+    account_name: &str,
+    account: &AccountInfo,
+    mint_account: &Mint,
+    expected_mint_authority: &Pubkey,
+) -> ProgramResult {
+    if mint_account.mint_authority.is_none() {
+        msg!(
+            "Account \"{}\" [{}] does not have a mint authority. Expected [{}]",
+            account_name,
+            account.key,
+            expected_mint_authority,
+        );
+        return Err(TokenRecipesError::InvalidMintAuthority.into());
+    }
+
+    if mint_account.mint_authority.unwrap() != *expected_mint_authority {
+        msg!(
+            "Account \"{}\" [{}] does not have a valid mint authority. Expected [{}], got [{}]",
+            account_name,
+            account.key,
+            expected_mint_authority,
+            mint_account.mint_authority.unwrap(),
+        );
+        return Err(TokenRecipesError::InvalidMintAuthority.into());
+    }
+
+    Ok(())
 }

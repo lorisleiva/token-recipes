@@ -1,7 +1,7 @@
 use crate::{
     assertions::{
-        assert_account_key, assert_data_size, assert_pda, assert_program_owner,
-        assert_same_pubkeys, assert_signer, assert_writable,
+        assert_account_key, assert_data_size, assert_mint_authority, assert_pda,
+        assert_program_owner, assert_same_pubkeys, assert_signer, assert_writable,
     },
     state::{
         delegated_ingredient::DelegatedIngredient,
@@ -14,9 +14,11 @@ use crate::{
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
     entrypoint::ProgramResult,
+    program_pack::Pack,
     pubkey::Pubkey,
     system_program,
 };
+use spl_token::state::Mint;
 
 pub(crate) fn add_ingredient(
     accounts: &[AccountInfo],
@@ -59,6 +61,8 @@ pub(crate) fn add_ingredient(
     assert_writable("mint", mint)?;
     assert_program_owner("mint", mint, &spl_token::ID)?;
     assert_data_size("mint", mint, 82)?; // 165 for token
+    let mint_account = Mint::unpack(&mint.data.borrow())?;
+    assert_mint_authority("mint", mint, &mint_account, authority.key)?;
 
     // Check: ingredient_record.
     assert_writable("ingredient_record", ingredient_record)?;

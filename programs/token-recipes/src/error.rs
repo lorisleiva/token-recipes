@@ -41,9 +41,12 @@ pub enum TokenRecipesError {
     /// 10 - Ingredient already added
     #[error("Ingredient already added")]
     IngredientAlreadyAdded,
-    /// 10 - Missing ingredient
+    /// 11 - Missing ingredient
     #[error("Missing ingredient")]
     MissingIngredient,
+    /// 12 - Invalid Mint Authority
+    #[error("Invalid Mint Authority")]
+    InvalidMintAuthority,
 }
 
 impl PrintProgramError for TokenRecipesError {

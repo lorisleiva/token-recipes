@@ -175,6 +175,19 @@ export class MissingIngredientError extends ProgramError {
 codeToErrorMap.set(0xb, MissingIngredientError);
 nameToErrorMap.set('MissingIngredient', MissingIngredientError);
 
+/** InvalidMintAuthority: Invalid Mint Authority */
+export class InvalidMintAuthorityError extends ProgramError {
+  readonly name: string = 'InvalidMintAuthority';
+
+  readonly code: number = 0xc; // 12
+
+  constructor(program: Program, cause?: Error) {
+    super('Invalid Mint Authority', program, cause);
+  }
+}
+codeToErrorMap.set(0xc, InvalidMintAuthorityError);
+nameToErrorMap.set('InvalidMintAuthority', InvalidMintAuthorityError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

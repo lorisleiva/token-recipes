@@ -248,10 +248,189 @@ test('it increments the counter when adding the same ingredient output to anothe
   });
 });
 
-// it can add a specific amount of an ingredient input and output
-// it can add a max supply to an ingredient output
+test('it can add a specific amount of an ingredient input and output', async (t) => {
+  // Given an empty recipe and two mint accounts.
+  const umi = await createUmi();
+  const recipe = generateSigner(umi);
+  const mintA = generateSigner(umi);
+  const mintB = generateSigner(umi);
+  await createRecipe(umi, { recipe })
+    .add(createMint(umi, { mint: mintA }))
+    .add(createMint(umi, { mint: mintB }))
+    .sendAndConfirm(umi);
 
-// it cannot add an ingredient as the wrong authority
-// it cannot add an ingredient input that is already an input
-// it cannot add an ingredient output that is already an output
-// it cannot add an ingredient output if the authority is not its mint authority
+  // When we add 2 mintA tokens as input and 3 mintB tokens as output.
+  await transactionBuilder()
+    .add(
+      addIngredient(umi, {
+        recipe: recipe.publicKey,
+        mint: mintA.publicKey,
+        ingredientType: IngredientType.Input,
+        amount: 2,
+      })
+    )
+    .add(
+      addIngredient(umi, {
+        recipe: recipe.publicKey,
+        mint: mintB.publicKey,
+        ingredientType: IngredientType.Output,
+        amount: 3,
+      })
+    )
+    .sendAndConfirm(umi);
+
+  // Then the recipe account contains the correct amounts.
+  t.like(await fetchRecipe(umi, recipe.publicKey), <Recipe>{
+    status: RecipeStatus.Paused,
+    inputs: <Array<IngredientInput>>[{ mint: mintA.publicKey, amount: 2n }],
+    outputs: <Array<IngredientOutput>>[
+      {
+        mint: mintB.publicKey,
+        amount: 3n,
+        maxSupply: BigInt('0xffffffffffffffff'),
+      },
+    ],
+  });
+});
+
+test('it can add a max supply to an ingredient output', async (t) => {
+  // Given an empty recipe and a mint account.
+  const umi = await createUmi();
+  const recipe = generateSigner(umi);
+  const mint = generateSigner(umi);
+  await createRecipe(umi, { recipe })
+    .add(createMint(umi, { mint }))
+    .sendAndConfirm(umi);
+
+  // When we add that mint as an ingredient output with a max supply.
+  await addIngredient(umi, {
+    recipe: recipe.publicKey,
+    mint: mint.publicKey,
+    ingredientType: IngredientType.Output,
+    maxSupply: 100,
+  }).sendAndConfirm(umi);
+
+  // Then the recipe account stores the max supply for that ingredient.
+  t.like(await fetchRecipe(umi, recipe.publicKey), <Recipe>{
+    status: RecipeStatus.Paused,
+    inputs: [] as Array<IngredientInput>,
+    outputs: <Array<IngredientOutput>>[
+      {
+        mint: mint.publicKey,
+        amount: 1n,
+        maxSupply: 100n,
+      },
+    ],
+  });
+});
+
+test('it cannot add an ingredient as the wrong authority', async (t) => {
+  // Given an empty recipe owned by authority A.
+  const umi = await createUmi();
+  const recipe = generateSigner(umi);
+  const authorityA = generateSigner(umi);
+  await createRecipe(umi, {
+    recipe,
+    authority: authorityA.publicKey,
+  }).sendAndConfirm(umi);
+
+  // And a mint account.
+  const mint = generateSigner(umi);
+  await createMint(umi, { mint }).sendAndConfirm(umi);
+
+  // When authority B tries to add that mint to the recipe.
+  const authorityB = generateSigner(umi);
+  const promise = addIngredient(umi, {
+    authority: authorityB,
+    recipe: recipe.publicKey,
+    mint: mint.publicKey,
+    ingredientType: IngredientType.Input,
+  }).sendAndConfirm(umi);
+
+  // Then we expect a program error.
+  await t.throwsAsync(promise, { name: 'AccountMismatch' });
+});
+
+test('it cannot add an ingredient input that is already an input', async (t) => {
+  // Given a recipe with an ingredient input.
+  const umi = await createUmi();
+  const recipe = generateSigner(umi);
+  const mint = generateSigner(umi);
+  await createRecipe(umi, { recipe })
+    .add(createMint(umi, { mint }))
+    .add(
+      addIngredient(umi, {
+        recipe: recipe.publicKey,
+        mint: mint.publicKey,
+        ingredientType: IngredientType.Input,
+      })
+    )
+    .sendAndConfirm(umi);
+
+  // When we try to add that ingredient input again.
+  const promise = addIngredient(umi, {
+    recipe: recipe.publicKey,
+    mint: mint.publicKey,
+    ingredientType: IngredientType.Input,
+  }).sendAndConfirm(umi);
+
+  // Then we expect a program error.
+  await t.throwsAsync(promise, { name: 'IngredientAlreadyAdded' });
+});
+
+test('it cannot add an ingredient output that is already an output', async (t) => {
+  // Given a recipe with an ingredient output.
+  const umi = await createUmi();
+  const recipe = generateSigner(umi);
+  const mint = generateSigner(umi);
+  await createRecipe(umi, { recipe })
+    .add(createMint(umi, { mint }))
+    .add(
+      addIngredient(umi, {
+        recipe: recipe.publicKey,
+        mint: mint.publicKey,
+        ingredientType: IngredientType.Output,
+      })
+    )
+    .sendAndConfirm(umi);
+
+  // When we try to add that ingredient output again.
+  const promise = addIngredient(umi, {
+    recipe: recipe.publicKey,
+    mint: mint.publicKey,
+    ingredientType: IngredientType.Output,
+  }).sendAndConfirm(umi);
+
+  // Then we expect a program error.
+  await t.throwsAsync(promise, { name: 'IngredientAlreadyAdded' });
+});
+
+test('it cannot add an ingredient output if the authority is not its mint authority', async (t) => {
+  // Given a recipe owned by authority A.
+  const umi = await createUmi();
+  const recipe = generateSigner(umi);
+  const authorityA = generateSigner(umi);
+  await createRecipe(umi, {
+    recipe,
+    authority: authorityA.publicKey,
+  }).sendAndConfirm(umi);
+
+  // And a mint account with mint authority B.
+  const mint = generateSigner(umi);
+  const authorityB = generateSigner(umi);
+  await createMint(umi, {
+    mint,
+    mintAuthority: authorityB.publicKey,
+  }).sendAndConfirm(umi);
+
+  // When authority A tries to add that ingredient as an output.
+  const promise = addIngredient(umi, {
+    authority: authorityA,
+    recipe: recipe.publicKey,
+    mint: mint.publicKey,
+    ingredientType: IngredientType.Output,
+  }).sendAndConfirm(umi);
+
+  // Then we expect a program error.
+  await t.throwsAsync(promise, { name: 'InvalidMintAuthority' });
+});
