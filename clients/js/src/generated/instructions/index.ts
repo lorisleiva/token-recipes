@@ -8,6 +8,7 @@
 
 export * from './activateRecipe';
 export * from './addIngredient';
+export * from './craft';
 export * from './createRecipe';
 export * from './pauseRecipe';
 export * from './removeIngredient';

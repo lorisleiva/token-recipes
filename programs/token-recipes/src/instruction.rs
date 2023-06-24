@@ -67,8 +67,23 @@ pub enum TokenRecipesInstruction {
     #[account(1, signer, name="authority", desc = "The authority of the recipe account")]
     PauseRecipe,
 
-    // DeleteRecipe,
-    // Craft, (+ quantity)
+    /// Craft a recipe.
+    /// The quantity argument can be used to craft multiple recipes at once.
+    /// Remaining accounts must be used to provide the mint and token accounts
+    /// of each ingredients in the order they are stored in the recipe starting
+    /// with the input ingredients.
+    #[account(0, name="recipe", desc = "The address of the recipe account")]
+    #[account(1, signer, name="owner", desc = "The owner of the token accounts")]
+    #[account(2, writable, signer, name="payer", desc = "The account paying for the storage fees if we have to create associated token accounts")]
+    #[account(3, name="system_program", desc = "The system program")]
+    #[account(4, name="token_program", desc = "The token program")]
+    #[account(5, name="associated_token_program", desc = "The associated token program")]
+    Craft {
+        /// The amount of recipes to craft.
+        quantity: u64,
+    },
+
+    // TODO: DeleteRecipe,
 }
 
 pub fn create_recipe(recipe: &Pubkey, authority: &Pubkey, payer: &Pubkey) -> Instruction {

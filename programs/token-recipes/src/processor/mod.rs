@@ -1,7 +1,7 @@
 use crate::{
     instruction::TokenRecipesInstruction,
     processor::{
-        activate_recipe::activate_recipe, add_ingredient::add_ingredient,
+        activate_recipe::activate_recipe, add_ingredient::add_ingredient, craft::craft,
         create_recipe::create_recipe, pause_recipe::pause_recipe,
         remove_ingredient::remove_ingredient,
     },
@@ -11,6 +11,7 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg, 
 
 pub mod activate_recipe;
 pub mod add_ingredient;
+pub mod craft;
 pub mod create_recipe;
 pub mod pause_recipe;
 pub mod remove_ingredient;
@@ -48,6 +49,10 @@ impl Processor {
             TokenRecipesInstruction::PauseRecipe => {
                 msg!("Instruction: PauseRecipe");
                 pause_recipe(accounts)
+            }
+            TokenRecipesInstruction::Craft { quantity } => {
+                msg!("Instruction: Craft");
+                craft(accounts, quantity)
             }
         }
     }
