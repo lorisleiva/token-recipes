@@ -434,3 +434,41 @@ test('it cannot add an ingredient output if the authority is not its mint author
   // Then we expect a program error.
   await t.throwsAsync(promise, { name: 'InvalidMintAuthority' });
 });
+
+test('it cannot add an ingredient output already delegated if the authority does not match', async (t) => {
+  // Given a recipe A owned by authority A with a delegated ingredient output.
+  const umi = await createUmi();
+  const recipeA = generateSigner(umi);
+  const authorityA = generateSigner(umi);
+  const mint = generateSigner(umi);
+  await createRecipe(umi, { recipe: recipeA, authority: authorityA.publicKey })
+    .add(createMint(umi, { mint, mintAuthority: authorityA.publicKey }))
+    .add(
+      addIngredient(umi, {
+        authority: authorityA,
+        recipe: recipeA.publicKey,
+        mint: mint.publicKey,
+        ingredientType: IngredientType.Output,
+      })
+    )
+    .sendAndConfirm(umi);
+
+  // And an empty recipe B owned by authority B.
+  const recipeB = generateSigner(umi);
+  const authorityB = generateSigner(umi);
+  await createRecipe(umi, {
+    recipe: recipeB,
+    authority: authorityB.publicKey,
+  }).sendAndConfirm(umi);
+
+  // When authority B tries to add that ingredient as an output to its own recipe.
+  const promise = addIngredient(umi, {
+    authority: authorityB,
+    recipe: recipeB.publicKey,
+    mint: mint.publicKey,
+    ingredientType: IngredientType.Output,
+  }).sendAndConfirm(umi);
+
+  // Then we expect a program error.
+  await t.throwsAsync(promise, { name: 'AccountMismatch' });
+});
