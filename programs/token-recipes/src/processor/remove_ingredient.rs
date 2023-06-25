@@ -7,7 +7,7 @@ use crate::{
         delegated_ingredient::DelegatedIngredient,
         ingredient_record::IngredientRecord,
         key::Key,
-        recipe::{IngredientInput, IngredientOutput, IngredientType, Recipe},
+        recipe::{IngredientType, Recipe},
     },
     utils::{close_account, realloc_account, transfer_mint_authority},
 };
@@ -76,18 +76,18 @@ pub(crate) fn remove_ingredient(
     assert_same_pubkeys("recipe", recipe, &ingredient_record_account.recipe)?;
     assert_same_pubkeys("mint", mint, &ingredient_record_account.mint)?;
 
-    // Realloc the recipe account.
-    let space: usize = match ingredient_type {
-        IngredientType::Input => recipe.data_len() - IngredientInput::LEN,
-        IngredientType::Output => recipe.data_len() - IngredientOutput::LEN,
+    // Remove the ingredient from the recipe account and realloc.
+    let new_size = match ingredient_type {
+        IngredientType::Input => {
+            let ingredient = recipe_account.remove_ingredient_input(mint.key)?;
+            recipe.data_len() - ingredient.len()
+        }
+        IngredientType::Output => {
+            let ingredient = recipe_account.remove_ingredient_output(mint.key)?;
+            recipe.data_len() - ingredient.len()
+        }
     };
-    realloc_account(recipe, payer, system_program, space)?;
-
-    // Remove the ingredient from the recipe account.
-    match ingredient_type {
-        IngredientType::Input => recipe_account.remove_ingredient_input(mint.key)?,
-        IngredientType::Output => recipe_account.remove_ingredient_output(mint.key)?,
-    }
+    realloc_account(recipe, payer, system_program, new_size)?;
     recipe_account.save(recipe)?;
 
     // Update and save the ingredient record.

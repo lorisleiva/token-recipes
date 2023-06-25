@@ -23,6 +23,7 @@ import {
   Serializer,
   mapSerializer,
   option,
+  publicKey as publicKeySerializer,
   struct,
   u64,
   u8,
@@ -63,12 +64,14 @@ export type AddIngredientInstructionData = {
   discriminator: number;
   amount: bigint;
   ingredientType: IngredientType;
+  destination: Option<PublicKey>;
   maxSupply: Option<bigint>;
 };
 
 export type AddIngredientInstructionDataArgs = {
   amount?: number | bigint;
   ingredientType: IngredientTypeArgs;
+  destination?: OptionOrNullable<PublicKey>;
   maxSupply?: OptionOrNullable<number | bigint>;
 };
 
@@ -93,6 +96,7 @@ export function getAddIngredientInstructionDataSerializer(
         ['discriminator', u8()],
         ['amount', u64()],
         ['ingredientType', getIngredientTypeSerializer()],
+        ['destination', option(publicKeySerializer())],
         ['maxSupply', option(u64())],
       ],
       { description: 'AddIngredientInstructionData' }
@@ -101,6 +105,7 @@ export function getAddIngredientInstructionDataSerializer(
       ...value,
       discriminator: 1,
       amount: value.amount ?? 1,
+      destination: value.destination ?? none(),
       maxSupply: value.maxSupply ?? none(),
     })
   ) as Serializer<

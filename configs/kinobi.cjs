@@ -70,6 +70,7 @@ kinobi.update(
   new k.SetStructDefaultValuesVisitor({
     addIngredientInstructionData: {
       amount: k.vScalar(1),
+      destination: k.vNone(),
       maxSupply: k.vNone(),
     },
     craftInstructionData: {

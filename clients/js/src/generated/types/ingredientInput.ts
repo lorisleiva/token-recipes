@@ -6,17 +6,26 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
-import { PublicKey } from '@metaplex-foundation/umi';
+import { Option, OptionOrNullable, PublicKey } from '@metaplex-foundation/umi';
 import {
   Serializer,
+  option,
   publicKey as publicKeySerializer,
   struct,
   u64,
 } from '@metaplex-foundation/umi/serializers';
 
-export type IngredientInput = { mint: PublicKey; amount: bigint };
+export type IngredientInput = {
+  mint: PublicKey;
+  amount: bigint;
+  destination: Option<PublicKey>;
+};
 
-export type IngredientInputArgs = { mint: PublicKey; amount: number | bigint };
+export type IngredientInputArgs = {
+  mint: PublicKey;
+  amount: number | bigint;
+  destination: OptionOrNullable<PublicKey>;
+};
 
 /** @deprecated Use `getIngredientInputSerializer()` without any argument instead. */
 export function getIngredientInputSerializer(
@@ -33,6 +42,7 @@ export function getIngredientInputSerializer(
     [
       ['mint', publicKeySerializer()],
       ['amount', u64()],
+      ['destination', option(publicKeySerializer())],
     ],
     { description: 'IngredientInput' }
   ) as Serializer<IngredientInputArgs, IngredientInput>;

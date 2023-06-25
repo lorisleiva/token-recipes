@@ -1,6 +1,7 @@
 import { Mint, createMint, fetchMint } from '@metaplex-foundation/mpl-toolbox';
 import {
   generateSigner,
+  none,
   some,
   transactionBuilder,
 } from '@metaplex-foundation/umi';
@@ -44,7 +45,9 @@ test('it can add an ingredient input', async (t) => {
   // Then the recipe account now contains that ingredient input.
   t.like(await fetchRecipe(umi, recipe.publicKey), <Recipe>{
     status: RecipeStatus.Paused,
-    inputs: <Array<IngredientInput>>[{ mint: mint.publicKey, amount: 1n }],
+    inputs: <Array<IngredientInput>>[
+      { mint: mint.publicKey, amount: 1n, destination: none() },
+    ],
     outputs: [] as Array<IngredientOutput>,
   });
 
@@ -164,7 +167,9 @@ test('it can add an ingredient as both input and output', async (t) => {
   // Then the recipe account now contains that ingredient as both input and output.
   t.like(await fetchRecipe(umi, recipe.publicKey), <Recipe>{
     status: RecipeStatus.Paused,
-    inputs: <Array<IngredientInput>>[{ mint: mint.publicKey, amount: 1n }],
+    inputs: <Array<IngredientInput>>[
+      { mint: mint.publicKey, amount: 1n, destination: none() },
+    ],
     outputs: <Array<IngredientOutput>>[
       {
         mint: mint.publicKey,
@@ -283,7 +288,9 @@ test('it can add a specific amount of an ingredient input and output', async (t)
   // Then the recipe account contains the correct amounts.
   t.like(await fetchRecipe(umi, recipe.publicKey), <Recipe>{
     status: RecipeStatus.Paused,
-    inputs: <Array<IngredientInput>>[{ mint: mintA.publicKey, amount: 2n }],
+    inputs: <Array<IngredientInput>>[
+      { mint: mintA.publicKey, amount: 2n, destination: none() },
+    ],
     outputs: <Array<IngredientOutput>>[
       {
         mint: mintB.publicKey,
@@ -294,7 +301,37 @@ test('it can add a specific amount of an ingredient input and output', async (t)
   });
 });
 
-test.todo('it can add a destination to an ingredient input');
+test('it can add a destination to an ingredient input', async (t) => {
+  // Given an empty recipe and a mint account.
+  const umi = await createUmi();
+  const recipe = generateSigner(umi);
+  const mint = generateSigner(umi);
+  await createRecipe(umi, { recipe })
+    .add(createMint(umi, { mint }))
+    .sendAndConfirm(umi);
+
+  // When we add that mint as an ingredient input with a destination.
+  const destination = generateSigner(umi).publicKey;
+  await addIngredient(umi, {
+    recipe: recipe.publicKey,
+    mint: mint.publicKey,
+    ingredientType: IngredientType.Input,
+    destination,
+  }).sendAndConfirm(umi);
+
+  // Then the recipe account stores the destination for that ingredient.
+  t.like(await fetchRecipe(umi, recipe.publicKey), <Recipe>{
+    status: RecipeStatus.Paused,
+    inputs: <Array<IngredientInput>>[
+      {
+        mint: mint.publicKey,
+        amount: 1n,
+        destination: some(destination),
+      },
+    ],
+    outputs: [] as Array<IngredientOutput>,
+  });
+});
 
 test('it can add a max supply to an ingredient output', async (t) => {
   // Given an empty recipe and a mint account.

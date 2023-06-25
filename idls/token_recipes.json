@@ -101,6 +101,12 @@
           }
         },
         {
+          "name": "destination",
+          "type": {
+            "option": "publicKey"
+          }
+        },
+        {
           "name": "maxSupply",
           "type": {
             "option": "u64"
@@ -387,6 +393,12 @@
           {
             "name": "amount",
             "type": "u64"
+          },
+          {
+            "name": "destination",
+            "type": {
+              "option": "publicKey"
+            }
           }
         ]
       }

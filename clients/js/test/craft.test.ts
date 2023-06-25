@@ -7,7 +7,7 @@ import {
   fetchToken,
   findAssociatedTokenPda,
 } from '@metaplex-foundation/mpl-toolbox';
-import { generateSigner } from '@metaplex-foundation/umi';
+import { generateSigner, none } from '@metaplex-foundation/umi';
 import test from 'ava';
 import { MAX_U64, Recipe, RecipeStatus, craft, fetchRecipe } from '../src';
 import { createMintWithHolders, createRecipe, createUmi } from './_setup';
@@ -42,8 +42,8 @@ test('it can craft a recipe', async (t) => {
   t.like(await fetchRecipe(umi, recipe), <Recipe>{
     status: RecipeStatus.Active,
     inputs: [
-      { mint: mintA, amount: 2n },
-      { mint: mintB, amount: 7n },
+      { mint: mintA, amount: 2n, destination: none() },
+      { mint: mintB, amount: 7n, destination: none() },
     ],
     outputs: [{ mint: mintC, amount: 1n, maxSupply: MAX_U64 }],
   });

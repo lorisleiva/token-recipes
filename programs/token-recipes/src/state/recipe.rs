@@ -28,11 +28,15 @@ impl Recipe {
         self.outputs.push(ingredient);
     }
 
-    pub fn remove_ingredient_input(&mut self, mint: &Pubkey) -> ProgramResult {
+    pub fn remove_ingredient_input(
+        &mut self,
+        mint: &Pubkey,
+    ) -> Result<IngredientInput, ProgramError> {
         match self.inputs.iter().position(|i| i.mint == *mint) {
             Some(index) => {
+                let ingredient = self.inputs[index].clone();
                 self.inputs.remove(index);
-                Ok(())
+                Ok(ingredient)
             }
             None => {
                 msg!(
@@ -44,11 +48,15 @@ impl Recipe {
         }
     }
 
-    pub fn remove_ingredient_output(&mut self, mint: &Pubkey) -> ProgramResult {
+    pub fn remove_ingredient_output(
+        &mut self,
+        mint: &Pubkey,
+    ) -> Result<IngredientOutput, ProgramError> {
         match self.outputs.iter().position(|i| i.mint == *mint) {
             Some(index) => {
+                let ingredient = self.outputs[index].clone();
                 self.outputs.remove(index);
-                Ok(())
+                Ok(ingredient)
             }
             None => {
                 msg!(
@@ -95,10 +103,13 @@ pub enum IngredientType {
 pub struct IngredientInput {
     pub mint: Pubkey,
     pub amount: u64,
+    pub destination: Option<Pubkey>,
 }
 
 impl IngredientInput {
-    pub const LEN: usize = 32 + 8;
+    pub fn len(&self) -> usize {
+        32 + 8 + self.destination.map(|_| 33).unwrap_or(1)
+    }
 }
 
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
@@ -109,5 +120,7 @@ pub struct IngredientOutput {
 }
 
 impl IngredientOutput {
-    pub const LEN: usize = 32 + 8 + 8;
+    pub fn len(&self) -> usize {
+        32 + 8 + 8
+    }
 }

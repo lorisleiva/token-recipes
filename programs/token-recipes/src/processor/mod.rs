@@ -33,10 +33,11 @@ impl Processor {
             TokenRecipesInstruction::AddIngredient {
                 amount,
                 ingredient_type,
+                destination,
                 max_supply,
             } => {
                 msg!("Instruction: AddIngredient");
-                add_ingredient(accounts, amount, ingredient_type, max_supply)
+                add_ingredient(accounts, amount, ingredient_type, destination, max_supply)
             }
             TokenRecipesInstruction::RemoveIngredient { ingredient_type } => {
                 msg!("Instruction: RemoveIngredient");

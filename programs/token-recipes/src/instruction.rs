@@ -35,6 +35,8 @@ pub enum TokenRecipesInstruction {
         amount: u64,
         /// Whether the ingredient is an input or output.
         ingredient_type: IngredientType,
+        /// If the ingredient is an input, the destination to send the tokens to. If None, the tokens will be burned.
+        destination: Option<Pubkey>,
         /// If the ingredient is an output, the maximum supply that can ever be minted.
         max_supply: Option<u64>,
     },
@@ -119,6 +121,7 @@ pub fn add_ingredient(
     payer: &Pubkey,
     amount: u64,
     ingredient_type: IngredientType,
+    destination: Option<Pubkey>,
     max_supply: Option<u64>,
 ) -> Instruction {
     let accounts = vec![
@@ -137,6 +140,7 @@ pub fn add_ingredient(
         data: TokenRecipesInstruction::AddIngredient {
             amount,
             ingredient_type,
+            destination,
             max_supply,
         }
         .try_to_vec()

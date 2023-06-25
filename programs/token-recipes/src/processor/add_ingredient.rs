@@ -24,6 +24,7 @@ pub(crate) fn add_ingredient(
     accounts: &[AccountInfo],
     amount: u64,
     ingredient_type: IngredientType,
+    destination: Option<Pubkey>,
     max_supply: Option<u64>,
 ) -> ProgramResult {
     // Accounts.
@@ -71,25 +72,28 @@ pub(crate) fn add_ingredient(
         &IngredientRecord::seeds(mint.key, recipe.key),
     )?;
 
-    // Realloc the recipe account.
-    let space: usize = match ingredient_type {
-        IngredientType::Input => recipe.data_len() + IngredientInput::LEN,
-        IngredientType::Output => recipe.data_len() + IngredientOutput::LEN,
+    // Add the ingredient to the recipe account and realloc.
+    let new_size: usize = match ingredient_type {
+        IngredientType::Input => {
+            let ingredient = IngredientInput {
+                mint: *mint.key,
+                amount,
+                destination,
+            };
+            recipe_account.add_ingredient_input(ingredient.clone());
+            recipe.data_len() + ingredient.len()
+        }
+        IngredientType::Output => {
+            let ingredient = IngredientOutput {
+                mint: *mint.key,
+                amount,
+                max_supply: max_supply.unwrap_or(u64::MAX),
+            };
+            recipe_account.add_ingredient_output(ingredient.clone());
+            recipe.data_len() + ingredient.len()
+        }
     };
-    realloc_account(recipe, payer, system_program, space)?;
-
-    // Add the ingredient to the recipe account.
-    match ingredient_type {
-        IngredientType::Input => recipe_account.add_ingredient_input(IngredientInput {
-            mint: *mint.key,
-            amount,
-        }),
-        IngredientType::Output => recipe_account.add_ingredient_output(IngredientOutput {
-            mint: *mint.key,
-            amount,
-            max_supply: max_supply.unwrap_or(u64::MAX),
-        }),
-    };
+    realloc_account(recipe, payer, system_program, new_size)?;
     recipe_account.save(recipe)?;
 
     // Create the ingredient PDA if it doesn't exist.
