@@ -59,6 +59,9 @@ pub enum TokenRecipesError {
     /// 16 - Maximum supply reached
     #[error("Maximum supply reached")]
     MaximumSupplyReached,
+    /// 17 - Recipe must be empty before it can be deleted
+    #[error("Recipe must be empty before it can be deleted")]
+    RecipeMustBeEmptyBeforeItCanBeDeleted,
 }
 
 impl PrintProgramError for TokenRecipesError {

@@ -9,5 +9,6 @@
 export * from './activateRecipe';
 export * from './addIngredient';
 export * from './createRecipe';
+export * from './deleteRecipe';
 export * from './pauseRecipe';
 export * from './removeIngredient';

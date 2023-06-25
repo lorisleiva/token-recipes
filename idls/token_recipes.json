@@ -280,6 +280,34 @@
         "type": "u8",
         "value": 5
       }
+    },
+    {
+      "name": "DeleteRecipe",
+      "accounts": [
+        {
+          "name": "recipe",
+          "isMut": true,
+          "isSigner": false,
+          "desc": "The address of the recipe account"
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "desc": "The authority of the recipe account"
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": false,
+          "desc": "The account that receives the rent fees"
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 6
+      }
     }
   ],
   "accounts": [
@@ -557,6 +585,11 @@
       "code": 16,
       "name": "MaximumSupplyReached",
       "msg": "Maximum supply reached"
+    },
+    {
+      "code": 17,
+      "name": "RecipeMustBeEmptyBeforeItCanBeDeleted",
+      "msg": "Recipe must be empty before it can be deleted"
     }
   ],
   "metadata": {

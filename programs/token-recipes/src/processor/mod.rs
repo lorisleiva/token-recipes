@@ -2,7 +2,7 @@ use crate::{
     instruction::TokenRecipesInstruction,
     processor::{
         activate_recipe::activate_recipe, add_ingredient::add_ingredient, craft::craft,
-        create_recipe::create_recipe, pause_recipe::pause_recipe,
+        create_recipe::create_recipe, delete_recipe::delete_recipe, pause_recipe::pause_recipe,
         remove_ingredient::remove_ingredient,
     },
 };
@@ -13,6 +13,7 @@ pub mod activate_recipe;
 pub mod add_ingredient;
 pub mod craft;
 pub mod create_recipe;
+pub mod delete_recipe;
 pub mod pause_recipe;
 pub mod remove_ingredient;
 
@@ -54,6 +55,10 @@ impl Processor {
             TokenRecipesInstruction::Craft { quantity } => {
                 msg!("Instruction: Craft");
                 craft(accounts, quantity)
+            }
+            TokenRecipesInstruction::DeleteRecipe => {
+                msg!("Instruction: DeleteRecipe");
+                delete_recipe(accounts)
             }
         }
     }

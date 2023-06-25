@@ -96,7 +96,11 @@ pub enum TokenRecipesInstruction {
         quantity: u64,
     },
 
-    // TODO: DeleteRecipe,
+    /// Delete a recipe.
+    #[account(0, writable, name="recipe", desc = "The address of the recipe account")]
+    #[account(1, signer, name="authority", desc = "The authority of the recipe account")]
+    #[account(2, writable, name="payer", desc = "The account that receives the rent fees")]
+    DeleteRecipe,
 }
 
 pub fn create_recipe(recipe: &Pubkey, authority: &Pubkey, payer: &Pubkey) -> Instruction {

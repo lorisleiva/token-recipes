@@ -240,6 +240,22 @@ export class MaximumSupplyReachedError extends ProgramError {
 codeToErrorMap.set(0x10, MaximumSupplyReachedError);
 nameToErrorMap.set('MaximumSupplyReached', MaximumSupplyReachedError);
 
+/** RecipeMustBeEmptyBeforeItCanBeDeleted: Recipe must be empty before it can be deleted */
+export class RecipeMustBeEmptyBeforeItCanBeDeletedError extends ProgramError {
+  readonly name: string = 'RecipeMustBeEmptyBeforeItCanBeDeleted';
+
+  readonly code: number = 0x11; // 17
+
+  constructor(program: Program, cause?: Error) {
+    super('Recipe must be empty before it can be deleted', program, cause);
+  }
+}
+codeToErrorMap.set(0x11, RecipeMustBeEmptyBeforeItCanBeDeletedError);
+nameToErrorMap.set(
+  'RecipeMustBeEmptyBeforeItCanBeDeleted',
+  RecipeMustBeEmptyBeforeItCanBeDeletedError
+);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors
