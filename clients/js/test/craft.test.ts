@@ -167,7 +167,7 @@ test('it can craft a recipe with multiple outputs', async (t) => {
   t.like(await fetchMint(umi, mintC), <Mint>{ supply: 2n });
 });
 
-test.only('it can craft a recipe with an input ingredient that transfers tokens', async (t) => {
+test('it can craft a recipe with an input ingredient that transfers tokens', async (t) => {
   // Given 3 mint accounts A, B and C, such that a crafter owns:
   // - 100 tokens of mint A
   // - 100 tokens of mint B
@@ -197,19 +197,19 @@ test.only('it can craft a recipe with an input ingredient that transfers tokens'
   });
 
   // When the crafter crafts the recipe.
-  const [destinationToken] = findAssociatedTokenPda(umi, {
-    mint: mintA,
-    owner: destination,
-  });
   await craft(umi, {
     recipe,
     owner: crafter,
-    inputs: [{ mint: mintA, destinationToken }, { mint: mintB }],
+    inputs: [{ mint: mintA, destination }, { mint: mintB }],
     outputs: [{ mint: mintC }],
   }).sendAndConfirm(umi);
 
   // Then the crafter sent 2 mint A to the destination.
-  t.like(await fetchToken(umi, destinationToken), <Token>{ amount: 2n });
+  const [destinationAta] = findAssociatedTokenPda(umi, {
+    mint: mintA,
+    owner: destination,
+  });
+  t.like(await fetchToken(umi, destinationAta), <Token>{ amount: 2n });
   t.like(await fetchToken(umi, tokenA), <Token>{ amount: 98n });
   t.like(await fetchMint(umi, mintA), <Mint>{ supply: 100n });
 

@@ -78,7 +78,8 @@ pub enum TokenRecipesInstruction {
     /// If the ingredient is an input, the remaining accounts must be:
     ///   - [writable] The mint account of the ingredient. 
     ///   - [writable] The token account of the ingredient.
-    ///   - [optional, writable] The destination token account when using the transfer strategy.
+    ///   - [optional] The destination account, when a destination is set on the ingredient.
+    ///   - [optional, writable] The destination token account, when a destination is set on the ingredient.
     /// 
     /// If the ingredient is an output, the remaining accounts must be:
     ///   - [writable] The mint account of the ingredient.

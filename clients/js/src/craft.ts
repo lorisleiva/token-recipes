@@ -28,6 +28,7 @@ export type CraftInstructionInput = Parameters<typeof baseCraft>[1] & {
   inputs?: Array<{
     mint: PublicKey;
     token?: PublicKey | Pda;
+    destination?: PublicKey;
     destinationToken?: PublicKey | Pda;
   }>;
   outputs?: Array<{
@@ -46,15 +47,20 @@ export function craft(
   let builder = baseCraft(context, baseInput);
 
   // Inputs.
-  inputs?.forEach(({ mint, token, destinationToken }) => {
+  inputs?.forEach(({ mint, token, destination, destinationToken }) => {
     token = token ?? findAssociatedTokenPda(context, { owner, mint });
     builder = builder.addRemainingAccounts([
       { pubkey: mint, isWritable: true, isSigner: false },
       { pubkey: publicKey(token, false), isWritable: true, isSigner: false },
-      ...(destinationToken
+      ...(destination
         ? [
+            { pubkey: destination, isWritable: false, isSigner: false },
             {
-              pubkey: publicKey(destinationToken, false),
+              pubkey: publicKey(
+                destinationToken ??
+                  findAssociatedTokenPda(context, { mint, owner: destination }),
+                false
+              ),
               isWritable: true,
               isSigner: false,
             },
