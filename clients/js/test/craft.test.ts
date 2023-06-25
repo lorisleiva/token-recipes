@@ -6,14 +6,7 @@ import {
 } from '@metaplex-foundation/mpl-toolbox';
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
-import {
-  MAX_U64,
-  Recipe,
-  RecipeStatus,
-  craft,
-  fetchRecipe,
-  findDelegatedIngredientPda,
-} from '../src';
+import { MAX_U64, Recipe, RecipeStatus, craft, fetchRecipe } from '../src';
 import { createMintWithHolders, createRecipe, createUmi } from './_setup';
 
 test('it can craft a recipe', async (t) => {
@@ -52,25 +45,13 @@ test('it can craft a recipe', async (t) => {
     outputs: [{ mint: mintC, amount: 1n, maxSupply: MAX_U64 }],
   });
 
-  // When the user crafts the recipe.
-  await craft(umi, { recipe, owner: crafter })
-    .addRemainingAccounts([
-      // Input A
-      { pubkey: mintA, isWritable: true, isSigner: false },
-      { pubkey: tokenA, isWritable: true, isSigner: false },
-      // Input B
-      { pubkey: mintB, isWritable: true, isSigner: false },
-      { pubkey: tokenB, isWritable: true, isSigner: false },
-      // Ouput C
-      { pubkey: mintC, isWritable: true, isSigner: false },
-      { pubkey: tokenC, isWritable: true, isSigner: false },
-      {
-        pubkey: findDelegatedIngredientPda(umi, { mint: mintC })[0],
-        isWritable: false,
-        isSigner: false,
-      },
-    ])
-    .sendAndConfirm(umi);
+  // When the crafter crafts the recipe.
+  await craft(umi, {
+    recipe,
+    owner: crafter,
+    inputs: [{ mint: mintA }, { mint: mintB }],
+    outputs: [{ mint: mintC }],
+  }).sendAndConfirm(umi);
 
   // Then the crafter burned 2 mint A.
   t.like(await fetchToken(umi, tokenA), <Token>{ amount: 98n });

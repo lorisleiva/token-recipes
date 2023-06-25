@@ -48,6 +48,7 @@ kinobi.update(
       bytesCreatedOnChain: k.bytesFromNumber(1 + 32 + 1 + 4 + 4),
     },
     craft: {
+      internal: true,
       accounts: {
         owner: { defaultsTo: k.identityDefault() },
       },
