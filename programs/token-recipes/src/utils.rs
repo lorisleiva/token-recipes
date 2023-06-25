@@ -154,3 +154,64 @@ pub fn burn_tokens<'a>(
         ],
     )
 }
+
+/// Mint tokens.
+#[inline(always)]
+pub fn mint_tokens<'a>(
+    token_account: &AccountInfo<'a>,
+    mint_account: &AccountInfo<'a>,
+    mint_authority_account: &AccountInfo<'a>,
+    amount: u64,
+    decimals: u8,
+    signer_seeds: Option<&[&[&[u8]]]>,
+) -> ProgramResult {
+    invoke_signed(
+        &spl_token::instruction::mint_to_checked(
+            &spl_token::id(),
+            mint_account.key,
+            token_account.key,
+            mint_authority_account.key,
+            &[],
+            amount,
+            decimals,
+        )?,
+        &[
+            mint_authority_account.clone(),
+            mint_account.clone(),
+            token_account.clone(),
+        ],
+        signer_seeds.unwrap_or(&[]),
+    )
+}
+
+/// Transfer tokens.
+#[inline(always)]
+pub fn transfer_tokens<'a>(
+    mint_account: &AccountInfo<'a>,
+    from_owner_account: &AccountInfo<'a>,
+    from_token_account: &AccountInfo<'a>,
+    to_token_account: &AccountInfo<'a>,
+    amount: u64,
+    decimals: u8,
+    signer_seeds: Option<&[&[&[u8]]]>,
+) -> ProgramResult {
+    invoke_signed(
+        &spl_token::instruction::transfer_checked(
+            &spl_token::id(),
+            from_token_account.key,
+            mint_account.key,
+            to_token_account.key,
+            from_owner_account.key,
+            &[],
+            amount,
+            decimals,
+        )?,
+        &[
+            from_owner_account.clone(),
+            from_token_account.clone(),
+            to_token_account.clone(),
+            mint_account.clone(),
+        ],
+        signer_seeds.unwrap_or(&[]),
+    )
+}

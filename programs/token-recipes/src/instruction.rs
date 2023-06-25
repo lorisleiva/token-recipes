@@ -69,9 +69,19 @@ pub enum TokenRecipesInstruction {
 
     /// Craft a recipe.
     /// The quantity argument can be used to craft multiple recipes at once.
-    /// Remaining accounts must be used to provide the mint and token accounts
-    /// of each ingredients in the order they are stored in the recipe starting
-    /// with the input ingredients.
+    /// Remaining accounts must be used to provide the required accounts of each
+    /// ingredients in the order they are stored in the recipe starting with the
+    /// input ingredients.
+    /// 
+    /// If the ingredient is an input, the remaining accounts must be:
+    ///   - The mint account of the ingredient. 
+    ///   - The token account of the ingredient.
+    ///   - (optional) The destination token account when using the transfer strategy.
+    /// 
+    /// If the ingredient is an output, the remaining accounts must be:
+    ///   - The mint account of the ingredient.
+    ///   - The token account of the ingredient.
+    ///   - The delegated ingredient PDA of the ingredient.
     #[account(0, name="recipe", desc = "The address of the recipe account")]
     #[account(1, signer, name="owner", desc = "The owner of the token accounts")]
     #[account(2, writable, signer, name="payer", desc = "The account paying for the storage fees if we have to create associated token accounts")]
