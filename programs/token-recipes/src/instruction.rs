@@ -74,13 +74,13 @@ pub enum TokenRecipesInstruction {
     /// input ingredients.
     /// 
     /// If the ingredient is an input, the remaining accounts must be:
-    ///   - The mint account of the ingredient. 
-    ///   - The token account of the ingredient.
-    ///   - (optional) The destination token account when using the transfer strategy.
+    ///   - [writable] The mint account of the ingredient. 
+    ///   - [writable] The token account of the ingredient.
+    ///   - [optional, writable] The destination token account when using the transfer strategy.
     /// 
     /// If the ingredient is an output, the remaining accounts must be:
-    ///   - The mint account of the ingredient.
-    ///   - The token account of the ingredient.
+    ///   - [writable] The mint account of the ingredient.
+    ///   - [writable] The token account of the ingredient.
     ///   - The delegated ingredient PDA of the ingredient.
     #[account(0, name="recipe", desc = "The address of the recipe account")]
     #[account(1, signer, name="owner", desc = "The owner of the token accounts")]

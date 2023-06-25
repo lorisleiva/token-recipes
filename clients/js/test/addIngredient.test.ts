@@ -12,6 +12,7 @@ import {
   IngredientRecord,
   IngredientType,
   Key,
+  MAX_U64,
   Recipe,
   RecipeStatus,
   addIngredient,
@@ -94,7 +95,7 @@ test('it can add an ingredient output', async (t) => {
       {
         mint: mint.publicKey,
         amount: 1n,
-        maxSupply: BigInt('0xffffffffffffffff'),
+        maxSupply: MAX_U64,
       },
     ],
   });
@@ -168,7 +169,7 @@ test('it can add an ingredient as both input and output', async (t) => {
       {
         mint: mint.publicKey,
         amount: 1n,
-        maxSupply: BigInt('0xffffffffffffffff'),
+        maxSupply: MAX_U64,
       },
     ],
   });
@@ -287,7 +288,7 @@ test('it can add a specific amount of an ingredient input and output', async (t)
       {
         mint: mintB.publicKey,
         amount: 3n,
-        maxSupply: BigInt('0xffffffffffffffff'),
+        maxSupply: MAX_U64,
       },
     ],
   });
