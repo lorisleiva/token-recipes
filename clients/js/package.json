@@ -1,5 +1,5 @@
 {
-  "name": "@metaplex-foundation/token-recipes",
+  "name": "@lorisleiva/token-recipes",
   "version": "0.1.0",
   "description": "Transform tokens into other tokens via predefined recipes.",
   "main": "dist/src/index.js",
