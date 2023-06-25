@@ -53,9 +53,12 @@ pub enum TokenRecipesError {
     /// 14 - Numerical overflow
     #[error("Numerical overflow")]
     NumericalOverflow,
-    /// 15 - Invalid input destination
-    #[error("Invalid input destination")]
-    InvalidInputDestination,
+    /// 15 - Not enough tokens
+    #[error("Not enough tokens")]
+    NotEnoughTokens,
+    /// 16 - Maximum supply reached
+    #[error("Maximum supply reached")]
+    MaximumSupplyReached,
 }
 
 impl PrintProgramError for TokenRecipesError {

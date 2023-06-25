@@ -1,7 +1,8 @@
 use crate::{
     assertions::{
-        assert_account_key, assert_data_size, assert_pda, assert_program_owner,
-        assert_recipe_is_active, assert_same_pubkeys, assert_signer, assert_writable,
+        assert_account_key, assert_data_size, assert_enough_tokens, assert_pda,
+        assert_program_owner, assert_recipe_is_active, assert_same_pubkeys, assert_signer,
+        assert_writable,
     },
     error::TokenRecipesError,
     state::{delegated_ingredient::DelegatedIngredient, key::Key, recipe::Recipe},
@@ -79,6 +80,7 @@ pub(crate) fn craft(accounts: &[AccountInfo], quantity: u64) -> ProgramResult {
                 .amount
                 .checked_mul(quantity)
                 .ok_or(TokenRecipesError::NumericalOverflow)?;
+            assert_enough_tokens("input_token", input_token, input_token_account, amount)?;
 
             // Transfer the ingredient tokens.
             if let Some(destination) = input.destination {
@@ -206,11 +208,19 @@ pub(crate) fn craft(accounts: &[AccountInfo], quantity: u64) -> ProgramResult {
             }
 
             // Compute the total amount of tokens required.
-            // Throw a NumericalOverflow error if the amount overflows u64.
             let amount = output
                 .amount
                 .checked_mul(quantity)
                 .ok_or(TokenRecipesError::NumericalOverflow)?;
+
+            // Assert max supply is not exceeded.
+            let new_supply = output_mint_account
+                .supply
+                .checked_add(amount)
+                .ok_or(TokenRecipesError::NumericalOverflow)?;
+            if new_supply > output.max_supply {
+                return Err(TokenRecipesError::MaximumSupplyReached.into());
+            }
 
             // Mint the ingredient token.
             let mut seeds = DelegatedIngredient::seeds(output_mint.key);

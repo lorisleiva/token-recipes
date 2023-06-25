@@ -550,8 +550,13 @@
     },
     {
       "code": 15,
-      "name": "InvalidInputDestination",
-      "msg": "Invalid input destination"
+      "name": "NotEnoughTokens",
+      "msg": "Not enough tokens"
+    },
+    {
+      "code": 16,
+      "name": "MaximumSupplyReached",
+      "msg": "Maximum supply reached"
     }
   ],
   "metadata": {

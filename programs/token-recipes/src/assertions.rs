@@ -9,7 +9,7 @@ use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
     pubkey::Pubkey,
 };
-use spl_token::state::Mint;
+use spl_token::state::{Account, Mint};
 
 /// Assert that the given account is owned by the given program.
 pub fn assert_program_owner(
@@ -179,6 +179,27 @@ pub fn assert_mint_authority(
 pub fn assert_recipe_is_active(recipe_account: &Recipe) -> ProgramResult {
     if !matches!(recipe_account.status, RecipeStatus::Active) {
         Err(TokenRecipesError::RecipeIsNotActive.into())
+    } else {
+        Ok(())
+    }
+}
+
+/// Assert that the given token account has enough tokens.
+pub fn assert_enough_tokens(
+    account_name: &str,
+    account: &AccountInfo,
+    token_account: Account,
+    expected_amount: u64,
+) -> ProgramResult {
+    if token_account.amount < expected_amount {
+        msg!(
+            "Account \"{}\" [{}] expected to have at least [{}] tokens, got [{}]",
+            account_name,
+            account.key,
+            expected_amount,
+            token_account.amount
+        );
+        Err(TokenRecipesError::NotEnoughTokens.into())
     } else {
         Ok(())
     }

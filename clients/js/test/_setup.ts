@@ -81,7 +81,7 @@ export const createRecipe = async (
       amount: number | bigint;
       maxSupply?: number | bigint;
     }>;
-  }
+  } = {}
 ): Promise<PublicKey> => {
   const recipe = input.recipe ?? generateSigner(umi);
   const authority = input.authority ?? umi.identity;

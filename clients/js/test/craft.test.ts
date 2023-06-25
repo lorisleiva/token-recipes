@@ -289,14 +289,123 @@ test('it can use an existing non-associated token account', async (t) => {
   t.like(await fetchMint(umi, mint.publicKey), <Mint>{ supply: 1n });
 });
 
-test.todo('it cannot craft a recipe if the recipe is paused');
-test.todo('it cannot craft a recipe if an input has not enough tokens');
-test.todo(
-  'it cannot craft a recipe if an input has not enough tokens for multiple quantities'
-);
-test.todo(
-  'it cannot craft a recipe if an output has reached its maximum supply'
-);
+test('it cannot craft a recipe if the recipe is paused', async (t) => {
+  // Given a paused recipe.
+  const umi = await createUmi();
+  const recipe = await createRecipe(umi);
+  t.like(await fetchRecipe(umi, recipe), <Recipe>{
+    status: RecipeStatus.Paused,
+  });
+
+  // When a anyone tries to craft the recipe.
+  const promise = craft(umi, {
+    recipe,
+    owner: generateSigner(umi),
+  }).sendAndConfirm(umi);
+
+  // Then we expect a program error.
+  await t.throwsAsync(promise, { name: 'RecipeIsNotActive' });
+});
+
+test('it cannot craft a recipe if an input has not enough tokens', async (t) => {
+  // Given 2 mint accounts A and B, such that a crafter owns:
+  // - 1 tokens of mint A
+  // - 0 tokens of mint B
+  const umi = await createUmi();
+  const crafter = generateSigner(umi);
+  const [mintA] = await createMintWithHolders(umi, {
+    holders: [{ owner: crafter.publicKey, amount: 1 }],
+  });
+  const [mintB] = await createMintWithHolders(umi, {
+    holders: [{ owner: crafter.publicKey, amount: 0 }],
+  });
+
+  // And a recipe that uses 2 mint A and outputs 1 mint B.
+  const recipe = await createRecipe(umi, {
+    active: true,
+    inputs: [{ mint: mintA, amount: 2 }],
+    outputs: [{ mint: mintB, amount: 1 }],
+  });
+
+  // When the crafter tries to crafts the recipe.
+  const promise = craft(umi, {
+    recipe,
+    owner: crafter,
+    inputs: [{ mint: mintA }],
+    outputs: [{ mint: mintB }],
+  }).sendAndConfirm(umi);
+
+  // Then we expect a program error.
+  await t.throwsAsync(promise, { name: 'NotEnoughTokens' });
+});
+
+test('it cannot craft a recipe if an input has not enough tokens for multiple quantities', async (t) => {
+  // Given 2 mint accounts A and B, such that a crafter owns:
+  // - 7 tokens of mint A
+  // - 0 tokens of mint B
+  const umi = await createUmi();
+  const crafter = generateSigner(umi);
+  const [mintA] = await createMintWithHolders(umi, {
+    holders: [{ owner: crafter.publicKey, amount: 7 }],
+  });
+  const [mintB] = await createMintWithHolders(umi, {
+    holders: [{ owner: crafter.publicKey, amount: 0 }],
+  });
+
+  // And a recipe that uses 2 mint A and outputs 1 mint B.
+  const recipe = await createRecipe(umi, {
+    active: true,
+    inputs: [{ mint: mintA, amount: 2 }],
+    outputs: [{ mint: mintB, amount: 1 }],
+  });
+
+  // When the crafter tries to crafts the recipe 4 times.
+  const promise = craft(umi, {
+    recipe,
+    owner: crafter,
+    inputs: [{ mint: mintA }],
+    outputs: [{ mint: mintB }],
+    quantity: 4,
+  }).sendAndConfirm(umi);
+
+  // Then we expect a program error.
+  await t.throwsAsync(promise, { name: 'NotEnoughTokens' });
+});
+
+test('it cannot craft a recipe if an output has reached its maximum supply', async (t) => {
+  // Given 2 mint accounts A and B, such that a crafter owns:
+  // - 4 tokens of mint A
+  // - 90 tokens of mint B
+  const umi = await createUmi();
+  const crafter = generateSigner(umi);
+  const [mintA] = await createMintWithHolders(umi, {
+    holders: [{ owner: crafter.publicKey, amount: 4 }],
+  });
+  const [mintB] = await createMintWithHolders(umi, {
+    holders: [{ owner: crafter.publicKey, amount: 90 }],
+  });
+
+  // And a recipe that uses 2 mint A and outputs 6 mint B with a maximum supply of 100.
+  const recipe = await createRecipe(umi, {
+    active: true,
+    inputs: [{ mint: mintA, amount: 2 }],
+    outputs: [{ mint: mintB, amount: 6, maxSupply: 100 }],
+  });
+
+  // When the crafter tries to crafts the recipe twice
+  // which would result in mint B reaching its maximum supply (102).
+  const promise = craft(umi, {
+    recipe,
+    owner: crafter,
+    inputs: [{ mint: mintA }],
+    outputs: [{ mint: mintB }],
+    quantity: 2,
+  }).sendAndConfirm(umi);
+
+  // Then we expect a program error.
+  await t.throwsAsync(promise, { name: 'MaximumSupplyReached' });
+});
+
 test.todo('it cannot craft a recipe if remaining accounts are missing');
 
 test('it cannot create an uninitialized token account if it is not associated', async (t) => {
