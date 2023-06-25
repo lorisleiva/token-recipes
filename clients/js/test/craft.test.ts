@@ -1,3 +1,9 @@
+import {
+  Mint,
+  Token,
+  fetchMint,
+  fetchToken,
+} from '@metaplex-foundation/mpl-toolbox';
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
 import {
@@ -66,8 +72,17 @@ test('it can craft a recipe', async (t) => {
     ])
     .sendAndConfirm(umi);
 
-  // Then
-  t.pass();
+  // Then the crafter burned 2 mint A.
+  t.like(await fetchToken(umi, tokenA), <Token>{ amount: 98n });
+  t.like(await fetchMint(umi, mintA), <Mint>{ supply: 98n });
+
+  // And the crafter burned 7 mint B.
+  t.like(await fetchToken(umi, tokenB), <Token>{ amount: 93n });
+  t.like(await fetchMint(umi, mintB), <Mint>{ supply: 93n });
+
+  // And the crafter received 1 mint C.
+  t.like(await fetchToken(umi, tokenC), <Token>{ amount: 1n });
+  t.like(await fetchMint(umi, mintC), <Mint>{ supply: 1n });
 });
 
 // it can craft a recipe in multiple quantities
