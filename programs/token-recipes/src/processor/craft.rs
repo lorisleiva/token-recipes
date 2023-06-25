@@ -60,13 +60,13 @@ pub(crate) fn craft(accounts: &[AccountInfo], quantity: u64) -> ProgramResult {
 
             // Check: ingredient mint.
             assert_writable("input_mint", input_mint)?;
-            assert_program_owner("input_mint", input_mint, &spl_token::ID)?;
+            assert_program_owner("input_mint", input_mint, &spl_token::id())?;
             assert_data_size("input_mint", input_mint, 82)?;
             let input_mint_account = spl_token::state::Mint::unpack(&input_mint.data.borrow())?;
 
             // Check: ingredient token.
             assert_writable("input_token", input_token)?;
-            assert_program_owner("input_token", input_token, &spl_token::ID)?;
+            assert_program_owner("input_token", input_token, &spl_token::id())?;
             assert_data_size("input_token", input_token, 165)?;
             let input_token_account =
                 spl_token::state::Account::unpack(&input_token.data.borrow())?;
@@ -119,7 +119,7 @@ pub(crate) fn craft(accounts: &[AccountInfo], quantity: u64) -> ProgramResult {
 
             // Check: ingredient mint.
             assert_writable("output_mint", output_mint)?;
-            assert_program_owner("output_mint", output_mint, &spl_token::ID)?;
+            assert_program_owner("output_mint", output_mint, &spl_token::id())?;
             assert_data_size("output_mint", output_mint, 82)?;
             let output_mint_account = spl_token::state::Mint::unpack(&output_mint.data.borrow())?;
 
@@ -128,7 +128,7 @@ pub(crate) fn craft(accounts: &[AccountInfo], quantity: u64) -> ProgramResult {
                 assert_pda(
                     "output_token",
                     output_token,
-                    &spl_token::ID,
+                    &spl_associated_token_account::id(),
                     &[
                         owner.key.as_ref(),
                         spl_token::id().as_ref(),
@@ -138,7 +138,7 @@ pub(crate) fn craft(accounts: &[AccountInfo], quantity: u64) -> ProgramResult {
                 create_associated_token_account(output_token, output_mint, owner, payer)?;
             } else {
                 assert_writable("output_token", output_token)?;
-                assert_program_owner("output_token", output_token, &spl_token::ID)?;
+                assert_program_owner("output_token", output_token, &spl_token::id())?;
                 assert_data_size("output_token", output_token, 165)?;
                 let output_token_account =
                     spl_token::state::Account::unpack(&output_token.data.borrow())?;

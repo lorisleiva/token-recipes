@@ -11,7 +11,7 @@ use token_recipes::state::{Key, Recipe, RecipeStatus};
 
 #[tokio::test]
 async fn create_recipe() {
-    let mut context = ProgramTest::new("token_recipes", token_recipes::ID, None)
+    let mut context = ProgramTest::new("token_recipes", token_recipes::id(), None)
         .start_with_context()
         .await;
 

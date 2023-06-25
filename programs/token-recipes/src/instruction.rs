@@ -101,10 +101,10 @@ pub fn create_recipe(recipe: &Pubkey, authority: &Pubkey, payer: &Pubkey) -> Ins
         AccountMeta::new(*recipe, true),
         AccountMeta::new_readonly(*authority, false),
         AccountMeta::new(*payer, true),
-        AccountMeta::new_readonly(solana_program::system_program::ID, false),
+        AccountMeta::new_readonly(solana_program::system_program::id(), false),
     ];
     Instruction {
-        program_id: crate::ID,
+        program_id: crate::id(),
         accounts,
         data: TokenRecipesInstruction::CreateRecipe.try_to_vec().unwrap(),
     }
@@ -128,11 +128,11 @@ pub fn add_ingredient(
         AccountMeta::new(*delegated_ingredient.unwrap_or(&crate::id()), false),
         AccountMeta::new_readonly(*authority, true),
         AccountMeta::new(*payer, true),
-        AccountMeta::new_readonly(solana_program::system_program::ID, false),
+        AccountMeta::new_readonly(solana_program::system_program::id(), false),
         AccountMeta::new_readonly(spl_token::id(), false),
     ];
     Instruction {
-        program_id: crate::ID,
+        program_id: crate::id(),
         accounts,
         data: TokenRecipesInstruction::AddIngredient {
             amount,

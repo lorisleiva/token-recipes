@@ -55,7 +55,7 @@ pub(crate) fn remove_ingredient(
 
     // Check: mint.
     assert_writable("mint", mint)?;
-    assert_program_owner("mint", mint, &spl_token::ID)?;
+    assert_program_owner("mint", mint, &spl_token::id())?;
     assert_data_size("mint", mint, 82)?;
 
     // Check: ingredient_record.

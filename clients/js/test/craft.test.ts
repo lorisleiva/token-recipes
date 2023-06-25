@@ -1,8 +1,10 @@
 import {
   Mint,
   Token,
+  createMint,
   fetchMint,
   fetchToken,
+  findAssociatedTokenPda,
 } from '@metaplex-foundation/mpl-toolbox';
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
@@ -116,9 +118,89 @@ test('it can craft a recipe in multiple quantities', async (t) => {
   t.like(await fetchMint(umi, mintC), <Mint>{ supply: 14n });
 });
 
-// it can craft a recipe with multiple outputs
+test('it can craft a recipe with multiple outputs', async (t) => {
+  // Given 3 mint accounts A, B and C, such that a crafter owns:
+  // - 100 tokens of mint A
+  // - 42 tokens of mint B
+  // - 0 tokens of mint C
+  const umi = await createUmi();
+  const crafter = generateSigner(umi);
+  const [mintA, tokenA] = await createMintWithHolders(umi, {
+    holders: [{ owner: crafter.publicKey, amount: 100 }],
+  });
+  const [mintB, tokenB] = await createMintWithHolders(umi, {
+    holders: [{ owner: crafter.publicKey, amount: 42 }],
+  });
+  const [mintC, tokenC] = await createMintWithHolders(umi, {
+    holders: [{ owner: crafter.publicKey, amount: 0 }],
+  });
+
+  // And a recipe that uses 5 mint A and outputs 1 mint B and 2 mint C.
+  const recipe = await createRecipe(umi, {
+    active: true,
+    inputs: [{ mint: mintA, amount: 5 }],
+    outputs: [
+      { mint: mintB, amount: 1 },
+      { mint: mintC, amount: 2 },
+    ],
+  });
+
+  // When the crafter crafts the recipe.
+  await craft(umi, {
+    recipe,
+    owner: crafter,
+    inputs: [{ mint: mintA }],
+    outputs: [{ mint: mintB }, { mint: mintC }],
+  }).sendAndConfirm(umi);
+
+  // Then the crafter burned 5 mint A.
+  t.like(await fetchToken(umi, tokenA), <Token>{ amount: 95n });
+  t.like(await fetchMint(umi, mintA), <Mint>{ supply: 95n });
+
+  // And the crafter received 1 mint B.
+  t.like(await fetchToken(umi, tokenB), <Token>{ amount: 43n });
+  t.like(await fetchMint(umi, mintB), <Mint>{ supply: 43n });
+
+  // And the crafter received 2 mint C.
+  t.like(await fetchToken(umi, tokenC), <Token>{ amount: 2n });
+  t.like(await fetchMint(umi, mintC), <Mint>{ supply: 2n });
+});
+
 // it can craft a recipe with an input ingredient that transfers tokens
-// it creates a new associated token account if not yet initialized
+
+test('it creates a new associated token account if not yet initialized', async (t) => {
+  // Given a mint account and a crafter that has token account for that mint.
+  const umi = await createUmi();
+  const crafter = generateSigner(umi);
+  const mint = generateSigner(umi);
+  await createMint(umi, { mint }).sendAndConfirm(umi);
+  const [ata] = findAssociatedTokenPda(umi, {
+    mint: mint.publicKey,
+    owner: crafter.publicKey,
+  });
+  t.false(await umi.rpc.accountExists(ata));
+
+  // And a recipe that outputs 1 token of that mint.
+  const recipe = await createRecipe(umi, {
+    active: true,
+    outputs: [{ mint: mint.publicKey, amount: 1 }],
+  });
+
+  // When the crafter crafts the recipe.
+  await craft(umi, {
+    recipe,
+    owner: crafter,
+    outputs: [{ mint: mint.publicKey }],
+  }).sendAndConfirm(umi);
+
+  // Then the associated token account was created.
+  t.true(await umi.rpc.accountExists(ata));
+
+  // And the crafter received 1 token of that mint.
+  t.like(await fetchToken(umi, ata), <Token>{ amount: 1n });
+  t.like(await fetchMint(umi, mint.publicKey), <Mint>{ supply: 1n });
+});
+
 // it can use an existing non-associated token account
 
 // it cannot craft a recipe if the recipe is paused
