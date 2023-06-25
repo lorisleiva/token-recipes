@@ -8,6 +8,7 @@ import {
   findAssociatedTokenPda,
 } from '@metaplex-foundation/mpl-toolbox';
 import { generateSigner, none } from '@metaplex-foundation/umi';
+import type { SendTransactionError } from '@solana/web3.js';
 import test from 'ava';
 import { MAX_U64, Recipe, RecipeStatus, craft, fetchRecipe } from '../src';
 import { createMintWithHolders, createRecipe, createUmi } from './_setup';
@@ -406,7 +407,38 @@ test('it cannot craft a recipe if an output has reached its maximum supply', asy
   await t.throwsAsync(promise, { name: 'MaximumSupplyReached' });
 });
 
-test.todo('it cannot craft a recipe if remaining accounts are missing');
+test('it cannot craft a recipe if remaining accounts are missing', async (t) => {
+  // Given 2 mint accounts A and B, such that a crafter owns:
+  // - 2 tokens of mint A
+  // - 0 tokens of mint B
+  const umi = await createUmi();
+  const crafter = generateSigner(umi);
+  const [mintA] = await createMintWithHolders(umi, {
+    holders: [{ owner: crafter.publicKey, amount: 2 }],
+  });
+  const [mintB] = await createMintWithHolders(umi, {
+    holders: [{ owner: crafter.publicKey, amount: 0 }],
+  });
+
+  // And a recipe that uses 2 mint A and outputs 1 mint B.
+  const recipe = await createRecipe(umi, {
+    active: true,
+    inputs: [{ mint: mintA, amount: 2 }],
+    outputs: [{ mint: mintB, amount: 1 }],
+  });
+
+  // When the crafter tries to crafts the recipe without passing any remaining accounts.
+  const promise = craft(umi, {
+    recipe,
+    owner: crafter,
+    // inputs missing.
+    // outputs missing.
+  }).sendAndConfirm(umi);
+
+  // Then we expect a program error.
+  const error = await t.throwsAsync<SendTransactionError>(promise);
+  t.true((error?.logs ?? []).join('\n').includes('NotEnoughAccountKeys'));
+});
 
 test('it cannot create an uninitialized token account if it is not associated', async (t) => {
   // Given a mint account and a crafter that has no token account for that mint.
