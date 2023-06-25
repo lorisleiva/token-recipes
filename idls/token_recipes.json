@@ -547,6 +547,11 @@
       "code": 14,
       "name": "NumericalOverflow",
       "msg": "Numerical overflow"
+    },
+    {
+      "code": 15,
+      "name": "InvalidInputDestination",
+      "msg": "Invalid input destination"
     }
   ],
   "metadata": {

@@ -53,6 +53,9 @@ pub enum TokenRecipesError {
     /// 14 - Numerical overflow
     #[error("Numerical overflow")]
     NumericalOverflow,
+    /// 15 - Invalid input destination
+    #[error("Invalid input destination")]
+    InvalidInputDestination,
 }
 
 impl PrintProgramError for TokenRecipesError {

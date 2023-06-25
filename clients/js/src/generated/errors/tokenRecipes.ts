@@ -214,6 +214,19 @@ export class NumericalOverflowError extends ProgramError {
 codeToErrorMap.set(0xe, NumericalOverflowError);
 nameToErrorMap.set('NumericalOverflow', NumericalOverflowError);
 
+/** InvalidInputDestination: Invalid input destination */
+export class InvalidInputDestinationError extends ProgramError {
+  readonly name: string = 'InvalidInputDestination';
+
+  readonly code: number = 0xf; // 15
+
+  constructor(program: Program, cause?: Error) {
+    super('Invalid input destination', program, cause);
+  }
+}
+codeToErrorMap.set(0xf, InvalidInputDestinationError);
+nameToErrorMap.set('InvalidInputDestination', InvalidInputDestinationError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

@@ -5,7 +5,7 @@ use crate::{
     },
     error::TokenRecipesError,
     state::{delegated_ingredient::DelegatedIngredient, key::Key, recipe::Recipe},
-    utils::{burn_tokens, create_associated_token_account, mint_tokens},
+    utils::{burn_tokens, create_associated_token_account, mint_tokens, transfer_tokens},
 };
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
@@ -81,14 +81,40 @@ pub(crate) fn craft(accounts: &[AccountInfo], quantity: u64) -> ProgramResult {
                 .ok_or(TokenRecipesError::NumericalOverflow)?;
 
             // Burn the ingredient token.
-            // TODO: Transfer option.
-            burn_tokens(
-                input_token,
-                input_mint,
-                owner,
-                amount,
-                input_mint_account.decimals,
-            )?;
+            if let Some(destination) = input.destination {
+                let input_destination_token = next_account_info(account_info_iter)?;
+                assert_writable("input_destination_token", input_destination_token)?;
+                assert_program_owner(
+                    "input_destination_token",
+                    input_destination_token,
+                    &spl_token::id(),
+                )?;
+                assert_data_size("input_destination_token", input_destination_token, 165)?;
+                let input_destination_token_account =
+                    spl_token::state::Account::unpack(&input_destination_token.data.borrow())?;
+                if input_destination_token_account.mint != *input_mint.key
+                    || input_destination_token_account.owner != destination
+                {
+                    return Err(TokenRecipesError::InvalidInputDestination.into());
+                }
+                transfer_tokens(
+                    input_mint,
+                    owner,
+                    input_token,
+                    input_destination_token,
+                    amount,
+                    input_mint_account.decimals,
+                    None,
+                )?;
+            } else {
+                burn_tokens(
+                    input_token,
+                    input_mint,
+                    owner,
+                    amount,
+                    input_mint_account.decimals,
+                )?;
+            };
 
             Ok(())
         })

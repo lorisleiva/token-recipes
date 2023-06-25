@@ -101,6 +101,9 @@ export const createRecipe = async (
         payer,
         ingredientType: IngredientType.Input,
         amount: ingredientInput.amount,
+        destination: ingredientInput.destination
+          ? publicKey(ingredientInput.destination)
+          : null,
       })
     );
   });
