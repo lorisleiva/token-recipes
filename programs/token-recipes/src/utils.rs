@@ -36,9 +36,7 @@ pub fn create_account<'a>(
             system_program.clone(),
         ],
         signer_seeds.unwrap_or(&[]),
-    )?;
-
-    Ok(())
+    )
 }
 
 /// Resize an account using realloc, lifted from Solana Cookbook.
@@ -62,9 +60,7 @@ pub fn realloc_account<'a>(
         ],
     )?;
 
-    target_account.realloc(new_size, false)?;
-
-    Ok(())
+    target_account.realloc(new_size, false)
 }
 
 /// Close an account.
@@ -105,7 +101,56 @@ pub fn transfer_mint_authority<'a>(
         )?,
         &[mint.clone(), from.clone()],
         signer_seeds.unwrap_or(&[]),
-    )?;
+    )
+}
 
-    Ok(())
+/// Create an associated token account.
+#[inline(always)]
+pub fn create_associated_token_account<'a>(
+    token_account: &AccountInfo<'a>,
+    mint_account: &AccountInfo<'a>,
+    owner_account: &AccountInfo<'a>,
+    payer_account: &AccountInfo<'a>,
+) -> ProgramResult {
+    invoke(
+        &spl_associated_token_account::instruction::create_associated_token_account(
+            payer_account.key,
+            owner_account.key,
+            mint_account.key,
+            &spl_token::id(),
+        ),
+        &[
+            payer_account.clone(),
+            owner_account.clone(),
+            mint_account.clone(),
+            token_account.clone(),
+        ],
+    )
+}
+
+/// Burn tokens.
+#[inline(always)]
+pub fn burn_tokens<'a>(
+    token_account: &AccountInfo<'a>,
+    mint_account: &AccountInfo<'a>,
+    owner_account: &AccountInfo<'a>,
+    amount: u64,
+    decimals: u8,
+) -> ProgramResult {
+    invoke(
+        &spl_token::instruction::burn_checked(
+            &spl_token::id(),
+            token_account.key,
+            mint_account.key,
+            owner_account.key,
+            &[],
+            amount,
+            decimals,
+        )?,
+        &[
+            owner_account.clone(),
+            mint_account.clone(),
+            token_account.clone(),
+        ],
+    )
 }

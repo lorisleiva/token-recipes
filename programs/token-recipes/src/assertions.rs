@@ -1,4 +1,10 @@
-use crate::{error::TokenRecipesError, state::key::Key};
+use crate::{
+    error::TokenRecipesError,
+    state::{
+        key::Key,
+        recipe::{Recipe, RecipeStatus},
+    },
+};
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
     pubkey::Pubkey,
@@ -167,4 +173,13 @@ pub fn assert_mint_authority(
     }
 
     Ok(())
+}
+
+/// Assert that the given account has the expected account key.
+pub fn assert_recipe_is_active(recipe_account: &Recipe) -> ProgramResult {
+    if !matches!(recipe_account.status, RecipeStatus::Active) {
+        Err(TokenRecipesError::RecipeIsNotActive.into())
+    } else {
+        Ok(())
+    }
 }

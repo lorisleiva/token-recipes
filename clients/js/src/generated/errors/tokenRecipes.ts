@@ -175,18 +175,44 @@ export class MissingIngredientError extends ProgramError {
 codeToErrorMap.set(0xb, MissingIngredientError);
 nameToErrorMap.set('MissingIngredient', MissingIngredientError);
 
-/** InvalidMintAuthority: Invalid Mint Authority */
+/** InvalidMintAuthority: Invalid mint authority */
 export class InvalidMintAuthorityError extends ProgramError {
   readonly name: string = 'InvalidMintAuthority';
 
   readonly code: number = 0xc; // 12
 
   constructor(program: Program, cause?: Error) {
-    super('Invalid Mint Authority', program, cause);
+    super('Invalid mint authority', program, cause);
   }
 }
 codeToErrorMap.set(0xc, InvalidMintAuthorityError);
 nameToErrorMap.set('InvalidMintAuthority', InvalidMintAuthorityError);
+
+/** RecipeIsNotActive: Recipe is not active */
+export class RecipeIsNotActiveError extends ProgramError {
+  readonly name: string = 'RecipeIsNotActive';
+
+  readonly code: number = 0xd; // 13
+
+  constructor(program: Program, cause?: Error) {
+    super('Recipe is not active', program, cause);
+  }
+}
+codeToErrorMap.set(0xd, RecipeIsNotActiveError);
+nameToErrorMap.set('RecipeIsNotActive', RecipeIsNotActiveError);
+
+/** NumericalOverflow: Numerical overflow */
+export class NumericalOverflowError extends ProgramError {
+  readonly name: string = 'NumericalOverflow';
+
+  readonly code: number = 0xe; // 14
+
+  constructor(program: Program, cause?: Error) {
+    super('Numerical overflow', program, cause);
+  }
+}
+codeToErrorMap.set(0xe, NumericalOverflowError);
+nameToErrorMap.set('NumericalOverflow', NumericalOverflowError);
 
 /**
  * Attempts to resolve a custom program error from the provided error code.

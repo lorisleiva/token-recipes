@@ -60,7 +60,7 @@ pub(crate) fn add_ingredient(
     // Check: mint.
     assert_writable("mint", mint)?;
     assert_program_owner("mint", mint, &spl_token::ID)?;
-    assert_data_size("mint", mint, 82)?; // 165 for token
+    assert_data_size("mint", mint, 82)?;
 
     // Check: ingredient_record.
     assert_writable("ingredient_record", ingredient_record)?;

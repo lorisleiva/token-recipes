@@ -44,9 +44,15 @@ pub enum TokenRecipesError {
     /// 11 - Missing ingredient
     #[error("Missing ingredient")]
     MissingIngredient,
-    /// 12 - Invalid Mint Authority
-    #[error("Invalid Mint Authority")]
+    /// 12 - Invalid mint authority
+    #[error("Invalid mint authority")]
     InvalidMintAuthority,
+    /// 13 - Recipe is not active
+    #[error("Recipe is not active")]
+    RecipeIsNotActive,
+    /// 14 - Numerical overflow
+    #[error("Numerical overflow")]
+    NumericalOverflow,
 }
 
 impl PrintProgramError for TokenRecipesError {

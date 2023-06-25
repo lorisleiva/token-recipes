@@ -524,7 +524,17 @@
     {
       "code": 12,
       "name": "InvalidMintAuthority",
-      "msg": "Invalid Mint Authority"
+      "msg": "Invalid mint authority"
+    },
+    {
+      "code": 13,
+      "name": "RecipeIsNotActive",
+      "msg": "Recipe is not active"
+    },
+    {
+      "code": 14,
+      "name": "NumericalOverflow",
+      "msg": "Numerical overflow"
     }
   ],
   "metadata": {
