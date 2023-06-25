@@ -294,6 +294,8 @@ test('it can add a specific amount of an ingredient input and output', async (t)
   });
 });
 
+test.todo('it can add a destination to an ingredient input');
+
 test('it can add a max supply to an ingredient output', async (t) => {
   // Given an empty recipe and a mint account.
   const umi = await createUmi();

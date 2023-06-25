@@ -167,7 +167,60 @@ test('it can craft a recipe with multiple outputs', async (t) => {
   t.like(await fetchMint(umi, mintC), <Mint>{ supply: 2n });
 });
 
-// it can craft a recipe with an input ingredient that transfers tokens
+test.skip('it can craft a recipe with an input ingredient that transfers tokens', async (t) => {
+  // Given 3 mint accounts A, B and C, such that a crafter owns:
+  // - 100 tokens of mint A
+  // - 100 tokens of mint B
+  // - 0 tokens of mint C
+  const umi = await createUmi();
+  const crafter = generateSigner(umi);
+  const [mintA, tokenA] = await createMintWithHolders(umi, {
+    holders: [{ owner: crafter.publicKey, amount: 100 }],
+  });
+  const [mintB, tokenB] = await createMintWithHolders(umi, {
+    holders: [{ owner: crafter.publicKey, amount: 100 }],
+  });
+  const [mintC, tokenC] = await createMintWithHolders(umi, {
+    holders: [{ owner: crafter.publicKey, amount: 0 }],
+  });
+
+  // And a recipe that uses 2 mint A and 7 mint B as inputs and outputs 1 mint C.
+  // Instead of burning the mint A tokens, it sends them to a specified destination.
+  const destination = generateSigner(umi).publicKey;
+  const recipe = await createRecipe(umi, {
+    active: true,
+    inputs: [
+      { mint: mintA, amount: 2, destination },
+      { mint: mintB, amount: 7 },
+    ],
+    outputs: [{ mint: mintC, amount: 1 }],
+  });
+
+  // When the crafter crafts the recipe.
+  await craft(umi, {
+    recipe,
+    owner: crafter,
+    inputs: [{ mint: mintA }, { mint: mintB }],
+    outputs: [{ mint: mintC }],
+  }).sendAndConfirm(umi);
+
+  // Then the crafter sent 2 mint A to the destination.
+  const [destinationAta] = findAssociatedTokenPda(umi, {
+    mint: mintA,
+    owner: destination,
+  });
+  t.like(await fetchToken(umi, destinationAta), <Token>{ amount: 2n });
+  t.like(await fetchToken(umi, tokenA), <Token>{ amount: 98n });
+  t.like(await fetchMint(umi, mintA), <Mint>{ supply: 100n });
+
+  // And the crafter burned 7 mint B.
+  t.like(await fetchToken(umi, tokenB), <Token>{ amount: 93n });
+  t.like(await fetchMint(umi, mintB), <Mint>{ supply: 93n });
+
+  // And the crafter received 1 mint C.
+  t.like(await fetchToken(umi, tokenC), <Token>{ amount: 1n });
+  t.like(await fetchMint(umi, mintC), <Mint>{ supply: 1n });
+});
 
 test('it creates a new associated token account if not yet initialized', async (t) => {
   // Given a mint account and a crafter that has no token account for that mint.
@@ -236,11 +289,15 @@ test('it can use an existing non-associated token account', async (t) => {
   t.like(await fetchMint(umi, mint.publicKey), <Mint>{ supply: 1n });
 });
 
-// it cannot craft a recipe if the recipe is paused
-// it cannot craft a recipe if an input has not enough tokens
-// it cannot craft a recipe if an input has not enough tokens for multiple quantities
-// it cannot craft a recipe if an output has reached its maximum supply
-// it cannot craft a recipe if remaining accounts are missing
+test.todo('it cannot craft a recipe if the recipe is paused');
+test.todo('it cannot craft a recipe if an input has not enough tokens');
+test.todo(
+  'it cannot craft a recipe if an input has not enough tokens for multiple quantities'
+);
+test.todo(
+  'it cannot craft a recipe if an output has reached its maximum supply'
+);
+test.todo('it cannot craft a recipe if remaining accounts are missing');
 
 test('it cannot create an uninitialized token account if it is not associated', async (t) => {
   // Given a mint account and a crafter that has no token account for that mint.
