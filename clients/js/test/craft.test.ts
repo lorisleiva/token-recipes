@@ -2,6 +2,7 @@ import {
   Mint,
   Token,
   createMint,
+  createToken,
   fetchMint,
   fetchToken,
   findAssociatedTokenPda,
@@ -169,7 +170,7 @@ test('it can craft a recipe with multiple outputs', async (t) => {
 // it can craft a recipe with an input ingredient that transfers tokens
 
 test('it creates a new associated token account if not yet initialized', async (t) => {
-  // Given a mint account and a crafter that has token account for that mint.
+  // Given a mint account and a crafter that has no token account for that mint.
   const umi = await createUmi();
   const crafter = generateSigner(umi);
   const mint = generateSigner(umi);
@@ -201,11 +202,68 @@ test('it creates a new associated token account if not yet initialized', async (
   t.like(await fetchMint(umi, mint.publicKey), <Mint>{ supply: 1n });
 });
 
-// it can use an existing non-associated token account
+test('it can use an existing non-associated token account', async (t) => {
+  // Given a mint account and a crafter that has a non-associated token account for that mint.
+  const umi = await createUmi();
+  const crafter = generateSigner(umi);
+  const mint = generateSigner(umi);
+  const token = generateSigner(umi);
+  await createMint(umi, { mint })
+    .add(
+      createToken(umi, {
+        token,
+        mint: mint.publicKey,
+        owner: crafter.publicKey,
+      })
+    )
+    .sendAndConfirm(umi);
+
+  // And a recipe that outputs 1 token of that mint.
+  const recipe = await createRecipe(umi, {
+    active: true,
+    outputs: [{ mint: mint.publicKey, amount: 1 }],
+  });
+
+  // When the crafter crafts the recipe by using the existing token account.
+  await craft(umi, {
+    recipe,
+    owner: crafter,
+    outputs: [{ mint: mint.publicKey, token: token.publicKey }],
+  }).sendAndConfirm(umi);
+
+  // Then the existing token account was used to receive the token.
+  t.like(await fetchToken(umi, token.publicKey), <Token>{ amount: 1n });
+  t.like(await fetchMint(umi, mint.publicKey), <Mint>{ supply: 1n });
+});
 
 // it cannot craft a recipe if the recipe is paused
 // it cannot craft a recipe if an input has not enough tokens
 // it cannot craft a recipe if an input has not enough tokens for multiple quantities
 // it cannot craft a recipe if an output has reached its maximum supply
 // it cannot craft a recipe if remaining accounts are missing
-// it cannot create an uninitialized token account if it is not associated
+
+test('it cannot create an uninitialized token account if it is not associated', async (t) => {
+  // Given a mint account and a crafter that has no token account for that mint.
+  const umi = await createUmi();
+  const crafter = generateSigner(umi);
+  const mint = generateSigner(umi);
+  await createMint(umi, { mint }).sendAndConfirm(umi);
+
+  // And a recipe that outputs 1 token of that mint.
+  const recipe = await createRecipe(umi, {
+    active: true,
+    outputs: [{ mint: mint.publicKey, amount: 1 }],
+  });
+
+  // When the crafter crafts the recipe by providing the address
+  // of a non-associated token account that does not exist.
+  const token = generateSigner(umi).publicKey;
+  const promise = craft(umi, {
+    recipe,
+    owner: crafter,
+    outputs: [{ mint: mint.publicKey, token }],
+  }).sendAndConfirm(umi);
+
+  // Then we expect a program error.
+  await t.throwsAsync(promise, { name: 'InvalidPda' });
+});
