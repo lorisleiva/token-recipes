@@ -30,8 +30,9 @@ pub(crate) fn remove_ingredient(
     let system_program = next_account_info(account_info_iter)?;
     let token_program = next_account_info(account_info_iter)?;
 
-    // Check: authority.
-    assert_signer("authority", authority)?;
+    // Check: recipe.
+    let mut recipe_account = Recipe::get_writable(recipe)?;
+    recipe_account.assert_signer_authority(authority)?;
 
     // Check: payer.
     assert_writable("payer", payer)?;
@@ -42,10 +43,6 @@ pub(crate) fn remove_ingredient(
 
     // Check: token_program.
     assert_same_pubkeys("token_program", token_program, &spl_token::id())?;
-
-    // Check: recipe.
-    let mut recipe_account = Recipe::get_writable(recipe)?;
-    recipe_account.assert_authority(authority)?;
 
     // TODO: Get IngredientInput or Output here.
 

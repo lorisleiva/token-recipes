@@ -1,5 +1,8 @@
 use crate::{
-    assertions::{assert_account_key, assert_program_owner, assert_same_pubkeys, assert_writable},
+    assertions::{
+        assert_account_key, assert_program_owner, assert_same_pubkeys, assert_signer,
+        assert_writable,
+    },
     error::TokenRecipesError,
     state::{
         features::FeatureLevels, ingredient_input::IngredientInput,
@@ -58,6 +61,11 @@ impl Recipe {
 
     pub fn assert_authority(self, authority: &AccountInfo) -> ProgramResult {
         assert_same_pubkeys("authority", authority, &self.authority)
+    }
+
+    pub fn assert_signer_authority(self, authority: &AccountInfo) -> ProgramResult {
+        self.assert_authority(authority)?;
+        assert_signer("authority", authority)
     }
 
     pub fn assert_active(self) -> ProgramResult {

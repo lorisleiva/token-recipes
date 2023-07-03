@@ -1,10 +1,5 @@
 use crate::{
-    assertions::{
-        assert_account_key, assert_program_owner, assert_same_pubkeys, assert_signer,
-        assert_writable,
-    },
-    error::TokenRecipesError,
-    state::{key::Key, recipe::Recipe},
+    assertions::assert_signer, error::TokenRecipesError, state::recipe::Recipe,
     utils::close_account,
 };
 use solana_program::{
@@ -19,15 +14,12 @@ pub(crate) fn delete_recipe(accounts: &[AccountInfo]) -> ProgramResult {
     let authority = next_account_info(account_info_iter)?;
     let payer = next_account_info(account_info_iter)?;
 
-    // Check: authority.
-    assert_signer("authority", authority)?;
+    // Check: recipe.
+    let mut recipe_account = Recipe::get_writable(recipe)?;
+    recipe_account.assert_signer_authority(authority)?;
 
     // Check: payer.
     assert_signer("payer", payer)?;
-
-    // Check: recipe.
-    let mut recipe_account = Recipe::get_writable(recipe)?;
-    recipe_account.assert_authority(authority)?;
 
     if recipe_account.inputs.len() > 0 || recipe_account.outputs.len() > 0 {
         return Err(TokenRecipesError::RecipeMustBeEmptyBeforeItCanBeDeleted.into());

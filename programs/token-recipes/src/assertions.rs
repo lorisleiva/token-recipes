@@ -1,10 +1,4 @@
-use crate::{
-    error::TokenRecipesError,
-    state::{
-        key::Key,
-        recipe::{Recipe, RecipeStatus},
-    },
-};
+use crate::{error::TokenRecipesError, state::key::Key};
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
     pubkey::Pubkey,
