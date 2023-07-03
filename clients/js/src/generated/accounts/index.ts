@@ -14,3 +14,4 @@ export * from './maxSupplyFeature';
 export * from './recipe';
 export * from './solPaymentFeature';
 export * from './transferInputsFeature';
+export * from './wisdom';

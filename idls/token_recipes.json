@@ -383,7 +383,11 @@
             }
           },
           {
-            "name": "destination",
+            "name": "adminDestination",
+            "type": "publicKey"
+          },
+          {
+            "name": "shardMint",
             "type": "publicKey"
           },
           {
@@ -544,6 +548,32 @@
       }
     },
     {
+      "name": "Wisdom",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "defined": "Key"
+            }
+          },
+          {
+            "name": "experienceMint",
+            "type": "publicKey"
+          },
+          {
+            "name": "mintBurn1",
+            "type": "publicKey"
+          },
+          {
+            "name": "mintBurn2",
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
+    {
       "name": "IngredientRecord",
       "type": {
         "kind": "struct",
@@ -671,11 +701,15 @@
             "type": "u8"
           },
           {
+            "name": "wisdom",
+            "type": "u8"
+          },
+          {
             "name": "padding",
             "type": {
               "array": [
                 "u8",
-                11
+                10
               ]
             }
           }

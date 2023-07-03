@@ -33,7 +33,9 @@ pub struct FeesFeature {
     /// Account discriminator.
     pub key: Key,
     /// The admin public key receiving the admin part of the fees.
-    pub destination: Pubkey,
+    pub admin_destination: Pubkey,
+    /// The mint used to mint shards.
+    pub shard_mint: Pubkey,
     /// When burned, allows leveling up by 1 from 0 to 1.
     pub mint_burn_1: Pubkey,
     /// When burned, allows leveling up by 1 from 0 to 10.
