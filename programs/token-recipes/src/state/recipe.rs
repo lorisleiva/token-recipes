@@ -1,6 +1,9 @@
 use crate::{
     error::TokenRecipesError,
-    state::{features::FeatureLevels, key::Key},
+    state::{
+        features::FeatureLevels, ingredient_input::IngredientInput,
+        ingredient_output::IngredientOutput, key::Key,
+    },
 };
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
@@ -53,7 +56,10 @@ impl Recipe {
         &mut self,
         mint: &Pubkey,
     ) -> Result<IngredientInput, ProgramError> {
-        match self.inputs.iter().position(|i| i.mint == *mint) {
+        match self.inputs.iter().position(|i| match i {
+            IngredientInput::BurnToken { mint: m, .. } => m == mint,
+            IngredientInput::TransferToken { mint: m, .. } => m == mint,
+        }) {
             Some(index) => {
                 let ingredient = self.inputs[index].clone();
                 self.inputs.remove(index);
@@ -73,7 +79,10 @@ impl Recipe {
         &mut self,
         mint: &Pubkey,
     ) -> Result<IngredientOutput, ProgramError> {
-        match self.outputs.iter().position(|i| i.mint == *mint) {
+        match self.outputs.iter().position(|i| match i {
+            IngredientOutput::MintToken { mint: m, .. } => m == mint,
+            IngredientOutput::MintTokenWithMaxSupply { mint: m, .. } => m == mint,
+        }) {
             Some(index) => {
                 let ingredient = self.outputs[index].clone();
                 self.outputs.remove(index);
@@ -122,30 +131,4 @@ impl RecipeStatus {
 pub enum IngredientType {
     Input,
     Output,
-}
-
-#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub struct IngredientInput {
-    pub mint: Pubkey,
-    pub amount: u64,
-    pub destination: Option<Pubkey>,
-}
-
-impl IngredientInput {
-    pub fn len(&self) -> usize {
-        32 + 8 + self.destination.map(|_| 33).unwrap_or(1)
-    }
-}
-
-#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub struct IngredientOutput {
-    pub mint: Pubkey,
-    pub amount: u64,
-    pub max_supply: u64,
-}
-
-impl IngredientOutput {
-    pub fn len(&self) -> usize {
-        32 + 8 + 8
-    }
 }

@@ -6,9 +6,11 @@ use crate::{
     error::TokenRecipesError,
     state::{
         delegated_ingredient::DelegatedIngredient,
+        ingredient_input::IngredientInput,
+        ingredient_output::IngredientOutput,
         ingredient_record::IngredientRecord,
         key::Key,
-        recipe::{IngredientInput, IngredientOutput, IngredientType, Recipe},
+        recipe::{IngredientType, Recipe},
     },
     utils::{create_account, realloc_account, transfer_mint_authority},
 };
