@@ -1,7 +1,7 @@
 use crate::{
     assertions::{
-        assert_account_key, assert_data_size, assert_pda, assert_program_owner,
-        assert_same_pubkeys, assert_writable,
+        assert_account_key, assert_mint_account, assert_pda, assert_program_owner,
+        assert_same_pubkeys, assert_token_account, assert_writable,
     },
     error::TokenRecipesError,
     state::{delegated_ingredient::DelegatedIngredient, key::Key},
@@ -12,10 +12,9 @@ use solana_program::{
     account_info::{next_account_info, AccountInfo},
     entrypoint::ProgramResult,
     program_error::ProgramError,
-    program_pack::Pack,
     pubkey::Pubkey,
 };
-use spl_token::state::{Account, Mint};
+use spl_token::state::Mint;
 use std::slice::Iter;
 
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
@@ -163,9 +162,7 @@ fn next_output_mint_and_token<'a>(
     // Check: ingredient mint.
     assert_same_pubkeys("output_mint", output_mint, mint)?;
     assert_writable("output_mint", output_mint)?;
-    assert_program_owner("output_mint", output_mint, &spl_token::id())?;
-    assert_data_size("output_mint", output_mint, 82)?;
-    let output_mint_account = Mint::unpack(&output_mint.data.borrow())?;
+    let output_mint_account = assert_mint_account("output_mint", output_mint)?;
 
     // Check: ingredient token.
     if output_token.data_is_empty() {
@@ -182,9 +179,7 @@ fn next_output_mint_and_token<'a>(
         create_associated_token_account(output_token, output_mint, owner, payer)?;
     } else {
         assert_writable("output_token", output_token)?;
-        assert_program_owner("output_token", output_token, &spl_token::id())?;
-        assert_data_size("output_token", output_token, 165)?;
-        let output_token_account = Account::unpack(&output_token.data.borrow())?;
+        let output_token_account = assert_token_account("output_token", output_token)?;
         assert_same_pubkeys("output_mint", output_mint, &output_token_account.mint)?;
         assert_same_pubkeys("owner", owner, &output_token_account.owner)?;
     }

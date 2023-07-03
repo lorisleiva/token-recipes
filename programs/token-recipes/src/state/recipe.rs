@@ -8,6 +8,7 @@ use crate::{
         features::FeatureLevels, ingredient_input::IngredientInput,
         ingredient_output::IngredientOutput, key::Key,
     },
+    utils::realloc_account,
 };
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
@@ -76,31 +77,50 @@ impl Recipe {
         }
     }
 
-    pub fn add_ingredient_input(&mut self, ingredient: IngredientInput) {
+    pub fn add_ingredient_input(
+        &mut self,
+        ingredient: IngredientInput,
+        recipe: &AccountInfo,
+        payer: &AccountInfo,
+        system_program: &AccountInfo,
+    ) -> ProgramResult {
         self.inputs.push(ingredient);
+        let new_size = recipe.data_len() + ingredient.len();
+        realloc_account(recipe, payer, system_program, new_size)?;
+        self.save(recipe)
     }
 
-    pub fn add_ingredient_output(&mut self, ingredient: IngredientOutput) {
+    pub fn add_ingredient_output(
+        &mut self,
+        ingredient: IngredientOutput,
+        recipe: &AccountInfo,
+        payer: &AccountInfo,
+        system_program: &AccountInfo,
+    ) -> ProgramResult {
         self.outputs.push(ingredient);
+        let new_size = recipe.data_len() + ingredient.len();
+        realloc_account(recipe, payer, system_program, new_size)?;
+        self.save(recipe)
     }
 
     pub fn remove_ingredient_input(
         &mut self,
-        mint: &Pubkey,
+        index: usize,
+        recipe: &AccountInfo,
+        payer: &AccountInfo,
+        system_program: &AccountInfo,
     ) -> Result<IngredientInput, ProgramError> {
-        match self.inputs.iter().position(|i| match i {
-            IngredientInput::BurnToken { mint: m, .. } => m == mint,
-            IngredientInput::TransferToken { mint: m, .. } => m == mint,
-        }) {
-            Some(index) => {
-                let ingredient = self.inputs[index].clone();
+        match self.inputs.get(index) {
+            Some(ingredient) => {
                 self.inputs.remove(index);
-                Ok(ingredient)
+                let new_size = recipe.data_len() - ingredient.len();
+                realloc_account(recipe, payer, system_program, new_size)?;
+                Ok(ingredient.clone())
             }
             None => {
                 msg!(
-                    "Ingredient [{}] is not part of this recipe as an input.",
-                    mint,
+                    "Ingredient #{} is not part of this recipe as an input.",
+                    index,
                 );
                 Err(TokenRecipesError::MissingIngredient.into())
             }
@@ -109,21 +129,22 @@ impl Recipe {
 
     pub fn remove_ingredient_output(
         &mut self,
-        mint: &Pubkey,
+        index: usize,
+        recipe: &AccountInfo,
+        payer: &AccountInfo,
+        system_program: &AccountInfo,
     ) -> Result<IngredientOutput, ProgramError> {
-        match self.outputs.iter().position(|i| match i {
-            IngredientOutput::MintToken { mint: m, .. } => m == mint,
-            IngredientOutput::MintTokenWithMaxSupply { mint: m, .. } => m == mint,
-        }) {
-            Some(index) => {
-                let ingredient = self.outputs[index].clone();
+        match self.outputs.get(index) {
+            Some(ingredient) => {
                 self.outputs.remove(index);
-                Ok(ingredient)
+                let new_size = recipe.data_len() - ingredient.len();
+                realloc_account(recipe, payer, system_program, new_size)?;
+                Ok(ingredient.clone())
             }
             None => {
                 msg!(
-                    "Ingredient [{}] is not part of this recipe as an output.",
-                    mint,
+                    "Ingredient #{} is not part of this recipe as an output.",
+                    index,
                 );
                 Err(TokenRecipesError::MissingIngredient.into())
             }

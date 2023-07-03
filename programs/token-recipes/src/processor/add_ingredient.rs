@@ -1,7 +1,5 @@
 use crate::{
-    assertions::{
-        assert_data_size, assert_program_owner, assert_same_pubkeys, assert_signer, assert_writable,
-    },
+    assertions::{assert_mint_account, assert_same_pubkeys, assert_signer, assert_writable},
     error::TokenRecipesError,
     state::{
         delegated_ingredient::DelegatedIngredient,
@@ -53,8 +51,7 @@ pub(crate) fn add_ingredient(
 
     // Check: mint.
     assert_writable("mint", mint)?;
-    assert_program_owner("mint", mint, &spl_token::id())?;
-    assert_data_size("mint", mint, 82)?;
+    assert_mint_account("mint", mint)?;
 
     // Check: amount
     if amount == 0 {

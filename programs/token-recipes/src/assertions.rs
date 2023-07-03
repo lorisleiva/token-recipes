@@ -1,7 +1,7 @@
 use crate::{error::TokenRecipesError, state::key::Key};
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
-    pubkey::Pubkey,
+    program_pack::Pack, pubkey::Pubkey,
 };
 use spl_token::state::{Account, Mint};
 
@@ -188,4 +188,24 @@ pub fn assert_enough_tokens(
     } else {
         Ok(())
     }
+}
+
+/// Assert that a given account is a mint account.
+pub fn assert_mint_account(
+    account_name: &str,
+    account: &AccountInfo,
+) -> Result<Mint, ProgramError> {
+    assert_program_owner(account_name, account, &spl_token::id())?;
+    assert_data_size(account_name, account, 82)?;
+    Mint::unpack(&account.data.borrow())
+}
+
+/// Assert that a given account is a token account.
+pub fn assert_token_account(
+    account_name: &str,
+    account: &AccountInfo,
+) -> Result<Account, ProgramError> {
+    assert_program_owner(account_name, account, &spl_token::id())?;
+    assert_data_size(account_name, account, 165)?;
+    Account::unpack(&account.data.borrow())
 }

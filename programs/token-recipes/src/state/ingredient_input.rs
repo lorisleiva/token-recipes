@@ -1,23 +1,20 @@
-use std::slice::Iter;
-
+use crate::{
+    assertions::{
+        assert_enough_tokens, assert_mint_account, assert_pda, assert_same_pubkeys,
+        assert_token_account, assert_writable,
+    },
+    error::TokenRecipesError,
+    utils::{burn_tokens, create_associated_token_account, transfer_tokens},
+};
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
     entrypoint::ProgramResult,
     program_error::ProgramError,
-    program_pack::Pack,
     pubkey::Pubkey,
 };
-use spl_token::state::{Account, Mint};
-
-use crate::{
-    assertions::{
-        assert_data_size, assert_enough_tokens, assert_pda, assert_program_owner,
-        assert_same_pubkeys, assert_writable,
-    },
-    error::TokenRecipesError,
-    utils::{burn_tokens, create_associated_token_account, transfer_tokens},
-};
+use spl_token::state::Mint;
+use std::slice::Iter;
 
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
 pub enum IngredientInput {
@@ -94,14 +91,8 @@ impl IngredientInput {
                     )?;
                 } else {
                     assert_writable("input_destination_token", input_destination_token)?;
-                    assert_program_owner(
-                        "input_destination_token",
-                        input_destination_token,
-                        &spl_token::id(),
-                    )?;
-                    assert_data_size("input_destination_token", input_destination_token, 165)?;
                     let input_destination_token_account =
-                        spl_token::state::Account::unpack(&input_destination_token.data.borrow())?;
+                        assert_token_account("input_destination_token", input_destination_token)?;
                     assert_same_pubkeys(
                         "input_mint",
                         input_mint,
@@ -141,15 +132,11 @@ fn next_input_mint_and_token<'a>(
     // Check: ingredient mint.
     assert_same_pubkeys("input_mint", input_mint, mint)?;
     assert_writable("input_mint", input_mint)?;
-    assert_program_owner("input_mint", input_mint, &spl_token::id())?;
-    assert_data_size("input_mint", input_mint, 82)?;
-    let input_mint_account = Mint::unpack(&input_mint.data.borrow())?;
+    let input_mint_account = assert_mint_account("input_mint", input_mint)?;
 
     // Check: ingredient token.
     assert_writable("input_token", input_token)?;
-    assert_program_owner("input_token", input_token, &spl_token::id())?;
-    assert_data_size("input_token", input_token, 165)?;
-    let input_token_account = Account::unpack(&input_token.data.borrow())?;
+    let input_token_account = assert_token_account("input_token", input_token)?;
     assert_same_pubkeys("input_mint", input_mint, &input_token_account.mint)?;
     assert_same_pubkeys("owner", owner, &input_token_account.owner)?;
 
