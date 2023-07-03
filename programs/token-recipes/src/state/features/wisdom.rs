@@ -17,7 +17,7 @@ use solana_program::{
 /// - Level 6: 300 experience points per craft.
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, ShankAccount)]
-pub struct Wisdom {
+pub struct WisdomFeature {
     /// Account discriminator.
     pub key: Key,
     /// The mint used to mint shards.
@@ -28,7 +28,7 @@ pub struct Wisdom {
     pub mint_burn_2: Pubkey,
 }
 
-impl Wisdom {
+impl WisdomFeature {
     pub const LEN: usize = 1 + 32 * 3;
 
     pub fn seeds<'a>() -> Vec<&'a [u8]> {
@@ -37,7 +37,7 @@ impl Wisdom {
 
     pub fn load(account: &AccountInfo) -> Result<Self, ProgramError> {
         let mut bytes: &[u8] = &(*account.data).borrow();
-        Wisdom::deserialize(&mut bytes).map_err(|error| {
+        WisdomFeature::deserialize(&mut bytes).map_err(|error| {
             msg!("Error deserializing Wisdom account: {}", error);
             TokenRecipesError::DeserializationError.into()
         })

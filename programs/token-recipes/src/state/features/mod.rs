@@ -1,5 +1,8 @@
+use self::{
+    additional_outputs::AdditionalOutputsFeature, fees::FeesFeature, max_supply::MaxSupplyFeature,
+    sol_payment::SolPaymentFeature, transfer_inputs::TransferInputsFeature, wisdom::WisdomFeature,
+};
 use borsh::{BorshDeserialize, BorshSerialize};
-use solana_program::pubkey::Pubkey;
 
 pub mod additional_outputs;
 pub mod fees;
@@ -23,21 +26,12 @@ impl FeatureLevels {
     pub const LEN: usize = 16;
 }
 
-#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
-pub enum FeatureData {
-    Fees {
-        destination: Pubkey,
-        mint_burn_1: Pubkey,
-        mint_burn_2: Pubkey,
-        mint_burn_3: Pubkey,
-        mint_skill_1: Pubkey,
-        mint_skill_2: Pubkey,
-    },
-    AdditionalOutputs {
-        mint_burn_1: Pubkey,
-        mint_burn_2: Pubkey,
-        mint_burn_3: Pubkey,
-        mint_skill_1: Pubkey,
-        mint_skill_2: Pubkey,
-    },
+#[derive(BorshSerialize, BorshDeserialize, Debug, Clone)]
+pub enum Feature {
+    Fees(FeesFeature),
+    AdditionalOutputs(AdditionalOutputsFeature),
+    TransferInputs(TransferInputsFeature),
+    MaxSupply(MaxSupplyFeature),
+    SolPayment(SolPaymentFeature),
+    Wisdom(WisdomFeature),
 }

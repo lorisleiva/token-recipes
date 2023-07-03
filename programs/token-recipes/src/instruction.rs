@@ -1,4 +1,4 @@
-use crate::state::recipe::IngredientType;
+use crate::state::{features::Feature, recipe::IngredientType};
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankInstruction;
 use solana_program::{
@@ -101,6 +101,16 @@ pub enum TokenRecipesInstruction {
     #[account(1, signer, name="authority", desc = "The authority of the recipe account")]
     #[account(2, writable, name="payer", desc = "The account that receives the rent fees")]
     DeleteRecipe,
+
+    /// [ADMIN ONLY] Set a feature on the program.
+    #[account(0, signer, name="program_id", desc = "The program as a signer")]
+    #[account(1, writable, name="feature_pda", desc = "The feature PDA")]
+    #[account(2, signer, writable, name="payer", desc = "The account that pays for the storage fees")]
+    #[account(3, name="system_program", desc = "The system program")]
+    AdminSetFeature {
+        /// The feature to set.
+        feature: Feature,
+    },
 }
 
 pub fn create_recipe(recipe: &Pubkey, authority: &Pubkey, payer: &Pubkey) -> Instruction {

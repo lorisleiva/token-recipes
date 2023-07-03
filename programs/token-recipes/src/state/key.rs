@@ -1,6 +1,6 @@
 use borsh::{BorshDeserialize, BorshSerialize};
 
-#[derive(Clone, Copy, BorshSerialize, BorshDeserialize, Debug)]
+#[derive(Clone, Copy, BorshSerialize, BorshDeserialize, Debug, PartialEq, Eq)]
 pub enum Key {
     Uninitialized,
     Recipe,
@@ -11,6 +11,7 @@ pub enum Key {
     TransferInputsFeature,
     MaxSupplyFeature,
     SolPaymentFeature,
+    WisdomFeature,
 }
 
 impl Key {

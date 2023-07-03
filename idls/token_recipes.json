@@ -308,6 +308,47 @@
         "type": "u8",
         "value": 6
       }
+    },
+    {
+      "name": "AdminSetFeature",
+      "accounts": [
+        {
+          "name": "programId",
+          "isMut": false,
+          "isSigner": true,
+          "desc": "The program as a signer"
+        },
+        {
+          "name": "featurePda",
+          "isMut": true,
+          "isSigner": false,
+          "desc": "The feature PDA"
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true,
+          "desc": "The account that pays for the storage fees"
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "desc": "The system program"
+        }
+      ],
+      "args": [
+        {
+          "name": "feature",
+          "type": {
+            "defined": "Feature"
+          }
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 7
+      }
     }
   ],
   "accounts": [
@@ -548,7 +589,7 @@
       }
     },
     {
-      "name": "Wisdom",
+      "name": "WisdomFeature",
       "type": {
         "kind": "struct",
         "fields": [
@@ -717,7 +758,7 @@
       }
     },
     {
-      "name": "FeatureData",
+      "name": "Feature",
       "type": {
         "kind": "enum",
         "variants": [
@@ -725,28 +766,7 @@
             "name": "Fees",
             "fields": [
               {
-                "name": "destination",
-                "type": "publicKey"
-              },
-              {
-                "name": "mint_burn_1",
-                "type": "publicKey"
-              },
-              {
-                "name": "mint_burn_2",
-                "type": "publicKey"
-              },
-              {
-                "name": "mint_burn_3",
-                "type": "publicKey"
-              },
-              {
-                "name": "mint_skill_1",
-                "type": "publicKey"
-              },
-              {
-                "name": "mint_skill_2",
-                "type": "publicKey"
+                "defined": "FeesFeature"
               }
             ]
           },
@@ -754,24 +774,39 @@
             "name": "AdditionalOutputs",
             "fields": [
               {
-                "name": "mint_burn_1",
-                "type": "publicKey"
-              },
+                "defined": "AdditionalOutputsFeature"
+              }
+            ]
+          },
+          {
+            "name": "TransferInputs",
+            "fields": [
               {
-                "name": "mint_burn_2",
-                "type": "publicKey"
-              },
+                "defined": "TransferInputsFeature"
+              }
+            ]
+          },
+          {
+            "name": "MaxSupply",
+            "fields": [
               {
-                "name": "mint_burn_3",
-                "type": "publicKey"
-              },
+                "defined": "MaxSupplyFeature"
+              }
+            ]
+          },
+          {
+            "name": "SolPayment",
+            "fields": [
               {
-                "name": "mint_skill_1",
-                "type": "publicKey"
-              },
+                "defined": "SolPaymentFeature"
+              }
+            ]
+          },
+          {
+            "name": "Wisdom",
+            "fields": [
               {
-                "name": "mint_skill_2",
-                "type": "publicKey"
+                "defined": "WisdomFeature"
               }
             ]
           }
@@ -885,6 +920,9 @@
           },
           {
             "name": "SolPaymentFeature"
+          },
+          {
+            "name": "WisdomFeature"
           }
         ]
       }

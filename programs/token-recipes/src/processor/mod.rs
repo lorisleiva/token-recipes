@@ -1,8 +1,9 @@
 use crate::{
     instruction::TokenRecipesInstruction,
     processor::{
-        activate_recipe::activate_recipe, add_ingredient::add_ingredient, craft::craft,
-        create_recipe::create_recipe, delete_recipe::delete_recipe, pause_recipe::pause_recipe,
+        activate_recipe::activate_recipe, add_ingredient::add_ingredient,
+        admin_set_feature::admin_set_feature, craft::craft, create_recipe::create_recipe,
+        delete_recipe::delete_recipe, pause_recipe::pause_recipe,
         remove_ingredient::remove_ingredient,
     },
 };
@@ -11,6 +12,7 @@ use solana_program::{account_info::AccountInfo, entrypoint::ProgramResult, msg, 
 
 pub mod activate_recipe;
 pub mod add_ingredient;
+pub mod admin_set_feature;
 pub mod craft;
 pub mod create_recipe;
 pub mod delete_recipe;
@@ -59,6 +61,10 @@ impl Processor {
             TokenRecipesInstruction::DeleteRecipe => {
                 msg!("Instruction: DeleteRecipe");
                 delete_recipe(accounts)
+            }
+            TokenRecipesInstruction::AdminSetFeature { feature } => {
+                msg!("Instruction: AdminSetFeature");
+                admin_set_feature(accounts, feature)
             }
         }
     }
