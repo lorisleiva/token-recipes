@@ -1,6 +1,6 @@
 use crate::{
     error::TokenRecipesError,
-    state::{key::Key, recipe::Recipe},
+    state::{ingredient_input::IngredientInput, key::Key, recipe::Recipe},
 };
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
@@ -22,7 +22,7 @@ pub struct TransferInputsFeature {
     pub key: Key,
     /// When burned, allows leveling up by 1 from 0 to 2.
     pub mint_burn_1: Pubkey,
-    /// When burned, allows leveling up by 1 from 2 to 3.
+    /// When burned, allows leveling up by 1 from 0 to 3.
     pub mint_burn_2: Pubkey,
     /// When burned, allows leveling up straight to 3.
     pub mint_burn_3: Pubkey,
@@ -64,11 +64,16 @@ impl TransferInputsFeature {
 /// Asserts that the recipe has a valid number of transfer inputs.
 /// Make sure to use AFTER the recipe was updated.
 pub fn assert_valid_transfer_inputs(recipe: &Recipe) -> ProgramResult {
-    let total_outputs = recipe.outputs.len();
+    let total_transfer_inputs = recipe
+        .inputs
+        .iter()
+        .filter(|i| matches!(i, IngredientInput::TransferToken { .. }))
+        .count();
+
     match recipe.feature_levels.transfer_inputs {
-        0 => assert_max_transfer_inputs(total_outputs, 0),
-        1 => assert_max_transfer_inputs(total_outputs, 1),
-        2 => assert_max_transfer_inputs(total_outputs, 2),
+        0 => assert_max_transfer_inputs(total_transfer_inputs, 0),
+        1 => assert_max_transfer_inputs(total_transfer_inputs, 1),
+        2 => assert_max_transfer_inputs(total_transfer_inputs, 2),
         _ => Ok(()),
     }
 }

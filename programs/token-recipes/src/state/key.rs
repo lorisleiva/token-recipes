@@ -6,6 +6,11 @@ pub enum Key {
     Recipe,
     IngredientRecord,
     DelegatedIngredient,
+    FeesFeature,
+    AdditionalOutputsFeature,
+    TransferInputsFeature,
+    MaxSupplyFeature,
+    SolPaymentFeature,
 }
 
 impl Key {

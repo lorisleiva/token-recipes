@@ -399,11 +399,111 @@
             "type": "publicKey"
           },
           {
+            "name": "mintBurn4",
+            "type": "publicKey"
+          },
+          {
             "name": "mintSkill1",
             "type": "publicKey"
           },
           {
             "name": "mintSkill2",
+            "type": "publicKey"
+          },
+          {
+            "name": "mintSkill3",
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MaxSupplyFeature",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "defined": "Key"
+            }
+          },
+          {
+            "name": "mintBurn1",
+            "type": "publicKey"
+          },
+          {
+            "name": "mintSkill1",
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SolPaymentFeature",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "defined": "Key"
+            }
+          },
+          {
+            "name": "mintBurn1",
+            "type": "publicKey"
+          },
+          {
+            "name": "mintBurn2",
+            "type": "publicKey"
+          },
+          {
+            "name": "mintBurn3",
+            "type": "publicKey"
+          },
+          {
+            "name": "mintBurn4",
+            "type": "publicKey"
+          },
+          {
+            "name": "mintBurn5",
+            "type": "publicKey"
+          },
+          {
+            "name": "mintBurn6",
+            "type": "publicKey"
+          },
+          {
+            "name": "mintBurn7",
+            "type": "publicKey"
+          },
+          {
+            "name": "mintBurn8",
+            "type": "publicKey"
+          },
+          {
+            "name": "mintBurn9",
+            "type": "publicKey"
+          },
+          {
+            "name": "mintSkill1",
+            "type": "publicKey"
+          },
+          {
+            "name": "mintSkill2",
+            "type": "publicKey"
+          },
+          {
+            "name": "mintSkill3",
+            "type": "publicKey"
+          },
+          {
+            "name": "mintSkill4",
+            "type": "publicKey"
+          },
+          {
+            "name": "mintSkill5",
             "type": "publicKey"
           }
         ]
@@ -736,6 +836,21 @@
           },
           {
             "name": "DelegatedIngredient"
+          },
+          {
+            "name": "FeesFeature"
+          },
+          {
+            "name": "AdditionalOutputsFeature"
+          },
+          {
+            "name": "TransferInputsFeature"
+          },
+          {
+            "name": "MaxSupplyFeature"
+          },
+          {
+            "name": "SolPaymentFeature"
           }
         ]
       }
@@ -895,6 +1010,16 @@
       "code": 23,
       "name": "InvalidTransferInputs",
       "msg": "Invalid transfer inputs"
+    },
+    {
+      "code": 24,
+      "name": "InvalidMaxSupply",
+      "msg": "Invalid max supply"
+    },
+    {
+      "code": 25,
+      "name": "InvalidSolPayment",
+      "msg": "Invalid sol payment"
     }
   ],
   "metadata": {

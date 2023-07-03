@@ -34,20 +34,24 @@ pub struct FeesFeature {
     pub key: Key,
     /// The admin public key receiving the admin part of the fees.
     pub destination: Pubkey,
-    /// When burned, allows leveling up by 1 from 0 to 10.
+    /// When burned, allows leveling up by 1 from 0 to 1.
     pub mint_burn_1: Pubkey,
-    /// When burned, allows leveling up by 1 from 0 to 11.
+    /// When burned, allows leveling up by 1 from 0 to 10.
     pub mint_burn_2: Pubkey,
-    /// When burned, allows leveling up straight to 11.
+    /// When burned, allows leveling up by 1 from 0 to 11.
     pub mint_burn_3: Pubkey,
-    /// Without burning, allows leveling up straight to 10.
+    /// When burned, allows leveling up straight to 11.
+    pub mint_burn_4: Pubkey,
+    /// Without burning, allows leveling up straight to 1.
     pub mint_skill_1: Pubkey,
-    /// Without burning, allows leveling up straight to 11.
+    /// Without burning, allows leveling up straight to 10.
     pub mint_skill_2: Pubkey,
+    /// Without burning, allows leveling up straight to 11.
+    pub mint_skill_3: Pubkey,
 }
 
 impl FeesFeature {
-    pub const LEN: usize = 1 + 32 * 6;
+    pub const LEN: usize = 1 + 32 * 8;
 
     pub fn seeds<'a>() -> Vec<&'a [u8]> {
         vec!["features".as_bytes(), "fees".as_bytes()]
@@ -71,6 +75,8 @@ impl FeesFeature {
         Ok(())
     }
 }
+
+// TODO: Function that returns fees, admin fees and shards base on level and recipe.
 
 /// Asserts that the recipe can set custom fees.
 pub fn asserts_can_set_fees(recipe: &Recipe) -> ProgramResult {

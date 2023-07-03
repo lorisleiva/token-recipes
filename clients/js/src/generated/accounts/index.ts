@@ -10,5 +10,7 @@ export * from './additionalOutputsFeature';
 export * from './delegatedIngredient';
 export * from './feesFeature';
 export * from './ingredientRecord';
+export * from './maxSupplyFeature';
 export * from './recipe';
+export * from './solPaymentFeature';
 export * from './transferInputsFeature';

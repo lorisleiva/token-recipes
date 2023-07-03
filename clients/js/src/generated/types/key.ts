@@ -13,6 +13,11 @@ export enum Key {
   Recipe,
   IngredientRecord,
   DelegatedIngredient,
+  FeesFeature,
+  AdditionalOutputsFeature,
+  TransferInputsFeature,
+  MaxSupplyFeature,
+  SolPaymentFeature,
 }
 
 export type KeyArgs = Key;

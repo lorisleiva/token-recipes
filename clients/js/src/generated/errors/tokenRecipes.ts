@@ -340,6 +340,32 @@ export class InvalidTransferInputsError extends ProgramError {
 codeToErrorMap.set(0x17, InvalidTransferInputsError);
 nameToErrorMap.set('InvalidTransferInputs', InvalidTransferInputsError);
 
+/** InvalidMaxSupply: Invalid max supply */
+export class InvalidMaxSupplyError extends ProgramError {
+  readonly name: string = 'InvalidMaxSupply';
+
+  readonly code: number = 0x18; // 24
+
+  constructor(program: Program, cause?: Error) {
+    super('Invalid max supply', program, cause);
+  }
+}
+codeToErrorMap.set(0x18, InvalidMaxSupplyError);
+nameToErrorMap.set('InvalidMaxSupply', InvalidMaxSupplyError);
+
+/** InvalidSolPayment: Invalid sol payment */
+export class InvalidSolPaymentError extends ProgramError {
+  readonly name: string = 'InvalidSolPayment';
+
+  readonly code: number = 0x19; // 25
+
+  constructor(program: Program, cause?: Error) {
+    super('Invalid sol payment', program, cause);
+  }
+}
+codeToErrorMap.set(0x19, InvalidSolPaymentError);
+nameToErrorMap.set('InvalidSolPayment', InvalidSolPaymentError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

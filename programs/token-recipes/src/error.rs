@@ -80,6 +80,12 @@ pub enum TokenRecipesError {
     /// 23 - Invalid transfer inputs
     #[error("Invalid transfer inputs")]
     InvalidTransferInputs,
+    /// 24 - Invalid max supply
+    #[error("Invalid max supply")]
+    InvalidMaxSupply,
+    /// 25 - Invalid sol payment
+    #[error("Invalid sol payment")]
+    InvalidSolPayment,
 }
 
 impl PrintProgramError for TokenRecipesError {

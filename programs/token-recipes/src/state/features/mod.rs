@@ -3,6 +3,8 @@ use solana_program::pubkey::Pubkey;
 
 pub mod additional_outputs;
 pub mod fees;
+pub mod max_supply;
+pub mod sol_payment;
 pub mod transfer_inputs;
 
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone, Default)]

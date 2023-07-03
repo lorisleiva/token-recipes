@@ -34,8 +34,10 @@ export type FeesFeatureAccountData = {
   mintBurn1: PublicKey;
   mintBurn2: PublicKey;
   mintBurn3: PublicKey;
+  mintBurn4: PublicKey;
   mintSkill1: PublicKey;
   mintSkill2: PublicKey;
+  mintSkill3: PublicKey;
 };
 
 export type FeesFeatureAccountDataArgs = {
@@ -44,8 +46,10 @@ export type FeesFeatureAccountDataArgs = {
   mintBurn1: PublicKey;
   mintBurn2: PublicKey;
   mintBurn3: PublicKey;
+  mintBurn4: PublicKey;
   mintSkill1: PublicKey;
   mintSkill2: PublicKey;
+  mintSkill3: PublicKey;
 };
 
 /** @deprecated Use `getFeesFeatureAccountDataSerializer()` without any argument instead. */
@@ -66,8 +70,10 @@ export function getFeesFeatureAccountDataSerializer(
       ['mintBurn1', publicKeySerializer()],
       ['mintBurn2', publicKeySerializer()],
       ['mintBurn3', publicKeySerializer()],
+      ['mintBurn4', publicKeySerializer()],
       ['mintSkill1', publicKeySerializer()],
       ['mintSkill2', publicKeySerializer()],
+      ['mintSkill3', publicKeySerializer()],
     ],
     { description: 'FeesFeatureAccountData' }
   ) as Serializer<FeesFeatureAccountDataArgs, FeesFeatureAccountData>;
@@ -157,16 +163,20 @@ export function getFeesFeatureGpaBuilder(
       mintBurn1: PublicKey;
       mintBurn2: PublicKey;
       mintBurn3: PublicKey;
+      mintBurn4: PublicKey;
       mintSkill1: PublicKey;
       mintSkill2: PublicKey;
+      mintSkill3: PublicKey;
     }>({
       key: [0, getKeySerializer()],
       destination: [1, publicKeySerializer()],
       mintBurn1: [33, publicKeySerializer()],
       mintBurn2: [65, publicKeySerializer()],
       mintBurn3: [97, publicKeySerializer()],
-      mintSkill1: [129, publicKeySerializer()],
-      mintSkill2: [161, publicKeySerializer()],
+      mintBurn4: [129, publicKeySerializer()],
+      mintSkill1: [161, publicKeySerializer()],
+      mintSkill2: [193, publicKeySerializer()],
+      mintSkill3: [225, publicKeySerializer()],
     })
     .deserializeUsing<FeesFeature>((account) =>
       deserializeFeesFeature(account)
@@ -174,5 +184,5 @@ export function getFeesFeatureGpaBuilder(
 }
 
 export function getFeesFeatureSize(): number {
-  return 193;
+  return 257;
 }
