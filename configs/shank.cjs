@@ -8,7 +8,7 @@ const programDir = path.join(__dirname, "..", "programs");
 generateIdl({
   generator: "shank",
   programName: "token_recipes",
-  programId: "6EgVKvZu2V6cpZzarvDHuyeJwa1NB2ujj8hXY98pQpLE",
+  programId: "C7zZZJpLzAehgidrbwdpBwN6RZCJo98qb55Zjep1a28T",
   idlDir,
   binaryInstallDir,
   programDir: path.join(programDir, "token-recipes"),

@@ -2,8 +2,8 @@ const path = require("path");
 
 const programDir = path.join(__dirname, "..", "programs");
 
-function getProgram(programBinary) {
-  return path.join(programDir, ".bin", programBinary);
+function getProgram(...programBinary) {
+  return path.join(programDir, ".bin", ...programBinary);
 }
 
 module.exports = {
@@ -12,8 +12,8 @@ module.exports = {
     programs: [
       {
         label: "Token Recipes",
-        programId: "6EgVKvZu2V6cpZzarvDHuyeJwa1NB2ujj8hXY98pQpLE",
-        deployPath: getProgram("token_recipes.so"),
+        programId: "C7zZZJpLzAehgidrbwdpBwN6RZCJo98qb55Zjep1a28T",
+        deployPath: getProgram("localnet", "token_recipes.so"),
       },
       // Below are external programs that should be included in the local validator.
       // You may configure which ones to fetch from the cluster when building
