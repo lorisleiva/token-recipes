@@ -93,14 +93,14 @@ impl IngredientInput {
     ) -> ProgramResult {
         match self {
             Self::BurnToken { mint, amount } => {
-                let (input_mint, input_mint_account, input_token, multipliedAmount) =
+                let (input_mint, input_mint_account, input_token, multiplied_amount) =
                     next_input_mint_and_token(account_info_iter, owner, quantity, mint, amount)?;
 
                 burn_tokens(
                     input_token,
                     input_mint,
                     owner,
-                    multipliedAmount,
+                    multiplied_amount,
                     input_mint_account.decimals,
                 )
             }
@@ -109,7 +109,7 @@ impl IngredientInput {
                 amount,
                 destination,
             } => {
-                let (input_mint, input_mint_account, input_token, multipliedAmount) =
+                let (input_mint, input_mint_account, input_token, multiplied_amount) =
                     next_input_mint_and_token(account_info_iter, owner, quantity, mint, amount)?;
 
                 let input_destination = next_account_info(account_info_iter)?;
@@ -157,7 +157,7 @@ impl IngredientInput {
                     owner,
                     input_token,
                     input_destination_token,
-                    multipliedAmount,
+                    multiplied_amount,
                     input_mint_account.decimals,
                     None,
                 )
@@ -188,20 +188,20 @@ fn next_input_mint_and_token<'a>(
     assert_same_pubkeys("owner", owner, &input_token_account.owner)?;
 
     // Compute the total amount of tokens required.
-    let multipliedAmount = amount
+    let multiplied_amount = amount
         .checked_mul(quantity)
         .ok_or(TokenRecipesError::NumericalOverflow)?;
     assert_enough_tokens(
         "input_token",
         input_token,
         input_token_account,
-        multipliedAmount,
+        multiplied_amount,
     )?;
 
     Ok((
         input_mint,
         input_mint_account,
         input_token,
-        multipliedAmount,
+        multiplied_amount,
     ))
 }

@@ -119,7 +119,7 @@ impl IngredientOutput {
                     output_token,
                     delegated_ingredient,
                     delegated_ingredient_bump,
-                    multipliedAmount,
+                    multiplied_amount,
                 ) = next_output_mint_and_token(
                     account_info_iter,
                     owner,
@@ -137,7 +137,7 @@ impl IngredientOutput {
                     output_token,
                     output_mint,
                     delegated_ingredient,
-                    multipliedAmount,
+                    multiplied_amount,
                     output_mint_account.decimals,
                     Some(&[&seeds]),
                 )
@@ -153,7 +153,7 @@ impl IngredientOutput {
                     output_token,
                     delegated_ingredient,
                     delegated_ingredient_bump,
-                    multipliedAmount,
+                    multiplied_amount,
                 ) = next_output_mint_and_token(
                     account_info_iter,
                     owner,
@@ -166,7 +166,7 @@ impl IngredientOutput {
                 // Assert max supply is not exceeded.
                 let new_supply = output_mint_account
                     .supply
-                    .checked_add(multipliedAmount)
+                    .checked_add(multiplied_amount)
                     .ok_or(TokenRecipesError::NumericalOverflow)?;
                 if new_supply > *max_supply {
                     return Err(TokenRecipesError::MaximumSupplyReached.into());
@@ -180,7 +180,7 @@ impl IngredientOutput {
                     output_token,
                     output_mint,
                     delegated_ingredient,
-                    multipliedAmount,
+                    multiplied_amount,
                     output_mint_account.decimals,
                     Some(&[&seeds]),
                 )
@@ -251,7 +251,7 @@ fn next_output_mint_and_token<'a>(
     }
 
     // Compute the total amount of tokens required.
-    let multipliedAmount = amount
+    let multiplied_amount = amount
         .checked_mul(quantity)
         .ok_or(TokenRecipesError::NumericalOverflow)?;
 
@@ -261,6 +261,6 @@ fn next_output_mint_and_token<'a>(
         output_token,
         delegated_ingredient,
         delegated_ingredient_bump,
-        multipliedAmount,
+        multiplied_amount,
     ))
 }
