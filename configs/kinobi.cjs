@@ -53,6 +53,11 @@ kinobi.update(
         owner: { defaultsTo: k.identityDefault() },
       },
     },
+    adminSetFeature: {
+      accounts: {
+        programId: { defaultsTo: null },
+      },
+    },
   })
 );
 
@@ -77,6 +82,19 @@ kinobi.update(
       quantity: k.vScalar(1),
     },
   })
+);
+
+kinobi.update(
+  new k.TransformNodesVisitor([
+    {
+      selector: { kind: "linkTypeNode", stack: ["Feature"] },
+      transformer: (node) => {
+        k.assertLinkTypeNode(node);
+        if (node.name === "feature") return node;
+        return { ...node, importFrom: "hooked" };
+      },
+    },
+  ])
 );
 
 // Render JavaScript.

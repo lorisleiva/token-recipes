@@ -26,115 +26,117 @@ import {
 } from '@metaplex-foundation/umi/serializers';
 import { Key, KeyArgs, getKeySerializer } from '../types';
 
-export type Wisdom = Account<WisdomAccountData>;
+export type WisdomFeature = Account<WisdomFeatureAccountData>;
 
-export type WisdomAccountData = {
+export type WisdomFeatureAccountData = {
   key: Key;
   experienceMint: PublicKey;
   mintBurn1: PublicKey;
   mintBurn2: PublicKey;
 };
 
-export type WisdomAccountDataArgs = {
+export type WisdomFeatureAccountDataArgs = {
   key: KeyArgs;
   experienceMint: PublicKey;
   mintBurn1: PublicKey;
   mintBurn2: PublicKey;
 };
 
-/** @deprecated Use `getWisdomAccountDataSerializer()` without any argument instead. */
-export function getWisdomAccountDataSerializer(
+/** @deprecated Use `getWisdomFeatureAccountDataSerializer()` without any argument instead. */
+export function getWisdomFeatureAccountDataSerializer(
   _context: object
-): Serializer<WisdomAccountDataArgs, WisdomAccountData>;
-export function getWisdomAccountDataSerializer(): Serializer<
-  WisdomAccountDataArgs,
-  WisdomAccountData
+): Serializer<WisdomFeatureAccountDataArgs, WisdomFeatureAccountData>;
+export function getWisdomFeatureAccountDataSerializer(): Serializer<
+  WisdomFeatureAccountDataArgs,
+  WisdomFeatureAccountData
 >;
-export function getWisdomAccountDataSerializer(
+export function getWisdomFeatureAccountDataSerializer(
   _context: object = {}
-): Serializer<WisdomAccountDataArgs, WisdomAccountData> {
-  return struct<WisdomAccountData>(
+): Serializer<WisdomFeatureAccountDataArgs, WisdomFeatureAccountData> {
+  return struct<WisdomFeatureAccountData>(
     [
       ['key', getKeySerializer()],
       ['experienceMint', publicKeySerializer()],
       ['mintBurn1', publicKeySerializer()],
       ['mintBurn2', publicKeySerializer()],
     ],
-    { description: 'WisdomAccountData' }
-  ) as Serializer<WisdomAccountDataArgs, WisdomAccountData>;
+    { description: 'WisdomFeatureAccountData' }
+  ) as Serializer<WisdomFeatureAccountDataArgs, WisdomFeatureAccountData>;
 }
 
-/** @deprecated Use `deserializeWisdom(rawAccount)` without any context instead. */
-export function deserializeWisdom(
+/** @deprecated Use `deserializeWisdomFeature(rawAccount)` without any context instead. */
+export function deserializeWisdomFeature(
   context: object,
   rawAccount: RpcAccount
-): Wisdom;
-export function deserializeWisdom(rawAccount: RpcAccount): Wisdom;
-export function deserializeWisdom(
+): WisdomFeature;
+export function deserializeWisdomFeature(rawAccount: RpcAccount): WisdomFeature;
+export function deserializeWisdomFeature(
   context: RpcAccount | object,
   rawAccount?: RpcAccount
-): Wisdom {
+): WisdomFeature {
   return deserializeAccount(
     rawAccount ?? (context as RpcAccount),
-    getWisdomAccountDataSerializer()
+    getWisdomFeatureAccountDataSerializer()
   );
 }
 
-export async function fetchWisdom(
+export async function fetchWisdomFeature(
   context: Pick<Context, 'rpc'>,
   publicKey: PublicKey | Pda,
   options?: RpcGetAccountOptions
-): Promise<Wisdom> {
+): Promise<WisdomFeature> {
   const maybeAccount = await context.rpc.getAccount(
     toPublicKey(publicKey, false),
     options
   );
-  assertAccountExists(maybeAccount, 'Wisdom');
-  return deserializeWisdom(maybeAccount);
+  assertAccountExists(maybeAccount, 'WisdomFeature');
+  return deserializeWisdomFeature(maybeAccount);
 }
 
-export async function safeFetchWisdom(
+export async function safeFetchWisdomFeature(
   context: Pick<Context, 'rpc'>,
   publicKey: PublicKey | Pda,
   options?: RpcGetAccountOptions
-): Promise<Wisdom | null> {
+): Promise<WisdomFeature | null> {
   const maybeAccount = await context.rpc.getAccount(
     toPublicKey(publicKey, false),
     options
   );
-  return maybeAccount.exists ? deserializeWisdom(maybeAccount) : null;
+  return maybeAccount.exists ? deserializeWisdomFeature(maybeAccount) : null;
 }
 
-export async function fetchAllWisdom(
+export async function fetchAllWisdomFeature(
   context: Pick<Context, 'rpc'>,
   publicKeys: Array<PublicKey | Pda>,
   options?: RpcGetAccountsOptions
-): Promise<Wisdom[]> {
+): Promise<WisdomFeature[]> {
   const maybeAccounts = await context.rpc.getAccounts(
     publicKeys.map((key) => toPublicKey(key, false)),
     options
   );
   return maybeAccounts.map((maybeAccount) => {
-    assertAccountExists(maybeAccount, 'Wisdom');
-    return deserializeWisdom(maybeAccount);
+    assertAccountExists(maybeAccount, 'WisdomFeature');
+    return deserializeWisdomFeature(maybeAccount);
   });
 }
 
-export async function safeFetchAllWisdom(
+export async function safeFetchAllWisdomFeature(
   context: Pick<Context, 'rpc'>,
   publicKeys: Array<PublicKey | Pda>,
   options?: RpcGetAccountsOptions
-): Promise<Wisdom[]> {
+): Promise<WisdomFeature[]> {
   const maybeAccounts = await context.rpc.getAccounts(
     publicKeys.map((key) => toPublicKey(key, false)),
     options
   );
   return maybeAccounts
     .filter((maybeAccount) => maybeAccount.exists)
-    .map((maybeAccount) => deserializeWisdom(maybeAccount as RpcAccount));
+    .map((maybeAccount) =>
+      deserializeWisdomFeature(maybeAccount as RpcAccount)
+    );
 }
 
-export function getWisdomGpaBuilder(
+export function getWisdomFeatureGpaBuilder(
   context: Pick<Context, 'rpc' | 'programs'>
 ) {
   const programId = context.programs.getPublicKey(
@@ -153,9 +155,11 @@ export function getWisdomGpaBuilder(
       mintBurn1: [33, publicKeySerializer()],
       mintBurn2: [65, publicKeySerializer()],
     })
-    .deserializeUsing<Wisdom>((account) => deserializeWisdom(account));
+    .deserializeUsing<WisdomFeature>((account) =>
+      deserializeWisdomFeature(account)
+    );
 }
 
-export function getWisdomSize(): number {
+export function getWisdomFeatureSize(): number {
   return 97;
 }

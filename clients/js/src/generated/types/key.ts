@@ -18,6 +18,7 @@ export enum Key {
   TransferInputsFeature,
   MaxSupplyFeature,
   SolPaymentFeature,
+  WisdomFeature,
 }
 
 export type KeyArgs = Key;
