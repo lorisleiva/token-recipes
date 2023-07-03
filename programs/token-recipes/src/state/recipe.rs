@@ -1,4 +1,7 @@
-use crate::{error::TokenRecipesError, state::key::Key};
+use crate::{
+    error::TokenRecipesError,
+    state::{features::FeatureLevels, key::Key},
+};
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
 use solana_program::account_info::AccountInfo;
@@ -13,12 +16,30 @@ pub struct Recipe {
     pub key: Key,
     pub authority: Pubkey,
     pub status: RecipeStatus,
+    pub total_crafts: u64,
+    pub total_crafts_with_quantity: u64,
+    pub fees: u64,
+    pub accumulated_admin_fees: u64,
+    pub accumulated_shards: u64,
+    pub accumulated_experience: u64,
+    pub feature_levels: FeatureLevels,
     pub inputs: Vec<IngredientInput>,
     pub outputs: Vec<IngredientOutput>,
 }
 
 impl Recipe {
-    pub const INITIAL_LEN: usize = 1 + 32 + 1 + 4 + 4;
+    pub const INITIAL_LEN: usize = Key::LEN // key
+        + 32 // authority
+        + RecipeStatus::LEN // status
+        + 8 // total_crafts
+        + 8 // total_crafts_with_quantity 
+        + 8 // fees
+        + 8 // accumulated_admin_fees
+        + 8 // accumulated_shards
+        + 8 // accumulated_experience
+        + FeatureLevels::LEN // feature_levels
+        + 4 // inputs.len()
+        + 4; // outputs.len()
 
     pub fn add_ingredient_input(&mut self, ingredient: IngredientInput) {
         self.inputs.push(ingredient);
@@ -91,6 +112,10 @@ impl Recipe {
 pub enum RecipeStatus {
     Paused,
     Active,
+}
+
+impl RecipeStatus {
+    const LEN: usize = 1;
 }
 
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]

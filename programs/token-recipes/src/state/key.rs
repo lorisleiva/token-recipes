@@ -7,3 +7,7 @@ pub enum Key {
     IngredientRecord,
     DelegatedIngredient,
 }
+
+impl Key {
+    pub const LEN: usize = 1;
+}

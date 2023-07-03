@@ -29,7 +29,7 @@ impl DelegatedIngredient {
     pub fn load(account: &AccountInfo) -> Result<Self, ProgramError> {
         let mut bytes: &[u8] = &(*account.data).borrow();
         DelegatedIngredient::deserialize(&mut bytes).map_err(|error| {
-            msg!("Error deserializing Recipe account: {}", error);
+            msg!("Error deserializing DelegatedIngredient account: {}", error);
             TokenRecipesError::DeserializationError.into()
         })
     }
@@ -37,7 +37,7 @@ impl DelegatedIngredient {
     pub fn save(&self, account: &AccountInfo) -> ProgramResult {
         let mut bytes = Vec::with_capacity(account.data_len());
         self.serialize(&mut bytes).map_err(|error| {
-            msg!("Error serializing Recipe account: {}", error);
+            msg!("Error serializing DelegatedIngredient account: {}", error);
             TokenRecipesError::SerializationError
         })?;
         account.try_borrow_mut_data().unwrap()[..bytes.len()].copy_from_slice(&bytes);

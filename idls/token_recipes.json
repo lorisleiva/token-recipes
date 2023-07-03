@@ -338,6 +338,78 @@
       }
     },
     {
+      "name": "AdditionalOutputsFeature",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "defined": "Key"
+            }
+          },
+          {
+            "name": "mintBurn1",
+            "type": "publicKey"
+          },
+          {
+            "name": "mintBurn2",
+            "type": "publicKey"
+          },
+          {
+            "name": "mintBurn3",
+            "type": "publicKey"
+          },
+          {
+            "name": "mintSkill1",
+            "type": "publicKey"
+          },
+          {
+            "name": "mintSkill2",
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FeesFeature",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "defined": "Key"
+            }
+          },
+          {
+            "name": "destination",
+            "type": "publicKey"
+          },
+          {
+            "name": "mintBurn1",
+            "type": "publicKey"
+          },
+          {
+            "name": "mintBurn2",
+            "type": "publicKey"
+          },
+          {
+            "name": "mintBurn3",
+            "type": "publicKey"
+          },
+          {
+            "name": "mintSkill1",
+            "type": "publicKey"
+          },
+          {
+            "name": "mintSkill2",
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
+    {
       "name": "IngredientRecord",
       "type": {
         "kind": "struct",
@@ -389,6 +461,36 @@
             }
           },
           {
+            "name": "totalCrafts",
+            "type": "u64"
+          },
+          {
+            "name": "totalCraftsWithQuantity",
+            "type": "u64"
+          },
+          {
+            "name": "fees",
+            "type": "u64"
+          },
+          {
+            "name": "accumulatedAdminFees",
+            "type": "u64"
+          },
+          {
+            "name": "accumulatedShards",
+            "type": "u64"
+          },
+          {
+            "name": "accumulatedExperience",
+            "type": "u64"
+          },
+          {
+            "name": "featureLevels",
+            "type": {
+              "defined": "FeatureLevels"
+            }
+          },
+          {
             "name": "inputs",
             "type": {
               "vec": {
@@ -409,6 +511,31 @@
     }
   ],
   "types": [
+    {
+      "name": "FeatureLevels",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "fees",
+            "type": "u8"
+          },
+          {
+            "name": "additionalOutputs",
+            "type": "u8"
+          },
+          {
+            "name": "padding",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          }
+        ]
+      }
+    },
     {
       "name": "IngredientInput",
       "type": {

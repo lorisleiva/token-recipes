@@ -25,8 +25,11 @@ import {
   mapSerializer,
   publicKey as publicKeySerializer,
   struct,
+  u64,
 } from '@metaplex-foundation/umi/serializers';
 import {
+  FeatureLevels,
+  FeatureLevelsArgs,
   IngredientInput,
   IngredientInputArgs,
   IngredientOutput,
@@ -35,6 +38,7 @@ import {
   KeyArgs,
   RecipeStatus,
   RecipeStatusArgs,
+  getFeatureLevelsSerializer,
   getIngredientInputSerializer,
   getIngredientOutputSerializer,
   getKeySerializer,
@@ -47,6 +51,13 @@ export type RecipeAccountData = {
   key: Key;
   authority: PublicKey;
   status: RecipeStatus;
+  totalCrafts: bigint;
+  totalCraftsWithQuantity: bigint;
+  fees: bigint;
+  accumulatedAdminFees: bigint;
+  accumulatedShards: bigint;
+  accumulatedExperience: bigint;
+  featureLevels: FeatureLevels;
   inputs: Array<IngredientInput>;
   outputs: Array<IngredientOutput>;
 };
@@ -54,6 +65,13 @@ export type RecipeAccountData = {
 export type RecipeAccountDataArgs = {
   authority: PublicKey;
   status: RecipeStatusArgs;
+  totalCrafts: number | bigint;
+  totalCraftsWithQuantity: number | bigint;
+  fees: number | bigint;
+  accumulatedAdminFees: number | bigint;
+  accumulatedShards: number | bigint;
+  accumulatedExperience: number | bigint;
+  featureLevels: FeatureLevelsArgs;
   inputs: Array<IngredientInputArgs>;
   outputs: Array<IngredientOutputArgs>;
 };
@@ -75,6 +93,13 @@ export function getRecipeAccountDataSerializer(
         ['key', getKeySerializer()],
         ['authority', publicKeySerializer()],
         ['status', getRecipeStatusSerializer()],
+        ['totalCrafts', u64()],
+        ['totalCraftsWithQuantity', u64()],
+        ['fees', u64()],
+        ['accumulatedAdminFees', u64()],
+        ['accumulatedShards', u64()],
+        ['accumulatedExperience', u64()],
+        ['featureLevels', getFeatureLevelsSerializer()],
         ['inputs', array(getIngredientInputSerializer())],
         ['outputs', array(getIngredientOutputSerializer())],
       ],
@@ -166,13 +191,27 @@ export function getRecipeGpaBuilder(
       key: KeyArgs;
       authority: PublicKey;
       status: RecipeStatusArgs;
+      totalCrafts: number | bigint;
+      totalCraftsWithQuantity: number | bigint;
+      fees: number | bigint;
+      accumulatedAdminFees: number | bigint;
+      accumulatedShards: number | bigint;
+      accumulatedExperience: number | bigint;
+      featureLevels: FeatureLevelsArgs;
       inputs: Array<IngredientInputArgs>;
       outputs: Array<IngredientOutputArgs>;
     }>({
       key: [0, getKeySerializer()],
       authority: [1, publicKeySerializer()],
       status: [33, getRecipeStatusSerializer()],
-      inputs: [34, array(getIngredientInputSerializer())],
+      totalCrafts: [34, u64()],
+      totalCraftsWithQuantity: [42, u64()],
+      fees: [50, u64()],
+      accumulatedAdminFees: [58, u64()],
+      accumulatedShards: [66, u64()],
+      accumulatedExperience: [74, u64()],
+      featureLevels: [82, getFeatureLevelsSerializer()],
+      inputs: [92, array(getIngredientInputSerializer())],
       outputs: [null, array(getIngredientOutputSerializer())],
     })
     .deserializeUsing<Recipe>((account) => deserializeRecipe(account))

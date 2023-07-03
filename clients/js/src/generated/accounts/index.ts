@@ -6,6 +6,8 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
+export * from './additionalOutputsFeature';
 export * from './delegatedIngredient';
+export * from './feesFeature';
 export * from './ingredientRecord';
 export * from './recipe';

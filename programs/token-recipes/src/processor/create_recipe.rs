@@ -1,6 +1,7 @@
 use crate::{
     assertions::{assert_empty, assert_same_pubkeys, assert_signer, assert_writable},
     state::{
+        features::FeatureLevels,
         key::Key,
         recipe::{Recipe, RecipeStatus},
     },
@@ -50,6 +51,13 @@ pub(crate) fn create_recipe(accounts: &[AccountInfo]) -> ProgramResult {
         key: Key::Recipe,
         authority: *authority.key,
         status: RecipeStatus::Paused,
+        total_crafts: 0,
+        total_crafts_with_quantity: 0,
+        fees: 0,
+        accumulated_admin_fees: 0,
+        accumulated_shards: 0,
+        accumulated_experience: 0,
+        feature_levels: FeatureLevels::default(),
         inputs: vec![],
         outputs: vec![],
     }
