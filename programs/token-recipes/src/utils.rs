@@ -87,12 +87,11 @@ pub fn transfer_mint_authority<'a>(
     mint: &AccountInfo<'a>,
     from: &AccountInfo<'a>,
     to: &AccountInfo<'a>,
-    token_program: &AccountInfo<'a>,
     signer_seeds: Option<&[&[&[u8]]]>,
 ) -> ProgramResult {
     invoke_signed(
         &set_authority(
-            token_program.key,
+            &spl_token::id(),
             mint.key,
             Some(to.key),
             AuthorityType::MintTokens,

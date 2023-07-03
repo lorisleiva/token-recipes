@@ -1,7 +1,7 @@
 use crate::{
     assertions::{
-        assert_account_key, assert_data_size, assert_pda, assert_program_owner,
-        assert_same_pubkeys, assert_signer, assert_writable,
+        assert_account_key, assert_data_size, assert_program_owner, assert_same_pubkeys,
+        assert_signer, assert_writable,
     },
     state::{
         delegated_ingredient::DelegatedIngredient,
@@ -9,12 +9,11 @@ use crate::{
         key::Key,
         recipe::{IngredientType, Recipe},
     },
-    utils::{close_account, realloc_account, transfer_mint_authority},
+    utils::realloc_account,
 };
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
     entrypoint::ProgramResult,
-    pubkey::Pubkey,
     system_program,
 };
 
@@ -53,28 +52,12 @@ pub(crate) fn remove_ingredient(
     let mut recipe_account = Recipe::load(recipe)?;
     assert_same_pubkeys("authority", authority, &recipe_account.authority)?;
 
+    // TODO: Get IngredientInput or Output here.
+
     // Check: mint.
     assert_writable("mint", mint)?;
     assert_program_owner("mint", mint, &spl_token::id())?;
     assert_data_size("mint", mint, 82)?;
-
-    // Check: ingredient_record.
-    assert_writable("ingredient_record", ingredient_record)?;
-    assert_program_owner("ingredient_record", ingredient_record, &crate::id())?;
-    assert_account_key(
-        "ingredient_record",
-        ingredient_record,
-        Key::IngredientRecord,
-    )?;
-    assert_pda(
-        "ingredient_record",
-        ingredient_record,
-        &crate::id(),
-        &IngredientRecord::seeds(mint.key, recipe.key),
-    )?;
-    let mut ingredient_record_account = IngredientRecord::load(ingredient_record)?;
-    assert_same_pubkeys("recipe", recipe, &ingredient_record_account.recipe)?;
-    assert_same_pubkeys("mint", mint, &ingredient_record_account.mint)?;
 
     // Remove the ingredient from the recipe account and realloc.
     let new_size = match ingredient_type {
@@ -90,63 +73,17 @@ pub(crate) fn remove_ingredient(
     realloc_account(recipe, payer, system_program, new_size)?;
     recipe_account.save(recipe)?;
 
-    // Update and save the ingredient record.
+    // Update or close the ingredient record account.
+    let mut ingredient_record_account = IngredientRecord::get(ingredient_record, mint, recipe)?;
     match ingredient_type {
         IngredientType::Input => ingredient_record_account.set_input(false)?,
         IngredientType::Output => ingredient_record_account.set_output(false)?,
     }
+    ingredient_record_account.save_or_close(ingredient_record, payer)?;
 
-    // Remove the ingredient PDA if the ingredient is no longer in input nor output.
-    match ingredient_record_account.should_be_closed() {
-        true => close_account(ingredient_record, payer)?,
-        false => ingredient_record_account.save(ingredient_record)?,
-    };
-
-    // Create or increment the delegated ingredient PDA for output ingredients.
+    // Decrent or close the delegated ingredient account.
     if matches!(ingredient_type, IngredientType::Output) {
-        // Check: delegated_ingredient.
-        assert_writable("delegated_ingredient", delegated_ingredient)?;
-        assert_pda(
-            "delegated_ingredient",
-            delegated_ingredient,
-            &crate::id(),
-            &DelegatedIngredient::seeds(mint.key),
-        )?;
-        assert_program_owner("delegated_ingredient", delegated_ingredient, &crate::id())?;
-        assert_account_key(
-            "delegated_ingredient",
-            delegated_ingredient,
-            Key::DelegatedIngredient,
-        )?;
-        let mut delegated_ingredient_account = DelegatedIngredient::load(delegated_ingredient)?;
-        assert_same_pubkeys("mint", mint, &delegated_ingredient_account.mint)?;
-        assert_same_pubkeys(
-            "authority",
-            authority,
-            &delegated_ingredient_account.authority,
-        )?;
-
-        // Decrement the counter.
-        delegated_ingredient_account.counter -= 1;
-
-        // Remove the delegated ingredient PDA and transfer back the mint authority if the counter is zero.
-        match delegated_ingredient_account.should_be_closed() {
-            true => {
-                let mut seeds = DelegatedIngredient::seeds(mint.key);
-                let (_, bump) = Pubkey::find_program_address(&seeds, &crate::id());
-                let bump = [bump];
-                seeds.push(&bump);
-                transfer_mint_authority(
-                    mint,
-                    delegated_ingredient,
-                    authority,
-                    token_program,
-                    Some(&[&seeds]),
-                )?;
-                close_account(delegated_ingredient, payer)?;
-            }
-            false => delegated_ingredient_account.save(delegated_ingredient)?,
-        };
+        DelegatedIngredient::close_or_decrement(delegated_ingredient, mint, authority, payer)?;
     }
 
     Ok(())

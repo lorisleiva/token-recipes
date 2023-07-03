@@ -129,6 +129,8 @@ impl RecipeStatus {
 
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
 pub enum IngredientType {
-    Input,
-    Output,
+    BurnTokenInput,
+    TransferTokenInput,
+    MintTokenOutput,
+    MintTokenWithMaxSupplyOutput,
 }

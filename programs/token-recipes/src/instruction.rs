@@ -85,7 +85,7 @@ pub enum TokenRecipesInstruction {
     ///   - [writable] The mint account of the ingredient.
     ///   - [writable] The token account of the ingredient.
     ///   - The delegated ingredient PDA of the ingredient.
-    #[account(0, name="recipe", desc = "The address of the recipe account")]
+    #[account(0, writable, name="recipe", desc = "The address of the recipe account")]
     #[account(1, signer, name="owner", desc = "The owner of the token accounts")]
     #[account(2, writable, signer, name="payer", desc = "The account paying for the storage fees if we have to create associated token accounts")]
     #[account(3, name="system_program", desc = "The system program")]
