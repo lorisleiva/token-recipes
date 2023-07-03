@@ -8,7 +8,6 @@ use crate::{
         ingredient_record::IngredientRecord,
         recipe::{IngredientType, Recipe},
     },
-    utils::realloc_account,
 };
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
@@ -59,15 +58,14 @@ pub(crate) fn add_ingredient(
     }
 
     // Add the ingredient to the recipe account and realloc.
-    let new_size: usize = match ingredient_type {
+    match ingredient_type {
         IngredientType::Input => {
             let ingredient = IngredientInput {
                 mint: *mint.key,
                 amount,
                 destination,
             };
-            recipe_account.add_ingredient_input(ingredient.clone());
-            recipe.data_len() + ingredient.len()
+            recipe_account.add_ingredient_input(ingredient, recipe, payer, system_program)?;
         }
         IngredientType::Output => {
             let ingredient = IngredientOutput {
@@ -75,12 +73,9 @@ pub(crate) fn add_ingredient(
                 amount,
                 max_supply: max_supply.unwrap_or(u64::MAX),
             };
-            recipe_account.add_ingredient_output(ingredient.clone());
-            recipe.data_len() + ingredient.len()
+            recipe_account.add_ingredient_output(ingredient, recipe, payer, system_program)?;
         }
     };
-    realloc_account(recipe, payer, system_program, new_size)?;
-    recipe_account.save(recipe)?;
 
     // Update or create the ingredient record.
     let mut ingredient_record_account =

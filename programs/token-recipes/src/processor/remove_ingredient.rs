@@ -5,7 +5,6 @@ use crate::{
         ingredient_record::IngredientRecord,
         recipe::{IngredientType, Recipe},
     },
-    utils::realloc_account,
 };
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
@@ -49,18 +48,14 @@ pub(crate) fn remove_ingredient(
     assert_mint_account("mint", mint)?;
 
     // Remove the ingredient from the recipe account and realloc.
-    let new_size = match ingredient_type {
+    match ingredient_type {
         IngredientType::Input => {
-            let ingredient = recipe_account.remove_ingredient_input(mint.key)?;
-            recipe.data_len() - ingredient.len()
+            recipe_account.remove_ingredient_input(index, recipe, payer, system_program)?;
         }
         IngredientType::Output => {
-            let ingredient = recipe_account.remove_ingredient_output(mint.key)?;
-            recipe.data_len() - ingredient.len()
+            recipe_account.remove_ingredient_output(index, recipe, payer, system_program)?;
         }
     };
-    realloc_account(recipe, payer, system_program, new_size)?;
-    recipe_account.save(recipe)?;
 
     // Update or close the ingredient record account.
     let mut ingredient_record_account = IngredientRecord::get(ingredient_record, mint, recipe)?;
