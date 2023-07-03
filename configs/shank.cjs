@@ -11,5 +11,6 @@ generateIdl({
   programId: "C7zZZJpLzAehgidrbwdpBwN6RZCJo98qb55Zjep1a28T",
   idlDir,
   binaryInstallDir,
+  binaryExtraArgs: ["-p", "C7zZZJpLzAehgidrbwdpBwN6RZCJo98qb55Zjep1a28T"],
   programDir: path.join(programDir, "token-recipes"),
 });
