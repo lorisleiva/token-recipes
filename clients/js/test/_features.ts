@@ -8,7 +8,6 @@ import {
   PublicKey,
   Umi,
   createSignerFromKeypair,
-  displayAmount,
   transactionBuilder,
   transactionBuilderGroup,
 } from '@metaplex-foundation/umi';
@@ -53,6 +52,16 @@ export const seededSigner = (umi: Umi, seed: string) => {
 export type FeatureContext = {
   feesFeaturePda: PublicKey;
   feesFeature: FeesFeatureAccountData;
+  additionalOutputsFeaturePda: PublicKey;
+  additionalOutputsFeature: AdditionalOutputsFeatureAccountData;
+  transferInputsFeaturePda: PublicKey;
+  transferInputsFeature: TransferInputsFeatureAccountData;
+  maxSupplyFeaturePda: PublicKey;
+  maxSupplyFeature: MaxSupplyFeatureAccountData;
+  solPaymentFeaturePda: PublicKey;
+  solPaymentFeature: SolPaymentFeatureAccountData;
+  wisdomFeaturePda: PublicKey;
+  wisdomFeature: WisdomFeatureAccountData;
 };
 
 let featureContext: FeatureContext | undefined;
@@ -61,12 +70,6 @@ export const withFeatures = async (umi: Umi): Promise<FeatureContext> => {
   if (featureContext) return featureContext;
   const programId = localnetSigner(umi);
   const { payer } = umi;
-  console.log({
-    programBalance: displayAmount(
-      await umi.rpc.getBalance(programId.publicKey)
-    ),
-    payerBalance: displayAmount(await umi.rpc.getBalance(payer.publicKey)),
-  });
 
   // Fees.
   const [feesFeaturePda] = findFeesFeaturePda(umi);
@@ -189,13 +192,20 @@ export const withFeatures = async (umi: Umi): Promise<FeatureContext> => {
       .unsafeSplitByTransactionSize(umi)
   ).sendAndConfirm(umi);
 
-  console.log({
-    programBalance: displayAmount(
-      await umi.rpc.getBalance(programId.publicKey)
-    ),
-    payerBalance: displayAmount(await umi.rpc.getBalance(payer.publicKey)),
-  });
-  featureContext = { feesFeaturePda, feesFeature };
+  featureContext = {
+    feesFeaturePda,
+    feesFeature,
+    additionalOutputsFeaturePda,
+    additionalOutputsFeature,
+    transferInputsFeaturePda,
+    transferInputsFeature,
+    maxSupplyFeaturePda,
+    maxSupplyFeature,
+    solPaymentFeaturePda,
+    solPaymentFeature,
+    wisdomFeaturePda,
+    wisdomFeature,
+  };
   return featureContext;
 };
 
