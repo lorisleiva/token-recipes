@@ -15,7 +15,6 @@ use solana_program::{
     pubkey::Pubkey,
 };
 use spl_token::state::Mint;
-use std::slice::Iter;
 
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]
 pub enum IngredientInput {
@@ -84,9 +83,9 @@ impl IngredientInput {
         }
     }
 
-    pub fn craft<'a>(
+    pub fn craft<'a, I: Iterator<Item = &'a AccountInfo<'a>>>(
         &self,
-        account_info_iter: &'a mut Iter<'a, AccountInfo<'a>>,
+        account_info_iter: &mut I,
         owner: &AccountInfo<'a>,
         payer: &AccountInfo<'a>,
         quantity: u64,
@@ -166,8 +165,8 @@ impl IngredientInput {
     }
 }
 
-fn next_input_mint_and_token<'a>(
-    account_info_iter: &'a mut Iter<'a, AccountInfo<'a>>,
+fn next_input_mint_and_token<'a, I: Iterator<Item = &'a AccountInfo<'a>>>(
+    account_info_iter: &mut I,
     owner: &AccountInfo<'a>,
     quantity: u64,
     mint: &Pubkey,
