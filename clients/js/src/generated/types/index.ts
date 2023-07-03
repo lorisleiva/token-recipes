@@ -6,6 +6,7 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
+export * from './featureData';
 export * from './featureLevels';
 export * from './ingredientInput';
 export * from './ingredientOutput';

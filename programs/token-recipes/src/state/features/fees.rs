@@ -1,4 +1,7 @@
-use crate::{error::TokenRecipesError, state::key::Key};
+use crate::{
+    error::TokenRecipesError,
+    state::{key::Key, recipe::Recipe},
+};
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
 use solana_program::{
@@ -47,6 +50,19 @@ impl FeesFeature {
             TokenRecipesError::SerializationError
         })?;
         account.try_borrow_mut_data().unwrap()[..bytes.len()].copy_from_slice(&bytes);
+        Ok(())
+    }
+}
+
+/// Asserts that the recipe can set custom fees.
+pub fn asserts_can_set_fees(recipe: &Recipe) -> ProgramResult {
+    let level = recipe.feature_levels.fees;
+    if level < 11 {
+        msg!(
+            "You cannot set custom fees for this recipe. Level up the \"Fees\" feature to level 11 to enable this feature.",
+        );
+        Err(TokenRecipesError::InvalidFees.into())
+    } else {
         Ok(())
     }
 }

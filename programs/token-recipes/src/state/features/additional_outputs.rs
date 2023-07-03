@@ -1,4 +1,7 @@
-use crate::{error::TokenRecipesError, state::key::Key};
+use crate::{
+    error::TokenRecipesError,
+    state::{key::Key, recipe::Recipe},
+};
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
 use solana_program::{
@@ -51,6 +54,30 @@ impl AdditionalOutputsFeature {
             TokenRecipesError::SerializationError
         })?;
         account.try_borrow_mut_data().unwrap()[..bytes.len()].copy_from_slice(&bytes);
+        Ok(())
+    }
+}
+
+/// Asserts that the recipe has a valid number of additional outputs.
+/// Make sure to use AFTER the recipe was updated.
+pub fn assert_valid_additional_outputs(recipe: &Recipe) -> ProgramResult {
+    let total_outputs = recipe.outputs.len();
+    match recipe.feature_levels.additional_outputs {
+        0 => assert_max_outputs(total_outputs, 1),
+        1 => assert_max_outputs(total_outputs, 2),
+        2 => assert_max_outputs(total_outputs, 3),
+        _ => Ok(()),
+    }
+}
+
+pub fn assert_max_outputs(total_outputs: usize, max_allowed: usize) -> ProgramResult {
+    if total_outputs > max_allowed {
+        msg!(
+            "You cannot have more than {} outputs for this recipe. Level up the \"Additional Outputs\" feature to increase the limit.",
+            max_allowed
+        );
+        Err(TokenRecipesError::InvalidAdditionalOutputs.into())
+    } else {
         Ok(())
     }
 }

@@ -579,6 +579,68 @@
       }
     },
     {
+      "name": "FeatureData",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Fees",
+            "fields": [
+              {
+                "name": "destination",
+                "type": "publicKey"
+              },
+              {
+                "name": "mint_burn_1",
+                "type": "publicKey"
+              },
+              {
+                "name": "mint_burn_2",
+                "type": "publicKey"
+              },
+              {
+                "name": "mint_burn_3",
+                "type": "publicKey"
+              },
+              {
+                "name": "mint_skill_1",
+                "type": "publicKey"
+              },
+              {
+                "name": "mint_skill_2",
+                "type": "publicKey"
+              }
+            ]
+          },
+          {
+            "name": "AdditionalOutputs",
+            "fields": [
+              {
+                "name": "mint_burn_1",
+                "type": "publicKey"
+              },
+              {
+                "name": "mint_burn_2",
+                "type": "publicKey"
+              },
+              {
+                "name": "mint_burn_3",
+                "type": "publicKey"
+              },
+              {
+                "name": "mint_skill_1",
+                "type": "publicKey"
+              },
+              {
+                "name": "mint_skill_2",
+                "type": "publicKey"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
       "name": "Key",
       "type": {
         "kind": "enum",
@@ -722,6 +784,16 @@
       "code": 18,
       "name": "CannotAddIngredientWithZeroAmount",
       "msg": "Cannot add an ingredient with zero amount"
+    },
+    {
+      "code": 19,
+      "name": "InvalidFees",
+      "msg": "Invalid fees"
+    },
+    {
+      "code": 20,
+      "name": "InvalidAdditionalOutputs",
+      "msg": "Invalid additional outputs"
     }
   ],
   "metadata": {

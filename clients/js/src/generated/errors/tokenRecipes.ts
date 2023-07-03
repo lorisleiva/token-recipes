@@ -272,6 +272,32 @@ nameToErrorMap.set(
   CannotAddIngredientWithZeroAmountError
 );
 
+/** InvalidFees: Invalid fees */
+export class InvalidFeesError extends ProgramError {
+  readonly name: string = 'InvalidFees';
+
+  readonly code: number = 0x13; // 19
+
+  constructor(program: Program, cause?: Error) {
+    super('Invalid fees', program, cause);
+  }
+}
+codeToErrorMap.set(0x13, InvalidFeesError);
+nameToErrorMap.set('InvalidFees', InvalidFeesError);
+
+/** InvalidAdditionalOutputs: Invalid additional outputs */
+export class InvalidAdditionalOutputsError extends ProgramError {
+  readonly name: string = 'InvalidAdditionalOutputs';
+
+  readonly code: number = 0x14; // 20
+
+  constructor(program: Program, cause?: Error) {
+    super('Invalid additional outputs', program, cause);
+  }
+}
+codeToErrorMap.set(0x14, InvalidAdditionalOutputsError);
+nameToErrorMap.set('InvalidAdditionalOutputs', InvalidAdditionalOutputsError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

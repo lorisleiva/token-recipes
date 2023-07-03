@@ -65,6 +65,12 @@ pub enum TokenRecipesError {
     /// 18 - Cannot add an ingredient with zero amount
     #[error("Cannot add an ingredient with zero amount")]
     CannotAddIngredientWithZeroAmount,
+    /// 19 - Invalid fees
+    #[error("Invalid fees")]
+    InvalidFees,
+    /// 20 - Invalid additional outputs
+    #[error("Invalid additional outputs")]
+    InvalidAdditionalOutputs,
 }
 
 impl PrintProgramError for TokenRecipesError {
