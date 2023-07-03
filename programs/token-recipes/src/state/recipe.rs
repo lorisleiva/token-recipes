@@ -60,16 +60,16 @@ impl Recipe {
         Self::get(recipe)
     }
 
-    pub fn assert_authority(self, authority: &AccountInfo) -> ProgramResult {
+    pub fn assert_authority(&self, authority: &AccountInfo) -> ProgramResult {
         assert_same_pubkeys("authority", authority, &self.authority)
     }
 
-    pub fn assert_signer_authority(self, authority: &AccountInfo) -> ProgramResult {
+    pub fn assert_signer_authority(&self, authority: &AccountInfo) -> ProgramResult {
         self.assert_authority(authority)?;
         assert_signer("authority", authority)
     }
 
-    pub fn assert_active(self) -> ProgramResult {
+    pub fn assert_active(&self) -> ProgramResult {
         if !matches!(self.status, RecipeStatus::Active) {
             Err(TokenRecipesError::RecipeIsNotActive.into())
         } else {
@@ -77,14 +77,55 @@ impl Recipe {
         }
     }
 
+    pub fn find_ingredient(
+        &self,
+        ingredient_type: IngredientType,
+        mint: &AccountInfo,
+    ) -> Result<(Ingredient, usize), ProgramError> {
+        match ingredient_type {
+            IngredientType::BurnTokenInput | IngredientType::TransferTokenInput => {
+                let maybe_index = self.inputs.iter().position(|i| match i {
+                    IngredientInput::BurnToken { mint: m, .. }
+                    | IngredientInput::TransferToken { mint: m, .. } => m == mint.key,
+                });
+                match maybe_index {
+                    Some(index) => Ok((Ingredient::Input(self.inputs[index].clone()), index)),
+                    None => {
+                        msg!(
+                            "Ingredient [{}] is not part of this recipe as an input.",
+                            mint.key
+                        );
+                        Err(TokenRecipesError::MissingIngredient.into())
+                    }
+                }
+            }
+            IngredientType::MintTokenOutput | IngredientType::MintTokenWithMaxSupplyOutput => {
+                let maybe_index = self.outputs.iter().position(|i| match i {
+                    IngredientOutput::MintToken { mint: m, .. }
+                    | IngredientOutput::MintTokenWithMaxSupply { mint: m, .. } => m == mint.key,
+                });
+                match maybe_index {
+                    Some(index) => Ok((Ingredient::Output(self.outputs[index].clone()), index)),
+                    None => {
+                        msg!(
+                            "Ingredient [{}] is not part of this recipe as an output.",
+                            mint.key
+                        );
+                        Err(TokenRecipesError::MissingIngredient.into())
+                    }
+                }
+            }
+        }
+    }
+
     pub fn add_ingredient_input(
         &mut self,
-        ingredient: IngredientInput,
+        ingredient: &IngredientInput,
         recipe: &AccountInfo,
         payer: &AccountInfo,
         system_program: &AccountInfo,
     ) -> ProgramResult {
-        self.inputs.push(ingredient);
+        self.inputs.push(ingredient.clone());
         let new_size = recipe.data_len() + ingredient.len();
         realloc_account(recipe, payer, system_program, new_size)?;
         self.save(recipe)
@@ -92,12 +133,12 @@ impl Recipe {
 
     pub fn add_ingredient_output(
         &mut self,
-        ingredient: IngredientOutput,
+        ingredient: &IngredientOutput,
         recipe: &AccountInfo,
         payer: &AccountInfo,
         system_program: &AccountInfo,
     ) -> ProgramResult {
-        self.outputs.push(ingredient);
+        self.outputs.push(ingredient.clone());
         let new_size = recipe.data_len() + ingredient.len();
         realloc_account(recipe, payer, system_program, new_size)?;
         self.save(recipe)
@@ -186,4 +227,9 @@ pub enum IngredientType {
     TransferTokenInput,
     MintTokenOutput,
     MintTokenWithMaxSupplyOutput,
+}
+
+pub enum Ingredient {
+    Input(IngredientInput),
+    Output(IngredientOutput),
 }

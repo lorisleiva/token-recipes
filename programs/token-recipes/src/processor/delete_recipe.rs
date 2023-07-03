@@ -15,7 +15,7 @@ pub(crate) fn delete_recipe(accounts: &[AccountInfo]) -> ProgramResult {
     let payer = next_account_info(account_info_iter)?;
 
     // Check: recipe.
-    let mut recipe_account = Recipe::get_writable(recipe)?;
+    let recipe_account = Recipe::get_writable(recipe)?;
     recipe_account.assert_signer_authority(authority)?;
 
     // Check: payer.

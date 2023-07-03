@@ -1,10 +1,6 @@
 use crate::{
     assertions::{assert_mint_account, assert_same_pubkeys, assert_signer, assert_writable},
-    state::{
-        delegated_ingredient::DelegatedIngredient,
-        ingredient_record::IngredientRecord,
-        recipe::{IngredientType, Recipe},
-    },
+    state::recipe::{Ingredient, IngredientType, Recipe},
 };
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
@@ -41,34 +37,31 @@ pub(crate) fn remove_ingredient(
     // Check: token_program.
     assert_same_pubkeys("token_program", token_program, &spl_token::id())?;
 
-    // TODO: Get IngredientInput or Output here.
-
     // Check: mint.
     assert_writable("mint", mint)?;
     assert_mint_account("mint", mint)?;
 
-    // Remove the ingredient from the recipe account and realloc.
-    match ingredient_type {
-        IngredientType::Input => {
-            recipe_account.remove_ingredient_input(index, recipe, payer, system_program)?;
-        }
-        IngredientType::Output => {
-            recipe_account.remove_ingredient_output(index, recipe, payer, system_program)?;
-        }
-    };
-
-    // Update or close the ingredient record account.
-    let mut ingredient_record_account = IngredientRecord::get(ingredient_record, mint, recipe)?;
-    match ingredient_type {
-        IngredientType::Input => ingredient_record_account.set_input(false)?,
-        IngredientType::Output => ingredient_record_account.set_output(false)?,
+    let (ingredient, index) = recipe_account.find_ingredient(ingredient_type, mint)?;
+    match ingredient {
+        Ingredient::Input(input) => input.remove(
+            &mut recipe_account,
+            index,
+            recipe,
+            mint,
+            ingredient_record,
+            payer,
+            system_program,
+        ),
+        Ingredient::Output(output) => output.remove(
+            &mut recipe_account,
+            index,
+            recipe,
+            mint,
+            ingredient_record,
+            delegated_ingredient,
+            authority,
+            payer,
+            system_program,
+        ),
     }
-    ingredient_record_account.save_or_close(ingredient_record, payer)?;
-
-    // Decrent or close the delegated ingredient account.
-    if matches!(ingredient_type, IngredientType::Output) {
-        DelegatedIngredient::close_or_decrement(delegated_ingredient, mint, authority, payer)?;
-    }
-
-    Ok(())
 }

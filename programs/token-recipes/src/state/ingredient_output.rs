@@ -4,7 +4,10 @@ use crate::{
         assert_same_pubkeys, assert_token_account, assert_writable,
     },
     error::TokenRecipesError,
-    state::{delegated_ingredient::DelegatedIngredient, key::Key},
+    state::{
+        delegated_ingredient::DelegatedIngredient, ingredient_record::IngredientRecord, key::Key,
+        recipe::Recipe,
+    },
     utils::{create_associated_token_account, mint_tokens},
 };
 use borsh::{BorshDeserialize, BorshSerialize};
@@ -33,8 +36,71 @@ pub enum IngredientOutput {
 impl IngredientOutput {
     pub fn len(&self) -> usize {
         match self {
-            IngredientOutput::MintToken { .. } => 32 + 8,
-            IngredientOutput::MintTokenWithMaxSupply { .. } => 32 + 8 + 8,
+            Self::MintToken { .. } => 32 + 8,
+            Self::MintTokenWithMaxSupply { .. } => 32 + 8 + 8,
+        }
+    }
+
+    pub fn add(
+        &self,
+        recipe_account: &mut Recipe,
+        recipe: &AccountInfo,
+        mint: &AccountInfo,
+        ingredient_record: &AccountInfo,
+        delegated_ingredient: &AccountInfo,
+        authority: &AccountInfo,
+        payer: &AccountInfo,
+        system_program: &AccountInfo,
+    ) -> ProgramResult {
+        match self {
+            Self::MintToken { .. } | Self::MintTokenWithMaxSupply { .. } => {
+                recipe_account.add_ingredient_output(&self, recipe, payer, system_program)?;
+                let mut ingredient_record_account = IngredientRecord::get_or_create(
+                    ingredient_record,
+                    mint,
+                    recipe,
+                    payer,
+                    system_program,
+                )?;
+                ingredient_record_account.set_output(true)?;
+                ingredient_record_account.save(ingredient_record)?;
+                DelegatedIngredient::create_or_increment(
+                    delegated_ingredient,
+                    mint,
+                    authority,
+                    payer,
+                    system_program,
+                )
+            }
+        }
+    }
+
+    pub fn remove(
+        &self,
+        recipe_account: &mut Recipe,
+        index: usize,
+        recipe: &AccountInfo,
+        mint: &AccountInfo,
+        ingredient_record: &AccountInfo,
+        delegated_ingredient: &AccountInfo,
+        authority: &AccountInfo,
+        payer: &AccountInfo,
+        system_program: &AccountInfo,
+    ) -> ProgramResult {
+        match self {
+            Self::MintToken { .. } | Self::MintTokenWithMaxSupply { .. } => {
+                recipe_account.remove_ingredient_output(index, recipe, payer, system_program)?;
+                let mut ingredient_record_account =
+                    IngredientRecord::get(ingredient_record, mint, recipe)?;
+                ingredient_record_account.set_output(false)?;
+                ingredient_record_account.save_or_close(ingredient_record, payer)?;
+                DelegatedIngredient::close_or_decrement(
+                    delegated_ingredient,
+                    mint,
+                    authority,
+                    payer,
+                )
+            }
         }
     }
 
@@ -46,7 +112,7 @@ impl IngredientOutput {
         quantity: u64,
     ) -> ProgramResult {
         match self {
-            IngredientOutput::MintToken { mint, amount } => {
+            Self::MintToken { mint, amount } => {
                 let (
                     output_mint,
                     output_mint_account,
@@ -76,7 +142,7 @@ impl IngredientOutput {
                     Some(&[&seeds]),
                 )
             }
-            IngredientOutput::MintTokenWithMaxSupply {
+            Self::MintTokenWithMaxSupply {
                 mint,
                 amount,
                 max_supply,

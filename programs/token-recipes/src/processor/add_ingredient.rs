@@ -2,11 +2,9 @@ use crate::{
     assertions::{assert_mint_account, assert_same_pubkeys, assert_signer, assert_writable},
     error::TokenRecipesError,
     state::{
-        delegated_ingredient::DelegatedIngredient,
         ingredient_input::IngredientInput,
         ingredient_output::IngredientOutput,
-        ingredient_record::IngredientRecord,
-        recipe::{IngredientType, Recipe},
+        recipe::{Ingredient, IngredientType, Recipe},
     },
 };
 use solana_program::{
@@ -57,45 +55,47 @@ pub(crate) fn add_ingredient(
         return Err(TokenRecipesError::CannotAddIngredientWithZeroAmount.into());
     }
 
-    // Add the ingredient to the recipe account and realloc.
-    match ingredient_type {
-        IngredientType::Input => {
-            let ingredient = IngredientInput {
+    let ingredient: Ingredient = match ingredient_type {
+        IngredientType::BurnTokenInput => Ingredient::Input(IngredientInput::BurnToken {
+            mint: *mint.key,
+            amount,
+        }),
+        IngredientType::TransferTokenInput => Ingredient::Input(IngredientInput::TransferToken {
+            mint: *mint.key,
+            amount,
+            destination: destination.ok_or(TokenRecipesError::MissingDestinationArgument)?,
+        }),
+        IngredientType::MintTokenOutput => Ingredient::Output(IngredientOutput::MintToken {
+            mint: *mint.key,
+            amount,
+        }),
+        IngredientType::MintTokenWithMaxSupplyOutput => {
+            Ingredient::Output(IngredientOutput::MintTokenWithMaxSupply {
                 mint: *mint.key,
                 amount,
-                destination,
-            };
-            recipe_account.add_ingredient_input(ingredient, recipe, payer, system_program)?;
-        }
-        IngredientType::Output => {
-            let ingredient = IngredientOutput {
-                mint: *mint.key,
-                amount,
-                max_supply: max_supply.unwrap_or(u64::MAX),
-            };
-            recipe_account.add_ingredient_output(ingredient, recipe, payer, system_program)?;
+                max_supply: max_supply.ok_or(TokenRecipesError::MissingMaxSupplyArgument)?,
+            })
         }
     };
 
-    // Update or create the ingredient record.
-    let mut ingredient_record_account =
-        IngredientRecord::get_or_create(ingredient_record, mint, recipe, payer, system_program)?;
-    match ingredient_type {
-        IngredientType::Input => ingredient_record_account.set_input(true)?,
-        IngredientType::Output => ingredient_record_account.set_output(true)?,
-    }
-    ingredient_record_account.save(ingredient_record)?;
-
-    // Create or increment the delegated ingredient PDA for output ingredients.
-    if matches!(ingredient_type, IngredientType::Output) {
-        DelegatedIngredient::create_or_increment(
-            delegated_ingredient,
+    match ingredient {
+        Ingredient::Input(input) => input.add(
+            &mut recipe_account,
+            recipe,
             mint,
+            ingredient_record,
+            payer,
+            system_program,
+        ),
+        Ingredient::Output(output) => output.add(
+            &mut recipe_account,
+            recipe,
+            mint,
+            ingredient_record,
+            delegated_ingredient,
             authority,
             payer,
             system_program,
-        )?;
+        ),
     }
-
-    Ok(())
 }

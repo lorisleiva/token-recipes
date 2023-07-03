@@ -19,7 +19,7 @@ pub(crate) fn craft(accounts: &[AccountInfo], quantity: u64) -> ProgramResult {
     let ata_program = next_account_info(account_info_iter)?;
 
     // Check: recipe.
-    let mut recipe_account = Recipe::get_writable(recipe)?;
+    let recipe_account = Recipe::get_writable(recipe)?;
     recipe_account.assert_active()?;
 
     // Check: owner.

@@ -71,6 +71,12 @@ pub enum TokenRecipesError {
     /// 20 - Invalid additional outputs
     #[error("Invalid additional outputs")]
     InvalidAdditionalOutputs,
+    /// 21 - Missing destination argument
+    #[error("Missing destination argument")]
+    MissingDestinationArgument,
+    /// 22 - Missing max supply argument
+    #[error("Missing max supply argument")]
+    MissingMaxSupplyArgument,
 }
 
 impl PrintProgramError for TokenRecipesError {

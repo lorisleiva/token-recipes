@@ -4,6 +4,7 @@ use crate::{
         assert_token_account, assert_writable,
     },
     error::TokenRecipesError,
+    state::{ingredient_record::IngredientRecord, recipe::Recipe},
     utils::{burn_tokens, create_associated_token_account, transfer_tokens},
 };
 use borsh::{BorshDeserialize, BorshSerialize};
@@ -32,8 +33,54 @@ pub enum IngredientInput {
 impl IngredientInput {
     pub fn len(&self) -> usize {
         match self {
-            IngredientInput::BurnToken { .. } => 32 + 8,
-            IngredientInput::TransferToken { .. } => 32 + 8 + 32,
+            Self::BurnToken { .. } => 32 + 8,
+            Self::TransferToken { .. } => 32 + 8 + 32,
+        }
+    }
+
+    pub fn add(
+        &self,
+        recipe_account: &mut Recipe,
+        recipe: &AccountInfo,
+        mint: &AccountInfo,
+        ingredient_record: &AccountInfo,
+        payer: &AccountInfo,
+        system_program: &AccountInfo,
+    ) -> ProgramResult {
+        match self {
+            Self::BurnToken { .. } | Self::TransferToken { .. } => {
+                recipe_account.add_ingredient_input(&self, recipe, payer, system_program)?;
+                let mut ingredient_record_account = IngredientRecord::get_or_create(
+                    ingredient_record,
+                    mint,
+                    recipe,
+                    payer,
+                    system_program,
+                )?;
+                ingredient_record_account.set_input(true)?;
+                ingredient_record_account.save(ingredient_record)
+            }
+        }
+    }
+
+    pub fn remove(
+        &self,
+        recipe_account: &mut Recipe,
+        index: usize,
+        recipe: &AccountInfo,
+        mint: &AccountInfo,
+        ingredient_record: &AccountInfo,
+        payer: &AccountInfo,
+        system_program: &AccountInfo,
+    ) -> ProgramResult {
+        match self {
+            Self::BurnToken { .. } | Self::TransferToken { .. } => {
+                recipe_account.remove_ingredient_input(index, recipe, payer, system_program)?;
+                let mut ingredient_record_account =
+                    IngredientRecord::get(ingredient_record, mint, recipe)?;
+                ingredient_record_account.set_input(false)?;
+                ingredient_record_account.save_or_close(ingredient_record, payer)
+            }
         }
     }
 
@@ -45,7 +92,7 @@ impl IngredientInput {
         quantity: u64,
     ) -> ProgramResult {
         match self {
-            IngredientInput::BurnToken { mint, amount } => {
+            Self::BurnToken { mint, amount } => {
                 let (input_mint, input_mint_account, input_token, multipliedAmount) =
                     next_input_mint_and_token(account_info_iter, owner, quantity, mint, amount)?;
 
@@ -57,7 +104,7 @@ impl IngredientInput {
                     input_mint_account.decimals,
                 )
             }
-            IngredientInput::TransferToken {
+            Self::TransferToken {
                 mint,
                 amount,
                 destination,

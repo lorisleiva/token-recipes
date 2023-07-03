@@ -31,10 +31,10 @@ pub enum TokenRecipesInstruction {
     #[account(7, name="token_program", desc = "The token program")]
     #[default_optional_accounts]
     AddIngredient {
+        /// Which input or output ingredient to add.
+        ingredient_type: IngredientType,
         /// The amount of tokens required if it's an input ingredient or minted otherwise.
         amount: u64,
-        /// Whether the ingredient is an input or output.
-        ingredient_type: IngredientType,
         /// If the ingredient is an input, the destination to send the tokens to. If None, the tokens will be burned.
         destination: Option<Pubkey>,
         /// If the ingredient is an output, the maximum supply that can ever be minted.
@@ -55,7 +55,7 @@ pub enum TokenRecipesInstruction {
     #[account(7, name="token_program", desc = "The token program")]
     #[default_optional_accounts]
     RemoveIngredient {
-        /// Whether the ingredient is an input or output.
+        /// Which input or output ingredient to remove.
         ingredient_type: IngredientType,
     },
 
