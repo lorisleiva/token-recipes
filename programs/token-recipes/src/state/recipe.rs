@@ -157,6 +157,7 @@ impl Recipe {
                 self.inputs.remove(index);
                 let new_size = recipe.data_len() - ingredient.len();
                 realloc_account(recipe, payer, system_program, new_size)?;
+                self.save(recipe)?;
                 Ok(ingredient)
             }
             None => {
@@ -182,6 +183,7 @@ impl Recipe {
                 self.outputs.remove(index);
                 let new_size = recipe.data_len() - ingredient.len();
                 realloc_account(recipe, payer, system_program, new_size)?;
+                self.save(recipe)?;
                 Ok(ingredient)
             }
             None => {
