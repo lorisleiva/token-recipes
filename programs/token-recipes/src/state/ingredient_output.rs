@@ -41,16 +41,16 @@ impl IngredientOutput {
         }
     }
 
-    pub fn add(
+    pub fn add<'a>(
         &self,
         recipe_account: &mut Recipe,
-        recipe: &AccountInfo,
-        mint: &AccountInfo,
-        ingredient_record: &AccountInfo,
-        delegated_ingredient: &AccountInfo,
-        authority: &AccountInfo,
-        payer: &AccountInfo,
-        system_program: &AccountInfo,
+        recipe: &AccountInfo<'a>,
+        mint: &AccountInfo<'a>,
+        ingredient_record: &AccountInfo<'a>,
+        delegated_ingredient: &AccountInfo<'a>,
+        authority: &AccountInfo<'a>,
+        payer: &AccountInfo<'a>,
+        system_program: &AccountInfo<'a>,
     ) -> ProgramResult {
         match self {
             Self::MintToken { .. } | Self::MintTokenWithMaxSupply { .. } => {
@@ -75,17 +75,17 @@ impl IngredientOutput {
         }
     }
 
-    pub fn remove(
+    pub fn remove<'a>(
         &self,
         recipe_account: &mut Recipe,
         index: usize,
-        recipe: &AccountInfo,
-        mint: &AccountInfo,
-        ingredient_record: &AccountInfo,
-        delegated_ingredient: &AccountInfo,
-        authority: &AccountInfo,
-        payer: &AccountInfo,
-        system_program: &AccountInfo,
+        recipe: &AccountInfo<'a>,
+        mint: &AccountInfo<'a>,
+        ingredient_record: &AccountInfo<'a>,
+        delegated_ingredient: &AccountInfo<'a>,
+        authority: &AccountInfo<'a>,
+        payer: &AccountInfo<'a>,
+        system_program: &AccountInfo<'a>,
     ) -> ProgramResult {
         match self {
             Self::MintToken { .. } | Self::MintTokenWithMaxSupply { .. } => {
@@ -104,11 +104,11 @@ impl IngredientOutput {
         }
     }
 
-    pub fn craft(
+    pub fn craft<'a>(
         &self,
         account_info_iter: &mut Iter<AccountInfo>,
-        owner: &AccountInfo,
-        payer: &AccountInfo,
+        owner: &AccountInfo<'a>,
+        payer: &AccountInfo<'a>,
         quantity: u64,
     ) -> ProgramResult {
         match self {

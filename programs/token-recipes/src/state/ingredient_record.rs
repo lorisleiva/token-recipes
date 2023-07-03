@@ -85,12 +85,12 @@ impl IngredientRecord {
         ]
     }
 
-    pub fn create(
-        ingredient_record: &AccountInfo,
-        mint: &AccountInfo,
-        recipe: &AccountInfo,
-        payer: &AccountInfo,
-        system_program: &AccountInfo,
+    pub fn create<'a>(
+        ingredient_record: &AccountInfo<'a>,
+        mint: &AccountInfo<'a>,
+        recipe: &AccountInfo<'a>,
+        payer: &AccountInfo<'a>,
+        system_program: &AccountInfo<'a>,
     ) -> Result<Self, ProgramError> {
         assert_empty("ingredient_record", ingredient_record)?;
         assert_writable("ingredient_record", ingredient_record)?;
@@ -121,10 +121,10 @@ impl IngredientRecord {
         })
     }
 
-    pub fn get(
-        ingredient_record: &AccountInfo,
-        mint: &AccountInfo,
-        recipe: &AccountInfo,
+    pub fn get<'a>(
+        ingredient_record: &AccountInfo<'a>,
+        mint: &AccountInfo<'a>,
+        recipe: &AccountInfo<'a>,
     ) -> Result<Self, ProgramError> {
         assert_writable("ingredient_record", ingredient_record)?;
         assert_program_owner("ingredient_record", ingredient_record, &crate::id())?;
@@ -139,18 +139,18 @@ impl IngredientRecord {
             &crate::id(),
             &Self::seeds(mint.key, recipe.key),
         )?;
-        let mut ingredient_record_account = Self::load(ingredient_record)?;
+        let ingredient_record_account = Self::load(ingredient_record)?;
         assert_same_pubkeys("recipe", recipe, &ingredient_record_account.recipe)?;
         assert_same_pubkeys("mint", mint, &ingredient_record_account.mint)?;
         Ok(ingredient_record_account)
     }
 
-    pub fn get_or_create(
-        ingredient_record: &AccountInfo,
-        mint: &AccountInfo,
-        recipe: &AccountInfo,
-        payer: &AccountInfo,
-        system_program: &AccountInfo,
+    pub fn get_or_create<'a>(
+        ingredient_record: &AccountInfo<'a>,
+        mint: &AccountInfo<'a>,
+        recipe: &AccountInfo<'a>,
+        payer: &AccountInfo<'a>,
+        system_program: &AccountInfo<'a>,
     ) -> Result<Self, ProgramError> {
         match ingredient_record.data_is_empty() {
             true => Self::create(ingredient_record, mint, recipe, payer, system_program),
@@ -158,10 +158,10 @@ impl IngredientRecord {
         }
     }
 
-    pub fn save_or_close(
+    pub fn save_or_close<'a>(
         &mut self,
-        ingredient_record: &AccountInfo,
-        payer: &AccountInfo,
+        ingredient_record: &AccountInfo<'a>,
+        payer: &AccountInfo<'a>,
     ) -> ProgramResult {
         match self.should_be_closed() {
             true => close_account(ingredient_record, payer),

@@ -35,12 +35,12 @@ impl DelegatedIngredient {
         vec!["delegated_ingredient".as_bytes(), mint.as_ref()]
     }
 
-    pub fn create(
-        delegated_ingredient: &AccountInfo,
-        mint: &AccountInfo,
-        authority: &AccountInfo,
-        payer: &AccountInfo,
-        system_program: &AccountInfo,
+    pub fn create<'a>(
+        delegated_ingredient: &AccountInfo<'a>,
+        mint: &AccountInfo<'a>,
+        authority: &AccountInfo<'a>,
+        payer: &AccountInfo<'a>,
+        system_program: &AccountInfo<'a>,
     ) -> Result<Self, ProgramError> {
         assert_empty("delegated_ingredient", delegated_ingredient)?;
         assert_writable("delegated_ingredient", delegated_ingredient)?;
@@ -76,10 +76,10 @@ impl DelegatedIngredient {
         })
     }
 
-    pub fn get(
-        delegated_ingredient: &AccountInfo,
-        mint: &AccountInfo,
-        authority: &AccountInfo,
+    pub fn get<'a>(
+        delegated_ingredient: &AccountInfo<'a>,
+        mint: &AccountInfo<'a>,
+        authority: &AccountInfo<'a>,
     ) -> Result<Self, ProgramError> {
         assert_writable("delegated_ingredient", delegated_ingredient)?;
         assert_pda(
@@ -104,12 +104,12 @@ impl DelegatedIngredient {
         Ok(delegated_ingredient_account)
     }
 
-    pub fn get_or_create(
-        delegated_ingredient: &AccountInfo,
-        mint: &AccountInfo,
-        authority: &AccountInfo,
-        payer: &AccountInfo,
-        system_program: &AccountInfo,
+    pub fn get_or_create<'a>(
+        delegated_ingredient: &AccountInfo<'a>,
+        mint: &AccountInfo<'a>,
+        authority: &AccountInfo<'a>,
+        payer: &AccountInfo<'a>,
+        system_program: &AccountInfo<'a>,
     ) -> Result<Self, ProgramError> {
         match delegated_ingredient.data_is_empty() {
             true => Self::create(delegated_ingredient, mint, authority, payer, system_program),
@@ -117,12 +117,12 @@ impl DelegatedIngredient {
         }
     }
 
-    pub fn save_or_close(
+    pub fn save_or_close<'a>(
         &mut self,
-        delegated_ingredient: &AccountInfo,
-        mint: &AccountInfo,
-        authority: &AccountInfo,
-        payer: &AccountInfo,
+        delegated_ingredient: &AccountInfo<'a>,
+        mint: &AccountInfo<'a>,
+        authority: &AccountInfo<'a>,
+        payer: &AccountInfo<'a>,
     ) -> ProgramResult {
         match self.should_be_closed() {
             true => {
@@ -137,12 +137,12 @@ impl DelegatedIngredient {
         }
     }
 
-    pub fn create_or_increment(
-        delegated_ingredient: &AccountInfo,
-        mint: &AccountInfo,
-        authority: &AccountInfo,
-        payer: &AccountInfo,
-        system_program: &AccountInfo,
+    pub fn create_or_increment<'a>(
+        delegated_ingredient: &AccountInfo<'a>,
+        mint: &AccountInfo<'a>,
+        authority: &AccountInfo<'a>,
+        payer: &AccountInfo<'a>,
+        system_program: &AccountInfo<'a>,
     ) -> ProgramResult {
         let mut delegated_ingredient_account =
             Self::get_or_create(delegated_ingredient, mint, authority, payer, system_program)?;
@@ -150,11 +150,11 @@ impl DelegatedIngredient {
         delegated_ingredient_account.save(delegated_ingredient)
     }
 
-    pub fn close_or_decrement(
-        delegated_ingredient: &AccountInfo,
-        mint: &AccountInfo,
-        authority: &AccountInfo,
-        payer: &AccountInfo,
+    pub fn close_or_decrement<'a>(
+        delegated_ingredient: &AccountInfo<'a>,
+        mint: &AccountInfo<'a>,
+        authority: &AccountInfo<'a>,
+        payer: &AccountInfo<'a>,
     ) -> ProgramResult {
         let mut delegated_ingredient_account = Self::get(delegated_ingredient, mint, authority)?;
         delegated_ingredient_account.counter -= 1;

@@ -38,14 +38,14 @@ impl IngredientInput {
         }
     }
 
-    pub fn add(
+    pub fn add<'a>(
         &self,
         recipe_account: &mut Recipe,
-        recipe: &AccountInfo,
-        mint: &AccountInfo,
-        ingredient_record: &AccountInfo,
-        payer: &AccountInfo,
-        system_program: &AccountInfo,
+        recipe: &AccountInfo<'a>,
+        mint: &AccountInfo<'a>,
+        ingredient_record: &AccountInfo<'a>,
+        payer: &AccountInfo<'a>,
+        system_program: &AccountInfo<'a>,
     ) -> ProgramResult {
         match self {
             Self::BurnToken { .. } | Self::TransferToken { .. } => {
@@ -63,15 +63,15 @@ impl IngredientInput {
         }
     }
 
-    pub fn remove(
+    pub fn remove<'a>(
         &self,
         recipe_account: &mut Recipe,
         index: usize,
-        recipe: &AccountInfo,
-        mint: &AccountInfo,
-        ingredient_record: &AccountInfo,
-        payer: &AccountInfo,
-        system_program: &AccountInfo,
+        recipe: &AccountInfo<'a>,
+        mint: &AccountInfo<'a>,
+        ingredient_record: &AccountInfo<'a>,
+        payer: &AccountInfo<'a>,
+        system_program: &AccountInfo<'a>,
     ) -> ProgramResult {
         match self {
             Self::BurnToken { .. } | Self::TransferToken { .. } => {
@@ -84,11 +84,11 @@ impl IngredientInput {
         }
     }
 
-    pub fn craft(
+    pub fn craft<'a>(
         &self,
-        account_info_iter: &mut Iter<AccountInfo>,
-        owner: &AccountInfo,
-        payer: &AccountInfo,
+        account_info_iter: &'a mut Iter<'a, AccountInfo<'a>>,
+        owner: &AccountInfo<'a>,
+        payer: &AccountInfo<'a>,
         quantity: u64,
     ) -> ProgramResult {
         match self {

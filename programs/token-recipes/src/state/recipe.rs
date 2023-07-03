@@ -118,12 +118,12 @@ impl Recipe {
         }
     }
 
-    pub fn add_ingredient_input(
+    pub fn add_ingredient_input<'a>(
         &mut self,
         ingredient: &IngredientInput,
-        recipe: &AccountInfo,
-        payer: &AccountInfo,
-        system_program: &AccountInfo,
+        recipe: &AccountInfo<'a>,
+        payer: &AccountInfo<'a>,
+        system_program: &AccountInfo<'a>,
     ) -> ProgramResult {
         self.inputs.push(ingredient.clone());
         let new_size = recipe.data_len() + ingredient.len();
@@ -131,12 +131,12 @@ impl Recipe {
         self.save(recipe)
     }
 
-    pub fn add_ingredient_output(
+    pub fn add_ingredient_output<'a>(
         &mut self,
         ingredient: &IngredientOutput,
-        recipe: &AccountInfo,
-        payer: &AccountInfo,
-        system_program: &AccountInfo,
+        recipe: &AccountInfo<'a>,
+        payer: &AccountInfo<'a>,
+        system_program: &AccountInfo<'a>,
     ) -> ProgramResult {
         self.outputs.push(ingredient.clone());
         let new_size = recipe.data_len() + ingredient.len();
@@ -144,12 +144,12 @@ impl Recipe {
         self.save(recipe)
     }
 
-    pub fn remove_ingredient_input(
+    pub fn remove_ingredient_input<'a>(
         &mut self,
         index: usize,
-        recipe: &AccountInfo,
-        payer: &AccountInfo,
-        system_program: &AccountInfo,
+        recipe: &AccountInfo<'a>,
+        payer: &AccountInfo<'a>,
+        system_program: &AccountInfo<'a>,
     ) -> Result<IngredientInput, ProgramError> {
         match self.inputs.get(index) {
             Some(ingredient) => {
@@ -168,12 +168,12 @@ impl Recipe {
         }
     }
 
-    pub fn remove_ingredient_output(
+    pub fn remove_ingredient_output<'a>(
         &mut self,
         index: usize,
-        recipe: &AccountInfo,
-        payer: &AccountInfo,
-        system_program: &AccountInfo,
+        recipe: &AccountInfo<'a>,
+        payer: &AccountInfo<'a>,
+        system_program: &AccountInfo<'a>,
     ) -> Result<IngredientOutput, ProgramError> {
         match self.outputs.get(index) {
             Some(ingredient) => {
