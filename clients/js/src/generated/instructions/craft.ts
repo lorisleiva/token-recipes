@@ -87,7 +87,7 @@ export function craft(
 
   // Resolved inputs.
   const resolvedAccounts = {
-    recipe: [input.recipe, false] as const,
+    recipe: [input.recipe, true] as const,
   };
   const resolvingArgs = {};
   addObjectProperty(

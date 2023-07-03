@@ -91,14 +91,14 @@
       ],
       "args": [
         {
-          "name": "amount",
-          "type": "u64"
-        },
-        {
           "name": "ingredientType",
           "type": {
             "defined": "IngredientType"
           }
+        },
+        {
+          "name": "amount",
+          "type": "u64"
         },
         {
           "name": "destination",
@@ -235,7 +235,7 @@
       "accounts": [
         {
           "name": "recipe",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false,
           "desc": "The address of the recipe account"
         },
@@ -537,48 +537,6 @@
       }
     },
     {
-      "name": "IngredientInput",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "mint",
-            "type": "publicKey"
-          },
-          {
-            "name": "amount",
-            "type": "u64"
-          },
-          {
-            "name": "destination",
-            "type": {
-              "option": "publicKey"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "IngredientOutput",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "mint",
-            "type": "publicKey"
-          },
-          {
-            "name": "amount",
-            "type": "u64"
-          },
-          {
-            "name": "maxSupply",
-            "type": "u64"
-          }
-        ]
-      }
-    },
-    {
       "name": "FeatureData",
       "type": {
         "kind": "enum",
@@ -641,6 +599,82 @@
       }
     },
     {
+      "name": "IngredientInput",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "BurnToken",
+            "fields": [
+              {
+                "name": "mint",
+                "type": "publicKey"
+              },
+              {
+                "name": "amount",
+                "type": "u64"
+              }
+            ]
+          },
+          {
+            "name": "TransferToken",
+            "fields": [
+              {
+                "name": "mint",
+                "type": "publicKey"
+              },
+              {
+                "name": "amount",
+                "type": "u64"
+              },
+              {
+                "name": "destination",
+                "type": "publicKey"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "IngredientOutput",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "MintToken",
+            "fields": [
+              {
+                "name": "mint",
+                "type": "publicKey"
+              },
+              {
+                "name": "amount",
+                "type": "u64"
+              }
+            ]
+          },
+          {
+            "name": "MintTokenWithMaxSupply",
+            "fields": [
+              {
+                "name": "mint",
+                "type": "publicKey"
+              },
+              {
+                "name": "amount",
+                "type": "u64"
+              },
+              {
+                "name": "max_supply",
+                "type": "u64"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
       "name": "Key",
       "type": {
         "kind": "enum",
@@ -680,10 +714,16 @@
         "kind": "enum",
         "variants": [
           {
-            "name": "Input"
+            "name": "BurnTokenInput"
           },
           {
-            "name": "Output"
+            "name": "TransferTokenInput"
+          },
+          {
+            "name": "MintTokenOutput"
+          },
+          {
+            "name": "MintTokenWithMaxSupplyOutput"
           }
         ]
       }
@@ -794,6 +834,16 @@
       "code": 20,
       "name": "InvalidAdditionalOutputs",
       "msg": "Invalid additional outputs"
+    },
+    {
+      "code": 21,
+      "name": "MissingDestinationArgument",
+      "msg": "Missing destination argument"
+    },
+    {
+      "code": 22,
+      "name": "MissingMaxSupplyArgument",
+      "msg": "Missing max supply argument"
     }
   ],
   "metadata": {

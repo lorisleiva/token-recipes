@@ -298,6 +298,35 @@ export class InvalidAdditionalOutputsError extends ProgramError {
 codeToErrorMap.set(0x14, InvalidAdditionalOutputsError);
 nameToErrorMap.set('InvalidAdditionalOutputs', InvalidAdditionalOutputsError);
 
+/** MissingDestinationArgument: Missing destination argument */
+export class MissingDestinationArgumentError extends ProgramError {
+  readonly name: string = 'MissingDestinationArgument';
+
+  readonly code: number = 0x15; // 21
+
+  constructor(program: Program, cause?: Error) {
+    super('Missing destination argument', program, cause);
+  }
+}
+codeToErrorMap.set(0x15, MissingDestinationArgumentError);
+nameToErrorMap.set(
+  'MissingDestinationArgument',
+  MissingDestinationArgumentError
+);
+
+/** MissingMaxSupplyArgument: Missing max supply argument */
+export class MissingMaxSupplyArgumentError extends ProgramError {
+  readonly name: string = 'MissingMaxSupplyArgument';
+
+  readonly code: number = 0x16; // 22
+
+  constructor(program: Program, cause?: Error) {
+    super('Missing max supply argument', program, cause);
+  }
+}
+codeToErrorMap.set(0x16, MissingMaxSupplyArgumentError);
+nameToErrorMap.set('MissingMaxSupplyArgument', MissingMaxSupplyArgumentError);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

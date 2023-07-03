@@ -153,10 +153,11 @@ impl Recipe {
     ) -> Result<IngredientInput, ProgramError> {
         match self.inputs.get(index) {
             Some(ingredient) => {
+                let ingredient = ingredient.clone();
                 self.inputs.remove(index);
                 let new_size = recipe.data_len() - ingredient.len();
                 realloc_account(recipe, payer, system_program, new_size)?;
-                Ok(ingredient.clone())
+                Ok(ingredient)
             }
             None => {
                 msg!(
@@ -177,10 +178,11 @@ impl Recipe {
     ) -> Result<IngredientOutput, ProgramError> {
         match self.outputs.get(index) {
             Some(ingredient) => {
+                let ingredient = ingredient.clone();
                 self.outputs.remove(index);
                 let new_size = recipe.data_len() - ingredient.len();
                 realloc_account(recipe, payer, system_program, new_size)?;
-                Ok(ingredient.clone())
+                Ok(ingredient)
             }
             None => {
                 msg!(

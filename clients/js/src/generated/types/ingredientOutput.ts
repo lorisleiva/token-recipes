@@ -8,23 +8,32 @@
 
 import { PublicKey } from '@metaplex-foundation/umi';
 import {
+  GetDataEnumKind,
+  GetDataEnumKindContent,
   Serializer,
+  dataEnum,
   publicKey as publicKeySerializer,
   struct,
   u64,
 } from '@metaplex-foundation/umi/serializers';
 
-export type IngredientOutput = {
-  mint: PublicKey;
-  amount: bigint;
-  maxSupply: bigint;
-};
+export type IngredientOutput =
+  | { __kind: 'MintToken'; mint: PublicKey; amount: bigint }
+  | {
+      __kind: 'MintTokenWithMaxSupply';
+      mint: PublicKey;
+      amount: bigint;
+      maxSupply: bigint;
+    };
 
-export type IngredientOutputArgs = {
-  mint: PublicKey;
-  amount: number | bigint;
-  maxSupply: number | bigint;
-};
+export type IngredientOutputArgs =
+  | { __kind: 'MintToken'; mint: PublicKey; amount: number | bigint }
+  | {
+      __kind: 'MintTokenWithMaxSupply';
+      mint: PublicKey;
+      amount: number | bigint;
+      maxSupply: number | bigint;
+    };
 
 /** @deprecated Use `getIngredientOutputSerializer()` without any argument instead. */
 export function getIngredientOutputSerializer(
@@ -37,12 +46,50 @@ export function getIngredientOutputSerializer(): Serializer<
 export function getIngredientOutputSerializer(
   _context: object = {}
 ): Serializer<IngredientOutputArgs, IngredientOutput> {
-  return struct<IngredientOutput>(
+  return dataEnum<IngredientOutput>(
     [
-      ['mint', publicKeySerializer()],
-      ['amount', u64()],
-      ['maxSupply', u64()],
+      [
+        'MintToken',
+        struct<GetDataEnumKindContent<IngredientOutput, 'MintToken'>>([
+          ['mint', publicKeySerializer()],
+          ['amount', u64()],
+        ]),
+      ],
+      [
+        'MintTokenWithMaxSupply',
+        struct<
+          GetDataEnumKindContent<IngredientOutput, 'MintTokenWithMaxSupply'>
+        >([
+          ['mint', publicKeySerializer()],
+          ['amount', u64()],
+          ['maxSupply', u64()],
+        ]),
+      ],
     ],
     { description: 'IngredientOutput' }
   ) as Serializer<IngredientOutputArgs, IngredientOutput>;
+}
+
+// Data Enum Helpers.
+export function ingredientOutput(
+  kind: 'MintToken',
+  data: GetDataEnumKindContent<IngredientOutputArgs, 'MintToken'>
+): GetDataEnumKind<IngredientOutputArgs, 'MintToken'>;
+export function ingredientOutput(
+  kind: 'MintTokenWithMaxSupply',
+  data: GetDataEnumKindContent<IngredientOutputArgs, 'MintTokenWithMaxSupply'>
+): GetDataEnumKind<IngredientOutputArgs, 'MintTokenWithMaxSupply'>;
+export function ingredientOutput<K extends IngredientOutputArgs['__kind']>(
+  kind: K,
+  data?: any
+): Extract<IngredientOutputArgs, { __kind: K }> {
+  return Array.isArray(data)
+    ? { __kind: kind, fields: data }
+    : { __kind: kind, ...(data ?? {}) };
+}
+export function isIngredientOutput<K extends IngredientOutput['__kind']>(
+  kind: K,
+  value: IngredientOutput
+): value is IngredientOutput & { __kind: K } {
+  return value.__kind === kind;
 }

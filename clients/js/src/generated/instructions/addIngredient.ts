@@ -62,15 +62,15 @@ export type AddIngredientInstructionAccounts = {
 // Data.
 export type AddIngredientInstructionData = {
   discriminator: number;
-  amount: bigint;
   ingredientType: IngredientType;
+  amount: bigint;
   destination: Option<PublicKey>;
   maxSupply: Option<bigint>;
 };
 
 export type AddIngredientInstructionDataArgs = {
-  amount?: number | bigint;
   ingredientType: IngredientTypeArgs;
+  amount?: number | bigint;
   destination?: OptionOrNullable<PublicKey>;
   maxSupply?: OptionOrNullable<number | bigint>;
 };
@@ -94,8 +94,8 @@ export function getAddIngredientInstructionDataSerializer(
     struct<AddIngredientInstructionData>(
       [
         ['discriminator', u8()],
-        ['amount', u64()],
         ['ingredientType', getIngredientTypeSerializer()],
+        ['amount', u64()],
         ['destination', option(publicKeySerializer())],
         ['maxSupply', option(u64())],
       ],

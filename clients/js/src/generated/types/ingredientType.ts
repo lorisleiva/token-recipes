@@ -9,8 +9,10 @@
 import { Serializer, scalarEnum } from '@metaplex-foundation/umi/serializers';
 
 export enum IngredientType {
-  Input,
-  Output,
+  BurnTokenInput,
+  TransferTokenInput,
+  MintTokenOutput,
+  MintTokenWithMaxSupplyOutput,
 }
 
 export type IngredientTypeArgs = IngredientType;
