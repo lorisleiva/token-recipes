@@ -1,7 +1,6 @@
 import { Mint, createMint, fetchMint } from '@metaplex-foundation/mpl-toolbox';
 import {
   generateSigner,
-  none,
   some,
   transactionBuilder,
 } from '@metaplex-foundation/umi';
@@ -13,7 +12,6 @@ import {
   IngredientRecord,
   IngredientType,
   Key,
-  MAX_U64,
   Recipe,
   RecipeStatus,
   addIngredient,
@@ -39,14 +37,14 @@ test('it can add an ingredient input', async (t) => {
   await addIngredient(umi, {
     recipe: recipe.publicKey,
     mint: mint.publicKey,
-    ingredientType: IngredientType.Input,
+    ingredientType: IngredientType.BurnTokenInput,
   }).sendAndConfirm(umi);
 
   // Then the recipe account now contains that ingredient input.
   t.like(await fetchRecipe(umi, recipe.publicKey), <Recipe>{
     status: RecipeStatus.Paused,
     inputs: <Array<IngredientInput>>[
-      { mint: mint.publicKey, amount: 1n, destination: none() },
+      { __kind: 'BurnToken', mint: mint.publicKey, amount: 1n },
     ],
     outputs: [] as Array<IngredientOutput>,
   });
@@ -87,7 +85,7 @@ test('it can add an ingredient output', async (t) => {
   await addIngredient(umi, {
     recipe: recipe.publicKey,
     mint: mint.publicKey,
-    ingredientType: IngredientType.Output,
+    ingredientType: IngredientType.MintTokenOutput,
   }).sendAndConfirm(umi);
 
   // Then the recipe account now contains that ingredient output.
@@ -95,11 +93,7 @@ test('it can add an ingredient output', async (t) => {
     status: RecipeStatus.Paused,
     inputs: [] as Array<IngredientInput>,
     outputs: <Array<IngredientOutput>>[
-      {
-        mint: mint.publicKey,
-        amount: 1n,
-        maxSupply: MAX_U64,
-      },
+      { __kind: 'MintToken', mint: mint.publicKey, amount: 1n },
     ],
   });
 
@@ -152,14 +146,14 @@ test('it can add an ingredient as both input and output', async (t) => {
       addIngredient(umi, {
         recipe: recipe.publicKey,
         mint: mint.publicKey,
-        ingredientType: IngredientType.Input,
+        ingredientType: IngredientType.BurnTokenInput,
       })
     )
     .add(
       addIngredient(umi, {
         recipe: recipe.publicKey,
         mint: mint.publicKey,
-        ingredientType: IngredientType.Output,
+        ingredientType: IngredientType.MintTokenOutput,
       })
     )
     .sendAndConfirm(umi);
@@ -168,14 +162,10 @@ test('it can add an ingredient as both input and output', async (t) => {
   t.like(await fetchRecipe(umi, recipe.publicKey), <Recipe>{
     status: RecipeStatus.Paused,
     inputs: <Array<IngredientInput>>[
-      { mint: mint.publicKey, amount: 1n, destination: none() },
+      { __kind: 'BurnToken', mint: mint.publicKey, amount: 1n },
     ],
     outputs: <Array<IngredientOutput>>[
-      {
-        mint: mint.publicKey,
-        amount: 1n,
-        maxSupply: MAX_U64,
-      },
+      { __kind: 'MintToken', mint: mint.publicKey, amount: 1n },
     ],
   });
 
@@ -229,14 +219,14 @@ test('it increments the counter when adding the same ingredient output to anothe
       addIngredient(umi, {
         recipe: recipeA.publicKey,
         mint: mint.publicKey,
-        ingredientType: IngredientType.Output,
+        ingredientType: IngredientType.MintTokenOutput,
       })
     )
     .add(
       addIngredient(umi, {
         recipe: recipeB.publicKey,
         mint: mint.publicKey,
-        ingredientType: IngredientType.Output,
+        ingredientType: IngredientType.MintTokenOutput,
       })
     )
     .sendAndConfirm(umi);
@@ -271,7 +261,7 @@ test('it can add a specific amount of an ingredient input and output', async (t)
       addIngredient(umi, {
         recipe: recipe.publicKey,
         mint: mintA.publicKey,
-        ingredientType: IngredientType.Input,
+        ingredientType: IngredientType.BurnTokenInput,
         amount: 2,
       })
     )
@@ -279,7 +269,7 @@ test('it can add a specific amount of an ingredient input and output', async (t)
       addIngredient(umi, {
         recipe: recipe.publicKey,
         mint: mintB.publicKey,
-        ingredientType: IngredientType.Output,
+        ingredientType: IngredientType.MintTokenOutput,
         amount: 3,
       })
     )
@@ -289,14 +279,10 @@ test('it can add a specific amount of an ingredient input and output', async (t)
   t.like(await fetchRecipe(umi, recipe.publicKey), <Recipe>{
     status: RecipeStatus.Paused,
     inputs: <Array<IngredientInput>>[
-      { mint: mintA.publicKey, amount: 2n, destination: none() },
+      { __kind: 'BurnToken', mint: mintA.publicKey, amount: 2n },
     ],
     outputs: <Array<IngredientOutput>>[
-      {
-        mint: mintB.publicKey,
-        amount: 3n,
-        maxSupply: MAX_U64,
-      },
+      { __kind: 'MintToken', mint: mintB.publicKey, amount: 3n },
     ],
   });
 });
@@ -315,7 +301,7 @@ test('it can add a destination to an ingredient input', async (t) => {
   await addIngredient(umi, {
     recipe: recipe.publicKey,
     mint: mint.publicKey,
-    ingredientType: IngredientType.Input,
+    ingredientType: IngredientType.TransferTokenInput,
     destination,
   }).sendAndConfirm(umi);
 
@@ -324,9 +310,10 @@ test('it can add a destination to an ingredient input', async (t) => {
     status: RecipeStatus.Paused,
     inputs: <Array<IngredientInput>>[
       {
+        __kind: 'TransferToken',
         mint: mint.publicKey,
         amount: 1n,
-        destination: some(destination),
+        destination,
       },
     ],
     outputs: [] as Array<IngredientOutput>,
@@ -346,7 +333,7 @@ test('it can add a max supply to an ingredient output', async (t) => {
   await addIngredient(umi, {
     recipe: recipe.publicKey,
     mint: mint.publicKey,
-    ingredientType: IngredientType.Output,
+    ingredientType: IngredientType.MintTokenWithMaxSupplyOutput,
     maxSupply: 100,
   }).sendAndConfirm(umi);
 
@@ -356,6 +343,7 @@ test('it can add a max supply to an ingredient output', async (t) => {
     inputs: [] as Array<IngredientInput>,
     outputs: <Array<IngredientOutput>>[
       {
+        __kind: 'MintTokenWithMaxSupply',
         mint: mint.publicKey,
         amount: 1n,
         maxSupply: 100n,
@@ -384,7 +372,7 @@ test('it cannot add an ingredient as the wrong authority', async (t) => {
     authority: authorityB,
     recipe: recipe.publicKey,
     mint: mint.publicKey,
-    ingredientType: IngredientType.Input,
+    ingredientType: IngredientType.BurnTokenInput,
   }).sendAndConfirm(umi);
 
   // Then we expect a program error.
@@ -402,7 +390,7 @@ test('it cannot add an ingredient input that is already an input', async (t) => 
       addIngredient(umi, {
         recipe: recipe.publicKey,
         mint: mint.publicKey,
-        ingredientType: IngredientType.Input,
+        ingredientType: IngredientType.BurnTokenInput,
       })
     )
     .sendAndConfirm(umi);
@@ -411,7 +399,7 @@ test('it cannot add an ingredient input that is already an input', async (t) => 
   const promise = addIngredient(umi, {
     recipe: recipe.publicKey,
     mint: mint.publicKey,
-    ingredientType: IngredientType.Input,
+    ingredientType: IngredientType.BurnTokenInput,
   }).sendAndConfirm(umi);
 
   // Then we expect a program error.
@@ -429,7 +417,7 @@ test('it cannot add an ingredient output that is already an output', async (t) =
       addIngredient(umi, {
         recipe: recipe.publicKey,
         mint: mint.publicKey,
-        ingredientType: IngredientType.Output,
+        ingredientType: IngredientType.MintTokenOutput,
       })
     )
     .sendAndConfirm(umi);
@@ -438,7 +426,7 @@ test('it cannot add an ingredient output that is already an output', async (t) =
   const promise = addIngredient(umi, {
     recipe: recipe.publicKey,
     mint: mint.publicKey,
-    ingredientType: IngredientType.Output,
+    ingredientType: IngredientType.MintTokenOutput,
   }).sendAndConfirm(umi);
 
   // Then we expect a program error.
@@ -468,7 +456,7 @@ test('it cannot add an ingredient output if the authority is not its mint author
     authority: authorityA,
     recipe: recipe.publicKey,
     mint: mint.publicKey,
-    ingredientType: IngredientType.Output,
+    ingredientType: IngredientType.MintTokenOutput,
   }).sendAndConfirm(umi);
 
   // Then we expect a program error.
@@ -488,7 +476,7 @@ test('it cannot add an ingredient output already delegated if the authority does
         authority: authorityA,
         recipe: recipeA.publicKey,
         mint: mint.publicKey,
-        ingredientType: IngredientType.Output,
+        ingredientType: IngredientType.MintTokenOutput,
       })
     )
     .sendAndConfirm(umi);
@@ -506,7 +494,7 @@ test('it cannot add an ingredient output already delegated if the authority does
     authority: authorityB,
     recipe: recipeB.publicKey,
     mint: mint.publicKey,
-    ingredientType: IngredientType.Output,
+    ingredientType: IngredientType.MintTokenOutput,
   }).sendAndConfirm(umi);
 
   // Then we expect a program error.
@@ -526,7 +514,7 @@ test('it cannot add an ingredient with zero amount', async (t) => {
   const promise = addIngredient(umi, {
     recipe: recipe.publicKey,
     mint: mint.publicKey,
-    ingredientType: IngredientType.Output,
+    ingredientType: IngredientType.MintTokenOutput,
     amount: 0,
   }).sendAndConfirm(umi);
 

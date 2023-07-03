@@ -7,10 +7,17 @@ import {
   fetchToken,
   findAssociatedTokenPda,
 } from '@metaplex-foundation/mpl-toolbox';
-import { generateSigner, none } from '@metaplex-foundation/umi';
+import { generateSigner } from '@metaplex-foundation/umi';
 import type { SendTransactionError } from '@solana/web3.js';
 import test from 'ava';
-import { MAX_U64, Recipe, RecipeStatus, craft, fetchRecipe } from '../src';
+import {
+  Recipe,
+  RecipeStatus,
+  craft,
+  fetchRecipe,
+  ingredientInput,
+  ingredientOutput,
+} from '../src';
 import { createMintWithHolders, createRecipe, createUmi } from './_setup';
 
 test('it can craft a recipe', async (t) => {
@@ -35,18 +42,18 @@ test('it can craft a recipe', async (t) => {
   const recipe = await createRecipe(umi, {
     active: true,
     inputs: [
-      { mint: mintA, amount: 2 },
-      { mint: mintB, amount: 7 },
+      ingredientInput('BurnToken', { mint: mintA, amount: 2 }),
+      ingredientInput('BurnToken', { mint: mintB, amount: 7 }),
     ],
-    outputs: [{ mint: mintC, amount: 1 }],
+    outputs: [ingredientOutput('MintToken', { mint: mintC, amount: 1 })],
   });
   t.like(await fetchRecipe(umi, recipe), <Recipe>{
     status: RecipeStatus.Active,
     inputs: [
-      { mint: mintA, amount: 2n, destination: none() },
-      { mint: mintB, amount: 7n, destination: none() },
+      { __kind: 'BurnToken', mint: mintA, amount: 2n },
+      { __kind: 'BurnToken', mint: mintB, amount: 7n },
     ],
-    outputs: [{ mint: mintC, amount: 1n, maxSupply: MAX_U64 }],
+    outputs: [{ __kind: 'MintToken', mint: mintC, amount: 1n }],
   });
 
   // When the crafter crafts the recipe.
@@ -92,10 +99,10 @@ test('it can craft a recipe in multiple quantities', async (t) => {
   const recipe = await createRecipe(umi, {
     active: true,
     inputs: [
-      { mint: mintA, amount: 2 },
-      { mint: mintB, amount: 7 },
+      ingredientInput('BurnToken', { mint: mintA, amount: 2 }),
+      ingredientInput('BurnToken', { mint: mintB, amount: 7 }),
     ],
-    outputs: [{ mint: mintC, amount: 1 }],
+    outputs: [ingredientOutput('MintToken', { mint: mintC, amount: 1 })],
   });
 
   // When the crafter crafts the recipe 14 times.
@@ -140,10 +147,10 @@ test('it can craft a recipe with multiple outputs', async (t) => {
   // And a recipe that uses 5 mint A and outputs 1 mint B and 2 mint C.
   const recipe = await createRecipe(umi, {
     active: true,
-    inputs: [{ mint: mintA, amount: 5 }],
+    inputs: [ingredientInput('BurnToken', { mint: mintA, amount: 5 })],
     outputs: [
-      { mint: mintB, amount: 1 },
-      { mint: mintC, amount: 2 },
+      ingredientOutput('MintToken', { mint: mintB, amount: 1 }),
+      ingredientOutput('MintToken', { mint: mintC, amount: 2 }),
     ],
   });
 
@@ -191,10 +198,10 @@ test('it can craft a recipe with an input ingredient that transfers tokens', asy
   const recipe = await createRecipe(umi, {
     active: true,
     inputs: [
-      { mint: mintA, amount: 2, destination },
-      { mint: mintB, amount: 7 },
+      ingredientInput('TransferToken', { mint: mintA, amount: 2, destination }),
+      ingredientInput('BurnToken', { mint: mintB, amount: 7 }),
     ],
-    outputs: [{ mint: mintC, amount: 1 }],
+    outputs: [ingredientOutput('MintToken', { mint: mintC, amount: 1 })],
   });
 
   // When the crafter crafts the recipe.
@@ -238,7 +245,9 @@ test('it creates a new associated token account if not yet initialized', async (
   // And a recipe that outputs 1 token of that mint.
   const recipe = await createRecipe(umi, {
     active: true,
-    outputs: [{ mint: mint.publicKey, amount: 1 }],
+    outputs: [
+      ingredientOutput('MintToken', { mint: mint.publicKey, amount: 1 }),
+    ],
   });
 
   // When the crafter crafts the recipe.
@@ -275,7 +284,9 @@ test('it can use an existing non-associated token account', async (t) => {
   // And a recipe that outputs 1 token of that mint.
   const recipe = await createRecipe(umi, {
     active: true,
-    outputs: [{ mint: mint.publicKey, amount: 1 }],
+    outputs: [
+      ingredientOutput('MintToken', { mint: mint.publicKey, amount: 1 }),
+    ],
   });
 
   // When the crafter crafts the recipe by using the existing token account.
@@ -324,8 +335,8 @@ test('it cannot craft a recipe if an input has not enough tokens', async (t) => 
   // And a recipe that uses 2 mint A and outputs 1 mint B.
   const recipe = await createRecipe(umi, {
     active: true,
-    inputs: [{ mint: mintA, amount: 2 }],
-    outputs: [{ mint: mintB, amount: 1 }],
+    inputs: [ingredientInput('BurnToken', { mint: mintA, amount: 2 })],
+    outputs: [ingredientOutput('MintToken', { mint: mintB, amount: 1 })],
   });
 
   // When the crafter tries to crafts the recipe.
@@ -356,8 +367,8 @@ test('it cannot craft a recipe if an input has not enough tokens for multiple qu
   // And a recipe that uses 2 mint A and outputs 1 mint B.
   const recipe = await createRecipe(umi, {
     active: true,
-    inputs: [{ mint: mintA, amount: 2 }],
-    outputs: [{ mint: mintB, amount: 1 }],
+    inputs: [ingredientInput('BurnToken', { mint: mintA, amount: 2 })],
+    outputs: [ingredientOutput('MintToken', { mint: mintB, amount: 1 })],
   });
 
   // When the crafter tries to crafts the recipe 4 times.
@@ -389,8 +400,14 @@ test('it cannot craft a recipe if an output has reached its maximum supply', asy
   // And a recipe that uses 2 mint A and outputs 6 mint B with a maximum supply of 100.
   const recipe = await createRecipe(umi, {
     active: true,
-    inputs: [{ mint: mintA, amount: 2 }],
-    outputs: [{ mint: mintB, amount: 6, maxSupply: 100 }],
+    inputs: [ingredientInput('BurnToken', { mint: mintA, amount: 2 })],
+    outputs: [
+      ingredientOutput('MintTokenWithMaxSupply', {
+        mint: mintB,
+        amount: 6,
+        maxSupply: 100,
+      }),
+    ],
   });
 
   // When the crafter tries to crafts the recipe twice
@@ -423,8 +440,8 @@ test('it cannot craft a recipe if remaining accounts are missing', async (t) => 
   // And a recipe that uses 2 mint A and outputs 1 mint B.
   const recipe = await createRecipe(umi, {
     active: true,
-    inputs: [{ mint: mintA, amount: 2 }],
-    outputs: [{ mint: mintB, amount: 1 }],
+    inputs: [ingredientInput('BurnToken', { mint: mintA, amount: 2 })],
+    outputs: [ingredientOutput('MintToken', { mint: mintB, amount: 1 })],
   });
 
   // When the crafter tries to crafts the recipe without passing any remaining accounts.
@@ -450,7 +467,9 @@ test('it cannot create an uninitialized token account if it is not associated', 
   // And a recipe that outputs 1 token of that mint.
   const recipe = await createRecipe(umi, {
     active: true,
-    outputs: [{ mint: mint.publicKey, amount: 1 }],
+    outputs: [
+      ingredientOutput('MintToken', { mint: mint.publicKey, amount: 1 }),
+    ],
   });
 
   // When the crafter crafts the recipe by providing the address

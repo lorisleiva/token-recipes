@@ -15,6 +15,8 @@ import {
 } from '@metaplex-foundation/umi';
 import { createUmi as basecreateUmi } from '@metaplex-foundation/umi-bundle-tests';
 import {
+  IngredientInputArgs,
+  IngredientOutputArgs,
   IngredientType,
   activateRecipe,
   addIngredient,
@@ -71,16 +73,8 @@ export const createRecipe = async (
   input: Omit<Partial<Parameters<typeof baseCreateRecipe>[1]>, 'authority'> & {
     authority?: Signer;
     active?: boolean;
-    inputs?: Array<{
-      mint: PublicKeyInput;
-      amount: number | bigint;
-      destination?: PublicKeyInput;
-    }>;
-    outputs?: Array<{
-      mint: PublicKeyInput;
-      amount: number | bigint;
-      maxSupply?: number | bigint;
-    }>;
+    inputs?: Array<IngredientInputArgs>;
+    outputs?: Array<IngredientOutputArgs>;
   } = {}
 ): Promise<PublicKey> => {
   const recipe = input.recipe ?? generateSigner(umi);
@@ -93,33 +87,57 @@ export const createRecipe = async (
   });
 
   input.inputs?.forEach((ingredientInput) => {
-    builder = builder.add(
-      addIngredient(umi, {
-        recipe: recipe.publicKey,
-        mint: publicKey(ingredientInput.mint),
-        authority,
-        payer,
-        ingredientType: IngredientType.Input,
-        amount: ingredientInput.amount,
-        destination: ingredientInput.destination
-          ? publicKey(ingredientInput.destination)
-          : null,
-      })
-    );
+    if (ingredientInput.__kind === 'BurnToken') {
+      builder = builder.add(
+        addIngredient(umi, {
+          recipe: recipe.publicKey,
+          mint: publicKey(ingredientInput.mint),
+          authority,
+          payer,
+          ingredientType: IngredientType.BurnTokenInput,
+          amount: ingredientInput.amount,
+        })
+      );
+    } else {
+      builder = builder.add(
+        addIngredient(umi, {
+          recipe: recipe.publicKey,
+          mint: publicKey(ingredientInput.mint),
+          authority,
+          payer,
+          ingredientType: IngredientType.TransferTokenInput,
+          amount: ingredientInput.amount,
+          destination: ingredientInput.destination,
+        })
+      );
+    }
   });
 
   input.outputs?.forEach((ingredientOutput) => {
-    builder = builder.add(
-      addIngredient(umi, {
-        recipe: recipe.publicKey,
-        mint: publicKey(ingredientOutput.mint),
-        authority,
-        payer,
-        ingredientType: IngredientType.Output,
-        amount: ingredientOutput.amount,
-        maxSupply: ingredientOutput.maxSupply,
-      })
-    );
+    if (ingredientOutput.__kind === 'MintToken') {
+      builder = builder.add(
+        addIngredient(umi, {
+          recipe: recipe.publicKey,
+          mint: publicKey(ingredientOutput.mint),
+          authority,
+          payer,
+          ingredientType: IngredientType.MintTokenOutput,
+          amount: ingredientOutput.amount,
+        })
+      );
+    } else {
+      builder = builder.add(
+        addIngredient(umi, {
+          recipe: recipe.publicKey,
+          mint: publicKey(ingredientOutput.mint),
+          authority,
+          payer,
+          ingredientType: IngredientType.MintTokenWithMaxSupplyOutput,
+          amount: ingredientOutput.amount,
+          maxSupply: ingredientOutput.maxSupply,
+        })
+      );
+    }
   });
 
   if (input.active === true) {

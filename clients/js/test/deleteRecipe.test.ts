@@ -1,7 +1,7 @@
 import { createMint } from '@metaplex-foundation/mpl-toolbox';
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
-import { deleteRecipe } from '../src';
+import { deleteRecipe, ingredientInput, ingredientOutput } from '../src';
 import { createRecipe, createUmi } from './_setup';
 
 test('it can delete a recipe', async (t) => {
@@ -43,8 +43,12 @@ test('it cannot delete a recipe that is not empty', async (t) => {
     .add(createMint(umi, { mint: mintB }))
     .sendAndConfirm(umi);
   const recipe = await createRecipe(umi, {
-    inputs: [{ mint: mintA.publicKey, amount: 2 }],
-    outputs: [{ mint: mintB.publicKey, amount: 1 }],
+    inputs: [
+      ingredientInput('BurnToken', { mint: mintA.publicKey, amount: 2 }),
+    ],
+    outputs: [
+      ingredientOutput('MintToken', { mint: mintB.publicKey, amount: 1 }),
+    ],
   });
 
   // When we try to delete the recipe.

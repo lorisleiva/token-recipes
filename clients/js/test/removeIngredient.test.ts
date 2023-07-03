@@ -32,7 +32,7 @@ test('it can remove an ingredient input', async (t) => {
       addIngredient(umi, {
         recipe: recipe.publicKey,
         mint: mint.publicKey,
-        ingredientType: IngredientType.Input,
+        ingredientType: IngredientType.BurnTokenInput,
       })
     )
     .sendAndConfirm(umi);
@@ -48,7 +48,7 @@ test('it can remove an ingredient input', async (t) => {
   await removeIngredient(umi, {
     recipe: recipe.publicKey,
     mint: mint.publicKey,
-    ingredientType: IngredientType.Input,
+    ingredientType: IngredientType.BurnTokenInput,
   }).sendAndConfirm(umi);
 
   // Then the recipe account now has no ingredient inputs.
@@ -73,7 +73,7 @@ test('it can remove an ingredient output', async (t) => {
       addIngredient(umi, {
         recipe: recipe.publicKey,
         mint: mint.publicKey,
-        ingredientType: IngredientType.Output,
+        ingredientType: IngredientType.MintTokenOutput,
       })
     )
     .sendAndConfirm(umi);
@@ -100,7 +100,7 @@ test('it can remove an ingredient output', async (t) => {
   await removeIngredient(umi, {
     recipe: recipe.publicKey,
     mint: mint.publicKey,
-    ingredientType: IngredientType.Output,
+    ingredientType: IngredientType.MintTokenOutput,
   }).sendAndConfirm(umi);
 
   // Then the recipe account now has no ingredient outputs.
@@ -133,7 +133,7 @@ test('it decrements the counter when removing an ingredient output that is still
       addIngredient(umi, {
         recipe: recipeA.publicKey,
         mint: mint.publicKey,
-        ingredientType: IngredientType.Output,
+        ingredientType: IngredientType.MintTokenOutput,
       })
     )
     .sendAndConfirm(umi);
@@ -145,7 +145,7 @@ test('it decrements the counter when removing an ingredient output that is still
       addIngredient(umi, {
         recipe: recipeB.publicKey,
         mint: mint.publicKey,
-        ingredientType: IngredientType.Output,
+        ingredientType: IngredientType.MintTokenOutput,
       })
     )
     .sendAndConfirm(umi);
@@ -162,7 +162,7 @@ test('it decrements the counter when removing an ingredient output that is still
   await removeIngredient(umi, {
     recipe: recipeA.publicKey,
     mint: mint.publicKey,
-    ingredientType: IngredientType.Output,
+    ingredientType: IngredientType.MintTokenOutput,
   }).sendAndConfirm(umi);
 
   // Then the delegated ingredient PDA now has a counter of 1.
@@ -182,14 +182,14 @@ test('it can remove an ingredient that is both input and output', async (t) => {
       addIngredient(umi, {
         recipe: recipe.publicKey,
         mint: mint.publicKey,
-        ingredientType: IngredientType.Input,
+        ingredientType: IngredientType.BurnTokenInput,
       })
     )
     .add(
       addIngredient(umi, {
         recipe: recipe.publicKey,
         mint: mint.publicKey,
-        ingredientType: IngredientType.Output,
+        ingredientType: IngredientType.MintTokenOutput,
       })
     )
     .sendAndConfirm(umi);
@@ -208,7 +208,7 @@ test('it can remove an ingredient that is both input and output', async (t) => {
   await removeIngredient(umi, {
     recipe: recipe.publicKey,
     mint: mint.publicKey,
-    ingredientType: IngredientType.Input,
+    ingredientType: IngredientType.BurnTokenInput,
   }).sendAndConfirm(umi);
 
   // Then the recipe and ingredient record accounts now show the ingredient is only an output.
@@ -226,7 +226,7 @@ test('it can remove an ingredient that is both input and output', async (t) => {
   await removeIngredient(umi, {
     recipe: recipe.publicKey,
     mint: mint.publicKey,
-    ingredientType: IngredientType.Output,
+    ingredientType: IngredientType.MintTokenOutput,
   }).sendAndConfirm(umi);
 
   // Then the recipe shows no ingredients.
@@ -253,7 +253,7 @@ test('it cannot remove an ingredient as the wrong authority', async (t) => {
         authority: authorityA,
         recipe: recipe.publicKey,
         mint: mint.publicKey,
-        ingredientType: IngredientType.Input,
+        ingredientType: IngredientType.BurnTokenInput,
       })
     )
     .sendAndConfirm(umi);
@@ -264,7 +264,7 @@ test('it cannot remove an ingredient as the wrong authority', async (t) => {
     authority: authorityB,
     recipe: recipe.publicKey,
     mint: mint.publicKey,
-    ingredientType: IngredientType.Input,
+    ingredientType: IngredientType.BurnTokenInput,
   }).sendAndConfirm(umi);
 
   // Then we expect a program error.
@@ -284,7 +284,7 @@ test('it cannot remove an ingredient that is not in the recipe', async (t) => {
   const promise = removeIngredient(umi, {
     recipe: recipe.publicKey,
     mint: mint.publicKey,
-    ingredientType: IngredientType.Input,
+    ingredientType: IngredientType.BurnTokenInput,
   }).sendAndConfirm(umi);
 
   // Then we expect a program error.
