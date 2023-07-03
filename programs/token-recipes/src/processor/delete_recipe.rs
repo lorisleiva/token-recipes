@@ -26,11 +26,9 @@ pub(crate) fn delete_recipe(accounts: &[AccountInfo]) -> ProgramResult {
     assert_signer("payer", payer)?;
 
     // Check: recipe.
-    assert_writable("recipe", recipe)?;
-    assert_program_owner("recipe", recipe, &crate::id())?;
-    assert_account_key("recipe", recipe, Key::Recipe)?;
-    let recipe_account = Recipe::load(recipe)?;
-    assert_same_pubkeys("authority", authority, &recipe_account.authority)?;
+    let mut recipe_account = Recipe::get_writable(recipe)?;
+    recipe_account.assert_authority(authority)?;
+
     if recipe_account.inputs.len() > 0 || recipe_account.outputs.len() > 0 {
         return Err(TokenRecipesError::RecipeMustBeEmptyBeforeItCanBeDeleted.into());
     }

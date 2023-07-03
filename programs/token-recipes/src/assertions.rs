@@ -175,15 +175,6 @@ pub fn assert_mint_authority(
     Ok(())
 }
 
-/// Assert that the given account has the expected account key.
-pub fn assert_recipe_is_active(recipe_account: &Recipe) -> ProgramResult {
-    if !matches!(recipe_account.status, RecipeStatus::Active) {
-        Err(TokenRecipesError::RecipeIsNotActive.into())
-    } else {
-        Ok(())
-    }
-}
-
 /// Assert that the given token account has enough tokens.
 pub fn assert_enough_tokens(
     account_name: &str,

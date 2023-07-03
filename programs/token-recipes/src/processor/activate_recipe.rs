@@ -20,11 +20,8 @@ pub(crate) fn activate_recipe(accounts: &[AccountInfo]) -> ProgramResult {
     let authority = next_account_info(account_info_iter)?;
 
     // Check: recipe.
-    assert_writable("recipe", recipe)?;
-    assert_program_owner("recipe", recipe, &crate::id())?;
-    assert_account_key("recipe", recipe, Key::Recipe)?;
-    let mut recipe_account = Recipe::load(recipe)?;
-    assert_same_pubkeys("authority", authority, &recipe_account.authority)?;
+    let mut recipe_account = Recipe::get_writable(recipe)?;
+    recipe_account.assert_authority(authority)?;
 
     // Check: authority.
     assert_signer("authority", authority)?;

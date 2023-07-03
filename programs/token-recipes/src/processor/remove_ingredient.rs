@@ -1,12 +1,10 @@
 use crate::{
     assertions::{
-        assert_account_key, assert_data_size, assert_program_owner, assert_same_pubkeys,
-        assert_signer, assert_writable,
+        assert_data_size, assert_program_owner, assert_same_pubkeys, assert_signer, assert_writable,
     },
     state::{
         delegated_ingredient::DelegatedIngredient,
         ingredient_record::IngredientRecord,
-        key::Key,
         recipe::{IngredientType, Recipe},
     },
     utils::realloc_account,
@@ -46,11 +44,8 @@ pub(crate) fn remove_ingredient(
     assert_same_pubkeys("token_program", token_program, &spl_token::id())?;
 
     // Check: recipe.
-    assert_writable("recipe", recipe)?;
-    assert_program_owner("recipe", recipe, &crate::id())?;
-    assert_account_key("recipe", recipe, Key::Recipe)?;
-    let mut recipe_account = Recipe::load(recipe)?;
-    assert_same_pubkeys("authority", authority, &recipe_account.authority)?;
+    let mut recipe_account = Recipe::get_writable(recipe)?;
+    recipe_account.assert_authority(authority)?;
 
     // TODO: Get IngredientInput or Output here.
 

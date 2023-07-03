@@ -53,11 +53,8 @@ pub(crate) fn add_ingredient(
     assert_same_pubkeys("token_program", token_program, &spl_token::id())?;
 
     // Check: recipe.
-    assert_writable("recipe", recipe)?;
-    assert_program_owner("recipe", recipe, &crate::id())?;
-    assert_account_key("recipe", recipe, Key::Recipe)?;
-    let mut recipe_account = Recipe::load(recipe)?;
-    assert_same_pubkeys("authority", authority, &recipe_account.authority)?;
+    let mut recipe_account = Recipe::get_writable(recipe)?;
+    recipe_account.assert_authority(authority)?;
 
     // Check: mint.
     assert_writable("mint", mint)?;

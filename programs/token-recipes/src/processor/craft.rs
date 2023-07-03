@@ -1,9 +1,6 @@
 use crate::{
-    assertions::{
-        assert_account_key, assert_program_owner, assert_recipe_is_active, assert_same_pubkeys,
-        assert_signer, assert_writable,
-    },
-    state::{key::Key, recipe::Recipe},
+    assertions::{assert_same_pubkeys, assert_signer, assert_writable},
+    state::recipe::Recipe,
 };
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
@@ -22,10 +19,8 @@ pub(crate) fn craft(accounts: &[AccountInfo], quantity: u64) -> ProgramResult {
     let ata_program = next_account_info(account_info_iter)?;
 
     // Check: recipe.
-    assert_program_owner("recipe", recipe, &crate::id())?;
-    assert_account_key("recipe", recipe, Key::Recipe)?;
-    let recipe_account = Recipe::load(recipe)?;
-    assert_recipe_is_active(&recipe_account)?;
+    let mut recipe_account = Recipe::get_writable(recipe)?;
+    recipe_account.assert_active()?;
 
     // Check: owner.
     assert_signer("owner", owner)?;

@@ -1,4 +1,5 @@
 use crate::{
+    assertions::{assert_account_key, assert_program_owner, assert_same_pubkeys, assert_writable},
     error::TokenRecipesError,
     state::{
         features::FeatureLevels, ingredient_input::IngredientInput,
@@ -43,6 +44,29 @@ impl Recipe {
         + FeatureLevels::LEN // feature_levels
         + 4 // inputs.len()
         + 4; // outputs.len()
+
+    pub fn get(recipe: &AccountInfo) -> Result<Self, ProgramError> {
+        assert_program_owner("recipe", recipe, &crate::id())?;
+        assert_account_key("recipe", recipe, Key::Recipe)?;
+        Recipe::load(recipe)
+    }
+
+    pub fn get_writable(recipe: &AccountInfo) -> Result<Self, ProgramError> {
+        assert_writable("recipe", recipe)?;
+        Self::get(recipe)
+    }
+
+    pub fn assert_authority(self, authority: &AccountInfo) -> ProgramResult {
+        assert_same_pubkeys("authority", authority, &self.authority)
+    }
+
+    pub fn assert_active(self) -> ProgramResult {
+        if !matches!(self.status, RecipeStatus::Active) {
+            Err(TokenRecipesError::RecipeIsNotActive.into())
+        } else {
+            Ok(())
+        }
+    }
 
     pub fn add_ingredient_input(&mut self, ingredient: IngredientInput) {
         self.inputs.push(ingredient);
@@ -100,7 +124,7 @@ impl Recipe {
 
     pub fn load(account: &AccountInfo) -> Result<Self, ProgramError> {
         let mut bytes: &[u8] = &(*account.data).borrow();
-        Recipe::deserialize(&mut bytes).map_err(|error| {
+        Self::deserialize(&mut bytes).map_err(|error| {
             msg!("Error deserializing Recipe account: {}", error);
             TokenRecipesError::DeserializationError.into()
         })
