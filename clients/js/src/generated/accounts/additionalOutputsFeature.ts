@@ -22,6 +22,7 @@ import {
 import {
   Serializer,
   publicKey as publicKeySerializer,
+  string,
   struct,
 } from '@metaplex-foundation/umi/serializers';
 import { Key, KeyArgs, getKeySerializer } from '../types';
@@ -186,4 +187,39 @@ export function getAdditionalOutputsFeatureGpaBuilder(
 
 export function getAdditionalOutputsFeatureSize(): number {
   return 161;
+}
+
+export function findAdditionalOutputsFeaturePda(
+  context: Pick<Context, 'eddsa' | 'programs'>
+): Pda {
+  const programId = context.programs.getPublicKey(
+    'tokenRecipes',
+    'C7zZZJpLzAehgidrbwdpBwN6RZCJo98qb55Zjep1a28T'
+  );
+  return context.eddsa.findPda(programId, [
+    string({ size: 'variable' }).serialize('features'),
+    string({ size: 'variable' }).serialize('additional_outputs'),
+  ]);
+}
+
+export async function fetchAdditionalOutputsFeatureFromSeeds(
+  context: Pick<Context, 'eddsa' | 'programs' | 'rpc'>,
+  options?: RpcGetAccountOptions
+): Promise<AdditionalOutputsFeature> {
+  return fetchAdditionalOutputsFeature(
+    context,
+    findAdditionalOutputsFeaturePda(context),
+    options
+  );
+}
+
+export async function safeFetchAdditionalOutputsFeatureFromSeeds(
+  context: Pick<Context, 'eddsa' | 'programs' | 'rpc'>,
+  options?: RpcGetAccountOptions
+): Promise<AdditionalOutputsFeature | null> {
+  return safeFetchAdditionalOutputsFeature(
+    context,
+    findAdditionalOutputsFeaturePda(context),
+    options
+  );
 }

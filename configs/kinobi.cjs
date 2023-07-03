@@ -24,6 +24,36 @@ kinobi.update(
         k.publicKeySeed("mint", "The mint address of the ingredient"),
       ],
     },
+    feesFeature: {
+      seeds: [k.stringConstantSeed("features"), k.stringConstantSeed("fees")],
+    },
+    additionalOutputsFeature: {
+      seeds: [
+        k.stringConstantSeed("features"),
+        k.stringConstantSeed("additional_outputs"),
+      ],
+    },
+    transferInputsFeature: {
+      seeds: [
+        k.stringConstantSeed("features"),
+        k.stringConstantSeed("transfer_inputs"),
+      ],
+    },
+    maxSupplyFeature: {
+      seeds: [
+        k.stringConstantSeed("features"),
+        k.stringConstantSeed("max_supply"),
+      ],
+    },
+    solPaymentFeature: {
+      seeds: [
+        k.stringConstantSeed("features"),
+        k.stringConstantSeed("sol_payment"),
+      ],
+    },
+    wisdomFeature: {
+      seeds: [k.stringConstantSeed("features"), k.stringConstantSeed("wisdom")],
+    },
   })
 );
 

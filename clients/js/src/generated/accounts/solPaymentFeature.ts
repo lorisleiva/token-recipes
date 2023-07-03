@@ -22,6 +22,7 @@ import {
 import {
   Serializer,
   publicKey as publicKeySerializer,
+  string,
   struct,
 } from '@metaplex-foundation/umi/serializers';
 import { Key, KeyArgs, getKeySerializer } from '../types';
@@ -224,4 +225,39 @@ export function getSolPaymentFeatureGpaBuilder(
 
 export function getSolPaymentFeatureSize(): number {
   return 449;
+}
+
+export function findSolPaymentFeaturePda(
+  context: Pick<Context, 'eddsa' | 'programs'>
+): Pda {
+  const programId = context.programs.getPublicKey(
+    'tokenRecipes',
+    'C7zZZJpLzAehgidrbwdpBwN6RZCJo98qb55Zjep1a28T'
+  );
+  return context.eddsa.findPda(programId, [
+    string({ size: 'variable' }).serialize('features'),
+    string({ size: 'variable' }).serialize('sol_payment'),
+  ]);
+}
+
+export async function fetchSolPaymentFeatureFromSeeds(
+  context: Pick<Context, 'eddsa' | 'programs' | 'rpc'>,
+  options?: RpcGetAccountOptions
+): Promise<SolPaymentFeature> {
+  return fetchSolPaymentFeature(
+    context,
+    findSolPaymentFeaturePda(context),
+    options
+  );
+}
+
+export async function safeFetchSolPaymentFeatureFromSeeds(
+  context: Pick<Context, 'eddsa' | 'programs' | 'rpc'>,
+  options?: RpcGetAccountOptions
+): Promise<SolPaymentFeature | null> {
+  return safeFetchSolPaymentFeature(
+    context,
+    findSolPaymentFeaturePda(context),
+    options
+  );
 }

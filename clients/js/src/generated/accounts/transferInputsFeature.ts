@@ -22,6 +22,7 @@ import {
 import {
   Serializer,
   publicKey as publicKeySerializer,
+  string,
   struct,
 } from '@metaplex-foundation/umi/serializers';
 import { Key, KeyArgs, getKeySerializer } from '../types';
@@ -185,4 +186,39 @@ export function getTransferInputsFeatureGpaBuilder(
 
 export function getTransferInputsFeatureSize(): number {
   return 161;
+}
+
+export function findTransferInputsFeaturePda(
+  context: Pick<Context, 'eddsa' | 'programs'>
+): Pda {
+  const programId = context.programs.getPublicKey(
+    'tokenRecipes',
+    'C7zZZJpLzAehgidrbwdpBwN6RZCJo98qb55Zjep1a28T'
+  );
+  return context.eddsa.findPda(programId, [
+    string({ size: 'variable' }).serialize('features'),
+    string({ size: 'variable' }).serialize('transfer_inputs'),
+  ]);
+}
+
+export async function fetchTransferInputsFeatureFromSeeds(
+  context: Pick<Context, 'eddsa' | 'programs' | 'rpc'>,
+  options?: RpcGetAccountOptions
+): Promise<TransferInputsFeature> {
+  return fetchTransferInputsFeature(
+    context,
+    findTransferInputsFeaturePda(context),
+    options
+  );
+}
+
+export async function safeFetchTransferInputsFeatureFromSeeds(
+  context: Pick<Context, 'eddsa' | 'programs' | 'rpc'>,
+  options?: RpcGetAccountOptions
+): Promise<TransferInputsFeature | null> {
+  return safeFetchTransferInputsFeature(
+    context,
+    findTransferInputsFeaturePda(context),
+    options
+  );
 }

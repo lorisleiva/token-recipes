@@ -22,6 +22,7 @@ import {
 import {
   Serializer,
   publicKey as publicKeySerializer,
+  string,
   struct,
 } from '@metaplex-foundation/umi/serializers';
 import { Key, KeyArgs, getKeySerializer } from '../types';
@@ -159,4 +160,39 @@ export function getMaxSupplyFeatureGpaBuilder(
 
 export function getMaxSupplyFeatureSize(): number {
   return 65;
+}
+
+export function findMaxSupplyFeaturePda(
+  context: Pick<Context, 'eddsa' | 'programs'>
+): Pda {
+  const programId = context.programs.getPublicKey(
+    'tokenRecipes',
+    'C7zZZJpLzAehgidrbwdpBwN6RZCJo98qb55Zjep1a28T'
+  );
+  return context.eddsa.findPda(programId, [
+    string({ size: 'variable' }).serialize('features'),
+    string({ size: 'variable' }).serialize('max_supply'),
+  ]);
+}
+
+export async function fetchMaxSupplyFeatureFromSeeds(
+  context: Pick<Context, 'eddsa' | 'programs' | 'rpc'>,
+  options?: RpcGetAccountOptions
+): Promise<MaxSupplyFeature> {
+  return fetchMaxSupplyFeature(
+    context,
+    findMaxSupplyFeaturePda(context),
+    options
+  );
+}
+
+export async function safeFetchMaxSupplyFeatureFromSeeds(
+  context: Pick<Context, 'eddsa' | 'programs' | 'rpc'>,
+  options?: RpcGetAccountOptions
+): Promise<MaxSupplyFeature | null> {
+  return safeFetchMaxSupplyFeature(
+    context,
+    findMaxSupplyFeaturePda(context),
+    options
+  );
 }

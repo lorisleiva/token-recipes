@@ -22,6 +22,7 @@ import {
 import {
   Serializer,
   publicKey as publicKeySerializer,
+  string,
   struct,
 } from '@metaplex-foundation/umi/serializers';
 import { Key, KeyArgs, getKeySerializer } from '../types';
@@ -162,4 +163,35 @@ export function getWisdomFeatureGpaBuilder(
 
 export function getWisdomFeatureSize(): number {
   return 97;
+}
+
+export function findWisdomFeaturePda(
+  context: Pick<Context, 'eddsa' | 'programs'>
+): Pda {
+  const programId = context.programs.getPublicKey(
+    'tokenRecipes',
+    'C7zZZJpLzAehgidrbwdpBwN6RZCJo98qb55Zjep1a28T'
+  );
+  return context.eddsa.findPda(programId, [
+    string({ size: 'variable' }).serialize('features'),
+    string({ size: 'variable' }).serialize('wisdom'),
+  ]);
+}
+
+export async function fetchWisdomFeatureFromSeeds(
+  context: Pick<Context, 'eddsa' | 'programs' | 'rpc'>,
+  options?: RpcGetAccountOptions
+): Promise<WisdomFeature> {
+  return fetchWisdomFeature(context, findWisdomFeaturePda(context), options);
+}
+
+export async function safeFetchWisdomFeatureFromSeeds(
+  context: Pick<Context, 'eddsa' | 'programs' | 'rpc'>,
+  options?: RpcGetAccountOptions
+): Promise<WisdomFeature | null> {
+  return safeFetchWisdomFeature(
+    context,
+    findWisdomFeaturePda(context),
+    options
+  );
 }

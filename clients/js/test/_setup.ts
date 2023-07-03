@@ -13,7 +13,7 @@ import {
   generateSigner,
   publicKey,
 } from '@metaplex-foundation/umi';
-import { createUmi as basecreateUmi } from '@metaplex-foundation/umi-bundle-tests';
+import { createUmi as baseCreateUmi } from '@metaplex-foundation/umi-bundle-tests';
 import {
   IngredientInputArgs,
   IngredientOutputArgs,
@@ -25,7 +25,7 @@ import {
 } from '../src';
 
 export const createUmi = async () =>
-  (await basecreateUmi()).use(tokenRecipes());
+  (await baseCreateUmi()).use(tokenRecipes());
 
 export const createMintWithHolders = async (
   umi: Umi,
