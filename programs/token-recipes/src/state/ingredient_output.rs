@@ -35,8 +35,8 @@ pub enum IngredientOutput {
 impl IngredientOutput {
     pub fn len(&self) -> usize {
         match self {
-            Self::MintToken { .. } => 32 + 8,
-            Self::MintTokenWithMaxSupply { .. } => 32 + 8 + 8,
+            Self::MintToken { .. } => 1 + 32 + 8,
+            Self::MintTokenWithMaxSupply { .. } => 1 + 32 + 8 + 8,
         }
     }
 

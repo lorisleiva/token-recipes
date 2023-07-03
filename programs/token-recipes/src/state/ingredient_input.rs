@@ -32,8 +32,8 @@ pub enum IngredientInput {
 impl IngredientInput {
     pub fn len(&self) -> usize {
         match self {
-            Self::BurnToken { .. } => 32 + 8,
-            Self::TransferToken { .. } => 32 + 8 + 32,
+            Self::BurnToken { .. } => 1 + 32 + 8,
+            Self::TransferToken { .. } => 1 + 32 + 8 + 32,
         }
     }
 
