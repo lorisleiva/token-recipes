@@ -19,7 +19,7 @@ pub(crate) fn craft<'a>(accounts: &'a [AccountInfo<'a>], quantity: u64) -> Progr
     let ata_program = next_account_info(account_info_iter)?;
 
     // Check: recipe.
-    let recipe_account = Recipe::get_writable(recipe)?;
+    let mut recipe_account = Recipe::get_writable(recipe)?;
     recipe_account.assert_active()?;
 
     // Check: owner.
@@ -55,6 +55,18 @@ pub(crate) fn craft<'a>(accounts: &'a [AccountInfo<'a>], quantity: u64) -> Progr
         .iter()
         .map(|output| output.craft(account_info_iter, owner, payer, quantity))
         .collect::<ProgramResult>()?;
+
+    // TODO: Handle fees and shards.
+
+    // Recipe experience.
+    recipe_account.accumulated_experience += 100;
+
+    // Recipe statistics.
+    recipe_account.total_crafts += 1;
+    recipe_account.total_crafts_with_quantity += quantity;
+
+    // Save recipe.
+    recipe_account.save(recipe)?;
 
     Ok(())
 }

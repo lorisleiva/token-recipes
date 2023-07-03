@@ -484,3 +484,43 @@ test('it cannot create an uninitialized token account if it is not associated', 
   // Then we expect a program error.
   await t.throwsAsync(promise, { name: 'InvalidPda' });
 });
+
+test('it keep tracks of the total amount of crafts and experience accumulated', async (t) => {
+  // Given an active recipe with no experience and no crafts.
+  const umi = await createUmi();
+  const crafter = generateSigner(umi);
+  const [mintA] = await createMintWithHolders(umi, {
+    holders: [{ owner: crafter.publicKey, amount: 100 }],
+  });
+  const [mintB] = await createMintWithHolders(umi, {
+    holders: [{ owner: crafter.publicKey, amount: 0 }],
+  });
+  const recipe = await createRecipe(umi, {
+    active: true,
+    inputs: [ingredientInput('BurnToken', { mint: mintA, amount: 2 })],
+    outputs: [ingredientOutput('MintToken', { mint: mintB, amount: 1 })],
+  });
+  t.like(await fetchRecipe(umi, recipe), <Recipe>{
+    status: RecipeStatus.Active,
+    totalCrafts: 0n,
+    totalCraftsWithQuantity: 0n,
+    accumulatedExperience: 0n,
+  });
+
+  // When the crafter crafts the recipe.
+  await craft(umi, {
+    recipe,
+    owner: crafter,
+    inputs: [{ mint: mintA }],
+    outputs: [{ mint: mintB }],
+    quantity: 42,
+  }).sendAndConfirm(umi);
+
+  // Then we expect the recipe to have kept craft statistics and added experience.
+  t.like(await fetchRecipe(umi, recipe), <Recipe>{
+    status: RecipeStatus.Active,
+    totalCrafts: 1n,
+    totalCraftsWithQuantity: 42n,
+    accumulatedExperience: 100n,
+  });
+});
