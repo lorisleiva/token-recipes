@@ -212,9 +212,12 @@ export const withFeatures = async (umi: Umi): Promise<FeatureContext> => {
 export const mintFeature = async (
   umi: Umi,
   seed: string,
-  destination: PublicKey,
-  amount: number | bigint
-) => {
+  amount: number | bigint,
+  destination?: PublicKey
+): Promise<{
+  mint: PublicKey;
+  ata: PublicKey;
+}> => {
   const mint = seededSigner(umi, seed);
   const programId = localnetSigner(umi);
   let builder = transactionBuilder();
@@ -229,17 +232,18 @@ export const mintFeature = async (
     );
   }
 
+  const [ata] = findAssociatedTokenPda(umi, {
+    mint: mint.publicKey,
+    owner: destination ?? umi.identity.publicKey,
+  });
   builder = builder.add(
     mintTokensTo(umi, {
       mint: mint.publicKey,
-      token: findAssociatedTokenPda(umi, {
-        mint: mint.publicKey,
-        owner: destination,
-      }),
+      token: ata,
       amount,
       mintAuthority: programId,
     })
   );
-
   await builder.sendAndConfirm(umi);
+  return { mint: mint.publicKey, ata };
 };
