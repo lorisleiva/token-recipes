@@ -512,3 +512,24 @@ test('it cannot add an ingredient output already delegated if the authority does
   // Then we expect a program error.
   await t.throwsAsync(promise, { name: 'AccountMismatch' });
 });
+
+test('it cannot add an ingredient with zero amount', async (t) => {
+  // Given an empty recipe and a mint.
+  const umi = await createUmi();
+  const recipe = generateSigner(umi);
+  const mint = generateSigner(umi);
+  await createRecipe(umi, { recipe })
+    .add(createMint(umi, { mint }))
+    .sendAndConfirm(umi);
+
+  // When we try to add that mint to the recipe with zero amount.
+  const promise = addIngredient(umi, {
+    recipe: recipe.publicKey,
+    mint: mint.publicKey,
+    ingredientType: IngredientType.Output,
+    amount: 0,
+  }).sendAndConfirm(umi);
+
+  // Then we expect a program error.
+  await t.throwsAsync(promise, { name: 'CannotAddIngredientWithZeroAmount' });
+});

@@ -256,6 +256,22 @@ nameToErrorMap.set(
   RecipeMustBeEmptyBeforeItCanBeDeletedError
 );
 
+/** CannotAddIngredientWithZeroAmount: Cannot add an ingredient with zero amount */
+export class CannotAddIngredientWithZeroAmountError extends ProgramError {
+  readonly name: string = 'CannotAddIngredientWithZeroAmount';
+
+  readonly code: number = 0x12; // 18
+
+  constructor(program: Program, cause?: Error) {
+    super('Cannot add an ingredient with zero amount', program, cause);
+  }
+}
+codeToErrorMap.set(0x12, CannotAddIngredientWithZeroAmountError);
+nameToErrorMap.set(
+  'CannotAddIngredientWithZeroAmount',
+  CannotAddIngredientWithZeroAmountError
+);
+
 /**
  * Attempts to resolve a custom program error from the provided error code.
  * @category Errors

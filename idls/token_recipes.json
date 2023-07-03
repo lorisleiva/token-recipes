@@ -590,6 +590,11 @@
       "code": 17,
       "name": "RecipeMustBeEmptyBeforeItCanBeDeleted",
       "msg": "Recipe must be empty before it can be deleted"
+    },
+    {
+      "code": 18,
+      "name": "CannotAddIngredientWithZeroAmount",
+      "msg": "Cannot add an ingredient with zero amount"
     }
   ],
   "metadata": {
