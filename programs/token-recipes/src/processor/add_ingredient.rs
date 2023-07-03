@@ -3,6 +3,7 @@ use crate::{
         assert_account_key, assert_data_size, assert_mint_authority, assert_pda,
         assert_program_owner, assert_same_pubkeys, assert_signer, assert_writable,
     },
+    error::TokenRecipesError,
     state::{
         delegated_ingredient::DelegatedIngredient,
         ingredient_record::IngredientRecord,
@@ -71,6 +72,11 @@ pub(crate) fn add_ingredient(
         &crate::id(),
         &IngredientRecord::seeds(mint.key, recipe.key),
     )?;
+
+    // Check: amount
+    if amount == 0 {
+        return Err(TokenRecipesError::CannotAddIngredientWithZeroAmount.into());
+    }
 
     // Add the ingredient to the recipe account and realloc.
     let new_size: usize = match ingredient_type {

@@ -101,7 +101,7 @@ pub fn assert_same_pubkeys(
 ) -> ProgramResult {
     if account.key != expected {
         msg!(
-            "Account \"{}\" [{}] must be match the following public key [{}]",
+            "Account \"{}\" [{}] must match the following public key [{}]",
             account_name,
             account.key,
             expected

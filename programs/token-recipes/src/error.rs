@@ -62,6 +62,9 @@ pub enum TokenRecipesError {
     /// 17 - Recipe must be empty before it can be deleted
     #[error("Recipe must be empty before it can be deleted")]
     RecipeMustBeEmptyBeforeItCanBeDeleted,
+    /// 18 - Cannot add an ingredient with zero amount
+    #[error("Cannot add an ingredient with zero amount")]
+    CannotAddIngredientWithZeroAmount,
 }
 
 impl PrintProgramError for TokenRecipesError {
