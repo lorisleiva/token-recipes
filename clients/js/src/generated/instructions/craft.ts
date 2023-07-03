@@ -82,7 +82,7 @@ export function craft(
   // Program ID.
   const programId = context.programs.getPublicKey(
     'tokenRecipes',
-    '6EgVKvZu2V6cpZzarvDHuyeJwa1NB2ujj8hXY98pQpLE'
+    'C7zZZJpLzAehgidrbwdpBwN6RZCJo98qb55Zjep1a28T'
   );
 
   // Resolved inputs.

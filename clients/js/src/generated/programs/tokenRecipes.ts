@@ -18,7 +18,7 @@ import {
 } from '../errors';
 
 export const TOKEN_RECIPES_PROGRAM_ID =
-  '6EgVKvZu2V6cpZzarvDHuyeJwa1NB2ujj8hXY98pQpLE' as PublicKey<'6EgVKvZu2V6cpZzarvDHuyeJwa1NB2ujj8hXY98pQpLE'>;
+  'C7zZZJpLzAehgidrbwdpBwN6RZCJo98qb55Zjep1a28T' as PublicKey<'C7zZZJpLzAehgidrbwdpBwN6RZCJo98qb55Zjep1a28T'>;
 
 export function createTokenRecipesProgram(): Program {
   return {
