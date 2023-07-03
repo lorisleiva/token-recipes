@@ -7,7 +7,6 @@ import {
   IngredientOutput,
   IngredientRecord,
   IngredientType,
-  MAX_U64,
   Recipe,
   RecipeStatus,
   addIngredient,
@@ -215,7 +214,7 @@ test('it can remove an ingredient that is both input and output', async (t) => {
   t.like(await fetchRecipe(umi, recipe.publicKey), <Recipe>{
     status: RecipeStatus.Paused,
     inputs: [] as Array<IngredientInput>,
-    outputs: [{ mint: mint.publicKey, amount: 1n, maxSupply: MAX_U64 }],
+    outputs: [{ __kind: 'MintToken', mint: mint.publicKey, amount: 1n }],
   });
   t.like(await fetchIngredientRecord(umi, ingredientRecord), <IngredientRecord>{
     input: false,
@@ -288,5 +287,5 @@ test('it cannot remove an ingredient that is not in the recipe', async (t) => {
   }).sendAndConfirm(umi);
 
   // Then we expect a program error.
-  await t.throwsAsync(promise, { name: 'InvalidProgramOwner' });
+  await t.throwsAsync(promise, { name: 'MissingIngredient' });
 });
