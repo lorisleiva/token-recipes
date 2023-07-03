@@ -53,7 +53,7 @@ pub struct FeesFeature {
 }
 
 impl FeesFeature {
-    pub const LEN: usize = 1 + 32 * 8;
+    pub const LEN: usize = 1 + 32 * 9;
 
     pub fn seeds<'a>() -> Vec<&'a [u8]> {
         vec!["features".as_bytes(), "fees".as_bytes()]
