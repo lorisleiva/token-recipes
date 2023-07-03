@@ -8,7 +8,7 @@ use solana_program::{
     system_program,
 };
 
-pub(crate) fn craft(accounts: &[AccountInfo], quantity: u64) -> ProgramResult {
+pub(crate) fn craft<'a>(accounts: &'a [AccountInfo<'a>], quantity: u64) -> ProgramResult {
     // Accounts.
     let account_info_iter = &mut accounts.iter();
     let recipe = next_account_info(account_info_iter)?;

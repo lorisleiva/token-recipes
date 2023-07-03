@@ -19,9 +19,9 @@ pub mod remove_ingredient;
 
 pub struct Processor;
 impl Processor {
-    pub fn process_instruction(
+    pub fn process_instruction<'a>(
         _program_id: &Pubkey,
-        accounts: &[AccountInfo],
+        accounts: &'a [AccountInfo<'a>],
         instruction_data: &[u8],
     ) -> ProgramResult {
         let instruction: TokenRecipesInstruction =
