@@ -11,3 +11,4 @@ export * from './delegatedIngredient';
 export * from './feesFeature';
 export * from './ingredientRecord';
 export * from './recipe';
+export * from './transferInputsFeature';

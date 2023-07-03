@@ -16,6 +16,9 @@ import {
 export type FeatureLevels = {
   fees: number;
   additionalOutputs: number;
+  transferInputs: number;
+  maxSupply: number;
+  solPayment: number;
   padding: Array<number>;
 };
 
@@ -36,7 +39,10 @@ export function getFeatureLevelsSerializer(
     [
       ['fees', u8()],
       ['additionalOutputs', u8()],
-      ['padding', array(u8(), { size: 8 })],
+      ['transferInputs', u8()],
+      ['maxSupply', u8()],
+      ['solPayment', u8()],
+      ['padding', array(u8(), { size: 11 })],
     ],
     { description: 'FeatureLevels' }
   ) as Serializer<FeatureLevelsArgs, FeatureLevels>;

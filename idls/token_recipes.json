@@ -410,6 +410,40 @@
       }
     },
     {
+      "name": "TransferInputsFeature",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "key",
+            "type": {
+              "defined": "Key"
+            }
+          },
+          {
+            "name": "mintBurn1",
+            "type": "publicKey"
+          },
+          {
+            "name": "mintBurn2",
+            "type": "publicKey"
+          },
+          {
+            "name": "mintBurn3",
+            "type": "publicKey"
+          },
+          {
+            "name": "mintSkill1",
+            "type": "publicKey"
+          },
+          {
+            "name": "mintSkill2",
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
+    {
       "name": "IngredientRecord",
       "type": {
         "kind": "struct",
@@ -525,11 +559,23 @@
             "type": "u8"
           },
           {
+            "name": "transferInputs",
+            "type": "u8"
+          },
+          {
+            "name": "maxSupply",
+            "type": "u8"
+          },
+          {
+            "name": "solPayment",
+            "type": "u8"
+          },
+          {
             "name": "padding",
             "type": {
               "array": [
                 "u8",
-                8
+                11
               ]
             }
           }
@@ -827,23 +873,28 @@
     },
     {
       "code": 19,
-      "name": "InvalidFees",
-      "msg": "Invalid fees"
-    },
-    {
-      "code": 20,
-      "name": "InvalidAdditionalOutputs",
-      "msg": "Invalid additional outputs"
-    },
-    {
-      "code": 21,
       "name": "MissingDestinationArgument",
       "msg": "Missing destination argument"
     },
     {
-      "code": 22,
+      "code": 20,
       "name": "MissingMaxSupplyArgument",
       "msg": "Missing max supply argument"
+    },
+    {
+      "code": 21,
+      "name": "InvalidFees",
+      "msg": "Invalid fees"
+    },
+    {
+      "code": 22,
+      "name": "InvalidAdditionalOutputs",
+      "msg": "Invalid additional outputs"
+    },
+    {
+      "code": 23,
+      "name": "InvalidTransferInputs",
+      "msg": "Invalid transfer inputs"
     }
   ],
   "metadata": {

@@ -65,18 +65,21 @@ pub enum TokenRecipesError {
     /// 18 - Cannot add an ingredient with zero amount
     #[error("Cannot add an ingredient with zero amount")]
     CannotAddIngredientWithZeroAmount,
-    /// 19 - Invalid fees
-    #[error("Invalid fees")]
-    InvalidFees,
-    /// 20 - Invalid additional outputs
-    #[error("Invalid additional outputs")]
-    InvalidAdditionalOutputs,
-    /// 21 - Missing destination argument
+    /// 19 - Missing destination argument
     #[error("Missing destination argument")]
     MissingDestinationArgument,
-    /// 22 - Missing max supply argument
+    /// 20 - Missing max supply argument
     #[error("Missing max supply argument")]
     MissingMaxSupplyArgument,
+    /// 21 - Invalid fees
+    #[error("Invalid fees")]
+    InvalidFees,
+    /// 22 - Invalid additional outputs
+    #[error("Invalid additional outputs")]
+    InvalidAdditionalOutputs,
+    /// 23 - Invalid transfer inputs
+    #[error("Invalid transfer inputs")]
+    InvalidTransferInputs,
 }
 
 impl PrintProgramError for TokenRecipesError {

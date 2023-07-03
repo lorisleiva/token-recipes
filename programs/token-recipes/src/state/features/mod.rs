@@ -3,16 +3,20 @@ use solana_program::pubkey::Pubkey;
 
 pub mod additional_outputs;
 pub mod fees;
+pub mod transfer_inputs;
 
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone, Default)]
 pub struct FeatureLevels {
     pub fees: u8,
     pub additional_outputs: u8,
-    pub _padding: [u8; 8],
+    pub transfer_inputs: u8,
+    pub max_supply: u8,
+    pub sol_payment: u8,
+    pub _padding: [u8; 11],
 }
 
 impl FeatureLevels {
-    pub const LEN: usize = 1 + 1 + 8;
+    pub const LEN: usize = 16;
 }
 
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Debug, Clone)]

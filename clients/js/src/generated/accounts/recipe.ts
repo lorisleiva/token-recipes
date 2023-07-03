@@ -211,7 +211,7 @@ export function getRecipeGpaBuilder(
       accumulatedShards: [66, u64()],
       accumulatedExperience: [74, u64()],
       featureLevels: [82, getFeatureLevelsSerializer()],
-      inputs: [92, array(getIngredientInputSerializer())],
+      inputs: [98, array(getIngredientInputSerializer())],
       outputs: [null, array(getIngredientOutputSerializer())],
     })
     .deserializeUsing<Recipe>((account) => deserializeRecipe(account))

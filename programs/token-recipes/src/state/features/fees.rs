@@ -9,6 +9,24 @@ use solana_program::{
     pubkey::Pubkey,
 };
 
+/// Unlocks recipe fees.
+///
+/// - Level 0: No fees when crafting.
+/// - Level 1: 10% of base fees (see below) when crafting, the rest goes to the program admin.
+///            90% of base fee lamports are added as "shards" to the recipe to be minted
+///            as a special ingredient when collecting fees.
+/// - Level 2: 20% of base fees, 80% shards.
+/// - Level 3: 30% of base fees, 70% shards.
+/// - Level 4: 40% of base fees, 60% shards.
+/// - Level 5: 50% of base fees, 50% shards.
+/// - Level 6: 60% of base fees, 40% shards.
+/// - Level 7: 70% of base fees, 30% shards.
+/// - Level 8: 80% of base fees, 20% shards.
+/// - Level 9: 90% of base fees, 10% shards.
+/// - Level 10: 100% of base fees, 10% shards. From this level, the program admin no longer receives fees.
+/// - Level 11: 100% of custom fees. 10% shards based on base fees.
+///
+/// Base fee: 0.02 SOL.
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, ShankAccount)]
 pub struct FeesFeature {

@@ -9,15 +9,15 @@ use solana_program::{
     pubkey::Pubkey,
 };
 
-/// Unlocks additional outputs.
+/// Unlocks transfer inputs.
 ///
-/// - Level 0: Only 1 output ingredient is allowed.
-/// - Level 1: 2 output ingredients allowed.
-/// - Level 2: 3 output ingredients allowed.
-/// - Level 3: Unlimited output ingredients allowed.
+/// - Level 0: No transfer allowed, only burning.
+/// - Level 1: Transfer allowed for 1 input ingredient.
+/// - Level 2: Transfer allowed for 2 input ingredients.
+/// - Level 3: Transfer allowed for all input ingredients.
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, ShankAccount)]
-pub struct AdditionalOutputsFeature {
+pub struct TransferInputsFeature {
     /// Account discriminator.
     pub key: Key,
     /// When burned, allows leveling up by 1 from 0 to 2.
@@ -32,18 +32,18 @@ pub struct AdditionalOutputsFeature {
     pub mint_skill_2: Pubkey,
 }
 
-impl AdditionalOutputsFeature {
+impl TransferInputsFeature {
     pub const LEN: usize = 1 + 32 * 5;
 
     pub fn seeds<'a>() -> Vec<&'a [u8]> {
-        vec!["features".as_bytes(), "additional_outputs".as_bytes()]
+        vec!["features".as_bytes(), "transfer_inputs".as_bytes()]
     }
 
     pub fn load(account: &AccountInfo) -> Result<Self, ProgramError> {
         let mut bytes: &[u8] = &(*account.data).borrow();
-        AdditionalOutputsFeature::deserialize(&mut bytes).map_err(|error| {
+        TransferInputsFeature::deserialize(&mut bytes).map_err(|error| {
             msg!(
-                "Error deserializing AdditionalOutputsFeature account: {}",
+                "Error deserializing TransferInputsFeature account: {}",
                 error
             );
             TokenRecipesError::DeserializationError.into()
@@ -53,10 +53,7 @@ impl AdditionalOutputsFeature {
     pub fn save(&self, account: &AccountInfo) -> ProgramResult {
         let mut bytes = Vec::with_capacity(account.data_len());
         self.serialize(&mut bytes).map_err(|error| {
-            msg!(
-                "Error serializing AdditionalOutputsFeature account: {}",
-                error
-            );
+            msg!("Error serializing TransferInputsFeature account: {}", error);
             TokenRecipesError::SerializationError
         })?;
         account.try_borrow_mut_data().unwrap()[..bytes.len()].copy_from_slice(&bytes);
@@ -64,25 +61,28 @@ impl AdditionalOutputsFeature {
     }
 }
 
-/// Asserts that the recipe has a valid number of additional outputs.
+/// Asserts that the recipe has a valid number of transfer inputs.
 /// Make sure to use AFTER the recipe was updated.
-pub fn assert_valid_additional_outputs(recipe: &Recipe) -> ProgramResult {
+pub fn assert_valid_transfer_inputs(recipe: &Recipe) -> ProgramResult {
     let total_outputs = recipe.outputs.len();
-    match recipe.feature_levels.additional_outputs {
-        0 => assert_max_outputs(total_outputs, 1),
-        1 => assert_max_outputs(total_outputs, 2),
-        2 => assert_max_outputs(total_outputs, 3),
+    match recipe.feature_levels.transfer_inputs {
+        0 => assert_max_transfer_inputs(total_outputs, 0),
+        1 => assert_max_transfer_inputs(total_outputs, 1),
+        2 => assert_max_transfer_inputs(total_outputs, 2),
         _ => Ok(()),
     }
 }
 
-pub fn assert_max_outputs(total_outputs: usize, max_allowed: usize) -> ProgramResult {
-    if total_outputs > max_allowed {
+pub fn assert_max_transfer_inputs(
+    total_transfer_inputs: usize,
+    max_allowed: usize,
+) -> ProgramResult {
+    if total_transfer_inputs > max_allowed {
         msg!(
-            "You cannot have more than {} outputs for this recipe. Level up the \"Additional Outputs\" feature to increase the limit.",
+            "You cannot have more than {} transfer inputs for this recipe. Level up the \"Transfer Inputs\" feature to increase the limit.",
             max_allowed
         );
-        Err(TokenRecipesError::InvalidAdditionalOutputs.into())
+        Err(TokenRecipesError::InvalidTransferInputs.into())
     } else {
         Ok(())
     }

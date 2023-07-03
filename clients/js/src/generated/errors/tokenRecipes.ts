@@ -272,43 +272,17 @@ nameToErrorMap.set(
   CannotAddIngredientWithZeroAmountError
 );
 
-/** InvalidFees: Invalid fees */
-export class InvalidFeesError extends ProgramError {
-  readonly name: string = 'InvalidFees';
-
-  readonly code: number = 0x13; // 19
-
-  constructor(program: Program, cause?: Error) {
-    super('Invalid fees', program, cause);
-  }
-}
-codeToErrorMap.set(0x13, InvalidFeesError);
-nameToErrorMap.set('InvalidFees', InvalidFeesError);
-
-/** InvalidAdditionalOutputs: Invalid additional outputs */
-export class InvalidAdditionalOutputsError extends ProgramError {
-  readonly name: string = 'InvalidAdditionalOutputs';
-
-  readonly code: number = 0x14; // 20
-
-  constructor(program: Program, cause?: Error) {
-    super('Invalid additional outputs', program, cause);
-  }
-}
-codeToErrorMap.set(0x14, InvalidAdditionalOutputsError);
-nameToErrorMap.set('InvalidAdditionalOutputs', InvalidAdditionalOutputsError);
-
 /** MissingDestinationArgument: Missing destination argument */
 export class MissingDestinationArgumentError extends ProgramError {
   readonly name: string = 'MissingDestinationArgument';
 
-  readonly code: number = 0x15; // 21
+  readonly code: number = 0x13; // 19
 
   constructor(program: Program, cause?: Error) {
     super('Missing destination argument', program, cause);
   }
 }
-codeToErrorMap.set(0x15, MissingDestinationArgumentError);
+codeToErrorMap.set(0x13, MissingDestinationArgumentError);
 nameToErrorMap.set(
   'MissingDestinationArgument',
   MissingDestinationArgumentError
@@ -318,14 +292,53 @@ nameToErrorMap.set(
 export class MissingMaxSupplyArgumentError extends ProgramError {
   readonly name: string = 'MissingMaxSupplyArgument';
 
-  readonly code: number = 0x16; // 22
+  readonly code: number = 0x14; // 20
 
   constructor(program: Program, cause?: Error) {
     super('Missing max supply argument', program, cause);
   }
 }
-codeToErrorMap.set(0x16, MissingMaxSupplyArgumentError);
+codeToErrorMap.set(0x14, MissingMaxSupplyArgumentError);
 nameToErrorMap.set('MissingMaxSupplyArgument', MissingMaxSupplyArgumentError);
+
+/** InvalidFees: Invalid fees */
+export class InvalidFeesError extends ProgramError {
+  readonly name: string = 'InvalidFees';
+
+  readonly code: number = 0x15; // 21
+
+  constructor(program: Program, cause?: Error) {
+    super('Invalid fees', program, cause);
+  }
+}
+codeToErrorMap.set(0x15, InvalidFeesError);
+nameToErrorMap.set('InvalidFees', InvalidFeesError);
+
+/** InvalidAdditionalOutputs: Invalid additional outputs */
+export class InvalidAdditionalOutputsError extends ProgramError {
+  readonly name: string = 'InvalidAdditionalOutputs';
+
+  readonly code: number = 0x16; // 22
+
+  constructor(program: Program, cause?: Error) {
+    super('Invalid additional outputs', program, cause);
+  }
+}
+codeToErrorMap.set(0x16, InvalidAdditionalOutputsError);
+nameToErrorMap.set('InvalidAdditionalOutputs', InvalidAdditionalOutputsError);
+
+/** InvalidTransferInputs: Invalid transfer inputs */
+export class InvalidTransferInputsError extends ProgramError {
+  readonly name: string = 'InvalidTransferInputs';
+
+  readonly code: number = 0x17; // 23
+
+  constructor(program: Program, cause?: Error) {
+    super('Invalid transfer inputs', program, cause);
+  }
+}
+codeToErrorMap.set(0x17, InvalidTransferInputsError);
+nameToErrorMap.set('InvalidTransferInputs', InvalidTransferInputsError);
 
 /**
  * Attempts to resolve a custom program error from the provided error code.
