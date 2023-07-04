@@ -12,12 +12,13 @@ import {
   PublicKey,
   PublicKeyInput,
   Signer,
+  TransactionBuilder,
   Umi,
   createSignerFromKeypair,
   defaultPublicKey,
   generateSigner,
   publicKey,
-  transactionBuilder,
+  transactionBuilderGroup,
 } from '@metaplex-foundation/umi';
 import { createUmi as baseCreateUmi } from '@metaplex-foundation/umi-bundle-tests';
 import { string } from '@metaplex-foundation/umi/serializers';
@@ -92,6 +93,7 @@ export const createRecipe = async (
     active?: boolean;
     inputs?: Array<IngredientInputArgs>;
     outputs?: Array<IngredientOutputArgs>;
+    features?: Array<[keyof FeatureLevels, number]>;
   } = {}
 ): Promise<PublicKey> => {
   const recipe = input.recipe ?? generateSigner(umi);
@@ -142,6 +144,12 @@ export const createRecipe = async (
     }
   });
 
+  input.features?.forEach(([feature, level]) => {
+    builder = builder.add(
+      setFeatureLevelBuilder(umi, recipe.publicKey, feature, level)
+    );
+  });
+
   input.outputs?.forEach((ingredientOutput) => {
     if (ingredientOutput.__kind === 'MintToken') {
       builder = builder.add(
@@ -175,7 +183,9 @@ export const createRecipe = async (
     );
   }
 
-  await builder.sendAndConfirm(umi);
+  await transactionBuilderGroup(
+    builder.unsafeSplitByTransactionSize(umi)
+  ).sendAndConfirm(umi);
 
   return recipe.publicKey;
 };
@@ -252,23 +262,43 @@ export const mintFeature = async (
   mint: PublicKey;
   ata: PublicKey;
 }> => {
+  const { mint, ata, builder } = mintFeatureBuilder(
+    umi,
+    seed,
+    amount,
+    destination
+  );
+  await builder.sendAndConfirm(umi);
+  return { mint, ata };
+};
+
+export const mintFeatureBuilder = (
+  umi: Umi,
+  seed: string,
+  amount: number | bigint,
+  destination?: PublicKey
+): {
+  mint: PublicKey;
+  ata: PublicKey;
+  builder: TransactionBuilder;
+} => {
   const mint = seededSigner(umi, seed);
   const programId = localnetSigner(umi);
   const owner = destination ?? umi.identity.publicKey;
   const [ata] = findAssociatedTokenPda(umi, { mint: mint.publicKey, owner });
+  const builder = createTokenIfMissing(umi, {
+    mint: mint.publicKey,
+    owner,
+  }).add(
+    mintTokensTo(umi, {
+      mint: mint.publicKey,
+      token: ata,
+      amount,
+      mintAuthority: programId,
+    })
+  );
 
-  await createTokenIfMissing(umi, { mint: mint.publicKey, owner })
-    .add(
-      mintTokensTo(umi, {
-        mint: mint.publicKey,
-        token: ata,
-        amount,
-        mintAuthority: programId,
-      })
-    )
-    .sendAndConfirm(umi);
-
-  return { mint: mint.publicKey, ata };
+  return { mint: mint.publicKey, ata, builder };
 };
 
 export const setFeatureLevel = async (
@@ -277,25 +307,33 @@ export const setFeatureLevel = async (
   feature: string,
   level: number
 ) => {
+  await setFeatureLevelBuilder(umi, recipe, feature, level).sendAndConfirm(umi);
+};
+
+export const setFeatureLevelBuilder = (
+  umi: Umi,
+  recipe: PublicKey,
+  feature: string,
+  level: number
+) => {
   const featureConfig = featureConfigs[feature];
   const featurePda = featureConfig.pdaFactory(umi);
-  const { mint: maxMint, ata: ataMax } = await mintFeature(
+  // eslint-disable-next-line prefer-const
+  let { mint, ata, builder } = mintFeatureBuilder(
     umi,
     `${featureConfig.seedPrefix}-${featureConfig.maxBurnSeed}`,
     level
   );
-  let builder = transactionBuilder();
   for (let i = 0; i < level; i += 1) {
-    builder = builder.add(
-      unlockFeature(umi, { recipe, featurePda, mint: maxMint })
-    );
+    builder = builder.add(unlockFeature(umi, { recipe, featurePda, mint }));
   }
   builder = builder.add(
     closeToken(umi, {
-      account: ataMax,
+      account: ata,
       destination: umi.identity.publicKey,
       owner: umi.identity,
     })
   );
-  await builder.sendAndConfirm(umi);
+
+  return builder;
 };

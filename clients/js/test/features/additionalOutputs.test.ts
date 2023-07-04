@@ -26,7 +26,10 @@ test(unlockMacro, 1, 2, 'mintSkill1', 1, 2, 'invalid-mint');
 test(unlockMacro, 1, 0, 'mintSkill2', 1, 3);
 test(unlockMacro, 1, 3, 'mintSkill2', 1, 3, 'max-level-reached');
 
-test.skip('it can craft a recipe with multiple outputs', async (t) => {
+// it cannot add
+// it can add
+
+test('it can craft a recipe with multiple outputs', async (t) => {
   // Given 3 mint accounts A, B and C, such that a crafter owns:
   // - 100 tokens of mint A
   // - 42 tokens of mint B
@@ -43,9 +46,11 @@ test.skip('it can craft a recipe with multiple outputs', async (t) => {
     holders: [{ owner: crafter.publicKey, amount: 0 }],
   });
 
-  // And a recipe that uses 5 mint A and outputs 1 mint B and 2 mint C.
+  // And a recipe that unlocked additional outputs
+  // and uses 5 mint A and outputs 1 mint B and 2 mint C.
   const recipe = await createRecipe(umi, {
     active: true,
+    features: [['additionalOutputs', 1]],
     inputs: [ingredientInput('BurnToken', { mint: mintA, amount: 5 })],
     outputs: [
       ingredientOutput('MintToken', { mint: mintB, amount: 1 }),
