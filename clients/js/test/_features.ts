@@ -2,10 +2,12 @@
 import {
   createAssociatedToken,
   createMint,
+  fetchToken,
   findAssociatedTokenPda,
   mintTokensTo,
 } from '@metaplex-foundation/mpl-toolbox';
 import {
+  Pda,
   PublicKey,
   Umi,
   createSignerFromKeypair,
@@ -13,10 +15,12 @@ import {
   transactionBuilderGroup,
 } from '@metaplex-foundation/umi';
 import { string } from '@metaplex-foundation/umi/serializers';
+import test from 'ava';
 import { readFileSync } from 'fs';
 import path from 'path';
 import {
   AdditionalOutputsFeatureAccountData,
+  FeatureLevels,
   FeesFeatureAccountData,
   Key,
   MaxSupplyFeatureAccountData,
@@ -25,13 +29,16 @@ import {
   WisdomFeatureAccountData,
   adminSetFeature,
   feature,
+  fetchRecipe,
   findAdditionalOutputsFeaturePda,
   findFeesFeaturePda,
   findMaxSupplyFeaturePda,
   findSolPaymentFeaturePda,
   findTransferInputsFeaturePda,
   findWisdomFeaturePda,
+  unlockFeature,
 } from '../src';
+import { createRecipe, createUmi } from './_setup';
 
 const rootDir = path.join(__dirname, '..', '..', '..', '..');
 const programScripts = path.join(rootDir, 'configs', 'program-scripts');
@@ -249,3 +256,47 @@ export const mintFeature = async (
   await builder.sendAndConfirm(umi);
   return { mint: mint.publicKey, ata };
 };
+
+export const getUnlockFeatureMacro = (
+  featurePda: (umi: Umi) => Pda | PublicKey,
+  featureKey: keyof FeatureLevels,
+  featurePrefix: string
+) =>
+  test.macro({
+    title: (providedTitle, _: number, mintSeed: string) =>
+      providedTitle ?? `it can unlock using ${mintSeed} tokens`,
+    exec: async (
+      t,
+      fromTokens: number,
+      mintSeed: string,
+      toTokens: number,
+      toLevel: number
+    ) => {
+      // Given feature PDAs and an existing recipe.
+      const umi = await createUmi();
+      await withFeatures(umi);
+      const recipe = await createRecipe(umi);
+
+      // And given we own a token from a feature mint.
+      const { mint, ata } = await mintFeature(
+        umi,
+        `${featurePrefix}-${mintSeed}`,
+        fromTokens
+      );
+
+      // When we use it to unlock the additional outputs feature.
+      await unlockFeature(umi, {
+        recipe,
+        featurePda: featurePda(umi),
+        mint,
+      }).sendAndConfirm(umi);
+
+      // Then the recipe was updated to reflect the new feature level.
+      const recipeAccount = await fetchRecipe(umi, recipe);
+      t.is(recipeAccount.featureLevels[featureKey], toLevel);
+
+      // And the token account was also potentially updated.
+      const tokenAccount = await fetchToken(umi, ata);
+      t.is(tokenAccount.amount, BigInt(toTokens));
+    },
+  });
