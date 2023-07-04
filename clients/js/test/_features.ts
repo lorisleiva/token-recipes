@@ -82,6 +82,7 @@ export const withFeatures = async (umi: Umi): Promise<FeatureContext> => {
     mintBurn2: seededSigner(umi, 'fees-mintBurn2').publicKey,
     mintBurn3: seededSigner(umi, 'fees-mintBurn3').publicKey,
     mintBurn4: seededSigner(umi, 'fees-mintBurn4').publicKey,
+    mintBurn5: seededSigner(umi, 'fees-mintBurn5').publicKey,
     mintSkill1: seededSigner(umi, 'fees-mintSkill1').publicKey,
     mintSkill2: seededSigner(umi, 'fees-mintSkill2').publicKey,
     mintSkill3: seededSigner(umi, 'fees-mintSkill3').publicKey,

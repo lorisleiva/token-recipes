@@ -37,6 +37,7 @@ export type FeesFeatureAccountData = {
   mintBurn2: PublicKey;
   mintBurn3: PublicKey;
   mintBurn4: PublicKey;
+  mintBurn5: PublicKey;
   mintSkill1: PublicKey;
   mintSkill2: PublicKey;
   mintSkill3: PublicKey;
@@ -50,6 +51,7 @@ export type FeesFeatureAccountDataArgs = {
   mintBurn2: PublicKey;
   mintBurn3: PublicKey;
   mintBurn4: PublicKey;
+  mintBurn5: PublicKey;
   mintSkill1: PublicKey;
   mintSkill2: PublicKey;
   mintSkill3: PublicKey;
@@ -75,6 +77,7 @@ export function getFeesFeatureAccountDataSerializer(
       ['mintBurn2', publicKeySerializer()],
       ['mintBurn3', publicKeySerializer()],
       ['mintBurn4', publicKeySerializer()],
+      ['mintBurn5', publicKeySerializer()],
       ['mintSkill1', publicKeySerializer()],
       ['mintSkill2', publicKeySerializer()],
       ['mintSkill3', publicKeySerializer()],
@@ -169,6 +172,7 @@ export function getFeesFeatureGpaBuilder(
       mintBurn2: PublicKey;
       mintBurn3: PublicKey;
       mintBurn4: PublicKey;
+      mintBurn5: PublicKey;
       mintSkill1: PublicKey;
       mintSkill2: PublicKey;
       mintSkill3: PublicKey;
@@ -180,9 +184,10 @@ export function getFeesFeatureGpaBuilder(
       mintBurn2: [97, publicKeySerializer()],
       mintBurn3: [129, publicKeySerializer()],
       mintBurn4: [161, publicKeySerializer()],
-      mintSkill1: [193, publicKeySerializer()],
-      mintSkill2: [225, publicKeySerializer()],
-      mintSkill3: [257, publicKeySerializer()],
+      mintBurn5: [193, publicKeySerializer()],
+      mintSkill1: [225, publicKeySerializer()],
+      mintSkill2: [257, publicKeySerializer()],
+      mintSkill3: [289, publicKeySerializer()],
     })
     .deserializeUsing<FeesFeature>((account) =>
       deserializeFeesFeature(account)
@@ -190,7 +195,7 @@ export function getFeesFeatureGpaBuilder(
 }
 
 export function getFeesFeatureSize(): number {
-  return 289;
+  return 321;
 }
 
 export function findFeesFeaturePda(

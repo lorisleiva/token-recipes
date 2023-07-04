@@ -1,6 +1,8 @@
 use crate::{
+    assertions::assert_mint_account,
     error::TokenRecipesError,
     state::{features::UnlockFeatureContext, key::Key, recipe::Recipe},
+    utils::burn_tokens,
 };
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
@@ -42,8 +44,10 @@ pub struct FeesFeature {
     pub mint_burn_2: Pubkey,
     /// When burned, allows leveling up by 1 from 0 to 11.
     pub mint_burn_3: Pubkey,
-    /// When burned, allows leveling up straight to 11.
+    /// When burned, allows leveling up straight to 10.
     pub mint_burn_4: Pubkey,
+    /// When burned, allows leveling up straight to 11.
+    pub mint_burn_5: Pubkey,
     /// Without burning, allows leveling up straight to 1.
     pub mint_skill_1: Pubkey,
     /// Without burning, allows leveling up straight to 10.
@@ -53,9 +57,64 @@ pub struct FeesFeature {
 }
 
 impl FeesFeature {
-    pub const LEN: usize = 1 + 32 * 9;
+    pub const LEN: usize = 1 + 32 * 10;
+    pub const MAX_LEVEL: u8 = 11;
 
-    pub fn unlock(&self, _context: &UnlockFeatureContext) -> ProgramResult {
+    pub fn unlock(&self, context: &UnlockFeatureContext) -> ProgramResult {
+        let mut recipe_account = Recipe::get_writable(context.recipe)?;
+        let level = recipe_account.feature_levels.additional_outputs;
+        if level >= Self::MAX_LEVEL {
+            return Err(TokenRecipesError::MaxFeatureLevelReached.into());
+        }
+
+        let result: Result<u64, ProgramError> = match context.mint.key {
+            x if *x == self.mint_burn_1 && level < 1 => {
+                recipe_account.feature_levels.additional_outputs += 1;
+                Ok(1)
+            }
+            x if *x == self.mint_burn_2 && level < 10 => {
+                recipe_account.feature_levels.additional_outputs += 1;
+                Ok(1)
+            }
+            x if *x == self.mint_burn_3 && level < 11 => {
+                recipe_account.feature_levels.additional_outputs += 1;
+                Ok(1)
+            }
+            x if *x == self.mint_burn_4 && level < 10 => {
+                recipe_account.feature_levels.additional_outputs = 10;
+                Ok(1)
+            }
+            x if *x == self.mint_burn_5 && level < 11 => {
+                recipe_account.feature_levels.additional_outputs = 11;
+                Ok(1)
+            }
+            x if *x == self.mint_skill_1 && level < 1 => {
+                recipe_account.feature_levels.additional_outputs = 1;
+                Ok(0)
+            }
+            x if *x == self.mint_skill_2 && level < 10 => {
+                recipe_account.feature_levels.additional_outputs = 10;
+                Ok(0)
+            }
+            x if *x == self.mint_skill_3 && level < 11 => {
+                recipe_account.feature_levels.additional_outputs = 11;
+                Ok(0)
+            }
+            _ => Err(TokenRecipesError::InvalidMintToLevelUpFeature.into()),
+        };
+        let tokens_to_burn = result?;
+
+        if tokens_to_burn > 0 {
+            let mint_account = assert_mint_account("mint", context.mint)?;
+            burn_tokens(
+                context.token,
+                context.mint,
+                context.owner,
+                tokens_to_burn,
+                mint_account.decimals,
+            )?;
+        }
+
         Ok(())
     }
 

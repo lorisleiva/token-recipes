@@ -504,6 +504,10 @@
             "type": "publicKey"
           },
           {
+            "name": "mintBurn5",
+            "type": "publicKey"
+          },
+          {
             "name": "mintSkill1",
             "type": "publicKey"
           },
