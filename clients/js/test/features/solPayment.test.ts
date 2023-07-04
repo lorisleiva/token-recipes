@@ -32,19 +32,37 @@ const unlockMacro = getUnlockFeatureMacro(
 
 // fromTokens, fromLevel, mint, toTokens, toLevel, error?
 test(unlockMacro, 1, 0, 'mintBurn1', 0, 1);
+test(unlockMacro, 1, 1, 'mintBurn1', 1, 1, 'invalid-mint');
 test(unlockMacro, 1, 0, 'mintBurn2', 0, 1);
+test(unlockMacro, 1, 2, 'mintBurn2', 0, 3);
+test(unlockMacro, 1, 3, 'mintBurn2', 1, 3, 'invalid-mint');
 test(unlockMacro, 1, 0, 'mintBurn3', 0, 1);
+test(unlockMacro, 1, 5, 'mintBurn3', 0, 6);
+test(unlockMacro, 1, 6, 'mintBurn3', 1, 6, 'invalid-mint');
 test(unlockMacro, 1, 0, 'mintBurn4', 0, 1);
+test(unlockMacro, 1, 9, 'mintBurn4', 0, 10);
+test(unlockMacro, 1, 10, 'mintBurn4', 1, 10, 'invalid-mint');
 test(unlockMacro, 1, 0, 'mintBurn5', 0, 1);
+test(unlockMacro, 1, 10, 'mintBurn5', 0, 11);
+test(unlockMacro, 1, 11, 'mintBurn5', 1, 11, 'max-level-reached');
 test(unlockMacro, 1, 0, 'mintBurn6', 0, 3);
+test(unlockMacro, 1, 3, 'mintBurn6', 1, 3, 'invalid-mint');
 test(unlockMacro, 1, 0, 'mintBurn7', 0, 6);
+test(unlockMacro, 1, 6, 'mintBurn7', 1, 6, 'invalid-mint');
 test(unlockMacro, 1, 0, 'mintBurn8', 0, 10);
+test(unlockMacro, 1, 10, 'mintBurn8', 1, 10, 'invalid-mint');
 test(unlockMacro, 1, 0, 'mintBurn9', 0, 11);
+test(unlockMacro, 1, 11, 'mintBurn9', 1, 11, 'max-level-reached');
 test(unlockMacro, 1, 0, 'mintSkill1', 1, 1);
+test(unlockMacro, 1, 1, 'mintSkill1', 1, 1, 'invalid-mint');
 test(unlockMacro, 1, 0, 'mintSkill2', 1, 3);
+test(unlockMacro, 1, 3, 'mintSkill2', 1, 3, 'invalid-mint');
 test(unlockMacro, 1, 0, 'mintSkill3', 1, 6);
+test(unlockMacro, 1, 6, 'mintSkill3', 1, 6, 'invalid-mint');
 test(unlockMacro, 1, 0, 'mintSkill4', 1, 10);
+test(unlockMacro, 1, 10, 'mintSkill4', 1, 10, 'invalid-mint');
 test(unlockMacro, 1, 0, 'mintSkill5', 1, 11);
+test(unlockMacro, 1, 11, 'mintSkill5', 1, 11, 'max-level-reached');
 
 test('it can craft a recipe with a transfer sol input', async (t) => {
   // Given an output mint not owned by the crafter.
