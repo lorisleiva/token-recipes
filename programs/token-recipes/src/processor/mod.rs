@@ -4,7 +4,7 @@ use crate::{
         activate_recipe::activate_recipe, add_ingredient::add_ingredient,
         admin_set_feature::admin_set_feature, craft::craft, create_recipe::create_recipe,
         delete_recipe::delete_recipe, pause_recipe::pause_recipe,
-        remove_ingredient::remove_ingredient,
+        remove_ingredient::remove_ingredient, unlock_feature::unlock_feature,
     },
 };
 use borsh::BorshDeserialize;
@@ -18,6 +18,7 @@ pub mod create_recipe;
 pub mod delete_recipe;
 pub mod pause_recipe;
 pub mod remove_ingredient;
+pub mod unlock_feature;
 
 pub struct Processor;
 impl Processor {
@@ -65,6 +66,10 @@ impl Processor {
             TokenRecipesInstruction::AdminSetFeature { feature } => {
                 msg!("Instruction: AdminSetFeature");
                 admin_set_feature(accounts, feature)
+            }
+            TokenRecipesInstruction::UnlockFeature => {
+                msg!("Instruction: UnlockFeature");
+                unlock_feature(accounts)
             }
         }
     }

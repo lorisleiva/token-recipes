@@ -13,3 +13,4 @@ export * from './createRecipe';
 export * from './deleteRecipe';
 export * from './pauseRecipe';
 export * from './removeIngredient';
+export * from './unlockFeature';

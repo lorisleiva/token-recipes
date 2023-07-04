@@ -1,6 +1,6 @@
 use crate::{
     error::TokenRecipesError,
-    state::{key::Key, recipe::Recipe},
+    state::{features::UnlockFeatureContext, key::Key, recipe::Recipe},
 };
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
@@ -34,6 +34,10 @@ pub struct AdditionalOutputsFeature {
 
 impl AdditionalOutputsFeature {
     pub const LEN: usize = 1 + 32 * 5;
+
+    pub fn unlock(&self, _context: &UnlockFeatureContext) -> ProgramResult {
+        Ok(())
+    }
 
     pub fn seeds<'a>() -> Vec<&'a [u8]> {
         vec!["features".as_bytes(), "additional_outputs".as_bytes()]

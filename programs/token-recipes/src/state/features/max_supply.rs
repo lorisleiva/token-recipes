@@ -1,6 +1,9 @@
 use crate::{
     error::TokenRecipesError,
-    state::{ingredient_output::IngredientOutput, key::Key, recipe::Recipe},
+    state::{
+        features::UnlockFeatureContext, ingredient_output::IngredientOutput, key::Key,
+        recipe::Recipe,
+    },
 };
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
@@ -26,6 +29,10 @@ pub struct MaxSupplyFeature {
 
 impl MaxSupplyFeature {
     pub const LEN: usize = 1 + 32 * 2;
+
+    pub fn unlock(&self, _context: &UnlockFeatureContext) -> ProgramResult {
+        Ok(())
+    }
 
     pub fn seeds<'a>() -> Vec<&'a [u8]> {
         vec!["features".as_bytes(), "max_supply".as_bytes()]

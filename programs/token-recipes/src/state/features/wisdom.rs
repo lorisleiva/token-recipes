@@ -1,4 +1,7 @@
-use crate::{error::TokenRecipesError, state::key::Key};
+use crate::{
+    error::TokenRecipesError,
+    state::{features::UnlockFeatureContext, key::Key},
+};
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
 use solana_program::{
@@ -30,6 +33,10 @@ pub struct WisdomFeature {
 
 impl WisdomFeature {
     pub const LEN: usize = 1 + 32 * 3;
+
+    pub fn unlock(&self, _context: &UnlockFeatureContext) -> ProgramResult {
+        Ok(())
+    }
 
     pub fn seeds<'a>() -> Vec<&'a [u8]> {
         vec!["features".as_bytes(), "wisdom".as_bytes()]

@@ -111,6 +111,16 @@ pub enum TokenRecipesInstruction {
         /// The feature to set.
         feature: Feature,
     },
+
+    /// Unlock a feature by burning or simply having a certain feature mint.
+    #[account(0, writable, name="recipe", desc = "The address of the recipe account")]
+    #[account(1, name="feature_pda", desc = "The feature PDA to level up")]
+    #[account(2, signer, name="authority", desc = "The authority of the recipe account")]
+    #[account(3, signer, name="owner", desc = "The owner of the token account, usually the same as the authority")]
+    #[account(4, writable, name="mint", desc = "The mint account that unlocks the feature")]
+    #[account(5, writable, name="token", desc = "The token account linking the mint and owner accounts")]
+    #[account(6, name="token_program", desc = "The token program")]
+    UnlockFeature,
 }
 
 pub fn create_recipe(recipe: &Pubkey, authority: &Pubkey, payer: &Pubkey) -> Instruction {

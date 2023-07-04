@@ -353,6 +353,58 @@
         "type": "u8",
         "value": 7
       }
+    },
+    {
+      "name": "UnlockFeature",
+      "accounts": [
+        {
+          "name": "recipe",
+          "isMut": true,
+          "isSigner": false,
+          "desc": "The address of the recipe account"
+        },
+        {
+          "name": "featurePda",
+          "isMut": false,
+          "isSigner": false,
+          "desc": "The feature PDA to level up"
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "desc": "The authority of the recipe account"
+        },
+        {
+          "name": "owner",
+          "isMut": false,
+          "isSigner": true,
+          "desc": "The owner of the token account, usually the same as the authority"
+        },
+        {
+          "name": "mint",
+          "isMut": true,
+          "isSigner": false,
+          "desc": "The mint account that unlocks the feature"
+        },
+        {
+          "name": "token",
+          "isMut": true,
+          "isSigner": false,
+          "desc": "The token account linking the mint and owner accounts"
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false,
+          "desc": "The token program"
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 8
+      }
     }
   ],
   "accounts": [

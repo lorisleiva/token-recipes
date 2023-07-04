@@ -1,6 +1,8 @@
 use crate::{
     error::TokenRecipesError,
-    state::{ingredient_input::IngredientInput, key::Key, recipe::Recipe},
+    state::{
+        features::UnlockFeatureContext, ingredient_input::IngredientInput, key::Key, recipe::Recipe,
+    },
 };
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
@@ -34,6 +36,10 @@ pub struct TransferInputsFeature {
 
 impl TransferInputsFeature {
     pub const LEN: usize = 1 + 32 * 5;
+
+    pub fn unlock(&self, _context: &UnlockFeatureContext) -> ProgramResult {
+        Ok(())
+    }
 
     pub fn seeds<'a>() -> Vec<&'a [u8]> {
         vec!["features".as_bytes(), "transfer_inputs".as_bytes()]
