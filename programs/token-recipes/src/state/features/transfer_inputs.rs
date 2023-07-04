@@ -83,7 +83,7 @@ impl TransferInputsFeature {
             )?;
         }
 
-        Ok(())
+        recipe_account.save(context.recipe)
     }
 
     pub fn seeds<'a>() -> Vec<&'a [u8]> {

@@ -88,6 +88,20 @@ kinobi.update(
         programId: { defaultsTo: null },
       },
     },
+    unlockFeature: {
+      accounts: {
+        owner: { defaultsTo: k.identityDefault() },
+        token: {
+          defaultsTo: k.pdaDefault("associatedToken", {
+            importFrom: "mplToolbox",
+            seeds: {
+              mint: k.accountDefault("mint"),
+              owner: k.accountDefault("owner"),
+            },
+          }),
+        },
+      },
+    },
   })
 );
 

@@ -6,6 +6,7 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
+import { findAssociatedTokenPda } from '@metaplex-foundation/mpl-toolbox';
 import {
   AccountMeta,
   Context,
@@ -13,6 +14,7 @@ import {
   PublicKey,
   Signer,
   TransactionBuilder,
+  publicKey,
   transactionBuilder,
 } from '@metaplex-foundation/umi';
 import {
@@ -32,11 +34,11 @@ export type UnlockFeatureInstructionAccounts = {
   /** The authority of the recipe account */
   authority?: Signer;
   /** The owner of the token account, usually the same as the authority */
-  owner: Signer;
+  owner?: Signer;
   /** The mint account that unlocks the feature */
   mint: PublicKey | Pda;
   /** The token account linking the mint and owner accounts */
-  token: PublicKey | Pda;
+  token?: PublicKey | Pda;
   /** The token program */
   tokenProgram?: PublicKey | Pda;
 };
@@ -74,7 +76,7 @@ export function getUnlockFeatureInstructionDataSerializer(
 
 // Instruction.
 export function unlockFeature(
-  context: Pick<Context, 'programs' | 'identity'>,
+  context: Pick<Context, 'programs' | 'eddsa' | 'identity'>,
   input: UnlockFeatureInstructionAccounts
 ): TransactionBuilder {
   const signers: Signer[] = [];
@@ -90,9 +92,7 @@ export function unlockFeature(
   const resolvedAccounts = {
     recipe: [input.recipe, true] as const,
     featurePda: [input.featurePda, false] as const,
-    owner: [input.owner, false] as const,
     mint: [input.mint, true] as const,
-    token: [input.token, true] as const,
   };
   addObjectProperty(
     resolvedAccounts,
@@ -100,6 +100,26 @@ export function unlockFeature(
     input.authority
       ? ([input.authority, false] as const)
       : ([context.identity, false] as const)
+  );
+  addObjectProperty(
+    resolvedAccounts,
+    'owner',
+    input.owner
+      ? ([input.owner, false] as const)
+      : ([context.identity, false] as const)
+  );
+  addObjectProperty(
+    resolvedAccounts,
+    'token',
+    input.token
+      ? ([input.token, true] as const)
+      : ([
+          findAssociatedTokenPda(context, {
+            mint: publicKey(input.mint, false),
+            owner: publicKey(resolvedAccounts.owner[0], false),
+          }),
+          true,
+        ] as const)
   );
   addObjectProperty(
     resolvedAccounts,
