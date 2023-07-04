@@ -1,5 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import {
+  closeToken,
   createMint,
   createTokenIfMissing,
   fetchToken,
@@ -293,7 +294,7 @@ export const getUnlockFeatureMacro = (
 
       // And given the recipe has the required initial feature level.
       if (fromLevel > 0) {
-        const { mint: maxMint } = await mintFeature(
+        const { mint: maxMint, ata: ataMax } = await mintFeature(
           umi,
           `${featurePrefix}-${featureMaxIncrementalMintBurnSeed}`,
           fromLevel
@@ -304,6 +305,13 @@ export const getUnlockFeatureMacro = (
             unlockFeature(umi, { recipe, featurePda, mint: maxMint })
           );
         }
+        builder = builder.add(
+          closeToken(umi, {
+            account: ataMax,
+            destination: umi.identity.publicKey,
+            owner: umi.identity,
+          })
+        );
         await builder.sendAndConfirm(umi);
       }
       let recipeAccount = await fetchRecipe(umi, recipe);
