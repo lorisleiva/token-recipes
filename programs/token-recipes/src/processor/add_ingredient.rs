@@ -65,6 +65,10 @@ pub(crate) fn add_ingredient(
             amount,
             destination: destination.ok_or(TokenRecipesError::MissingDestinationArgument)?,
         }),
+        IngredientType::TransferSolInput => Ingredient::Input(IngredientInput::TransferSol {
+            lamports: amount,
+            destination: destination.ok_or(TokenRecipesError::MissingDestinationArgument)?,
+        }),
         IngredientType::MintTokenOutput => Ingredient::Output(IngredientOutput::MintToken {
             mint: *mint.key,
             amount,

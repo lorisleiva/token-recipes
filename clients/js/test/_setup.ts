@@ -10,6 +10,7 @@ import {
   PublicKeyInput,
   Signer,
   Umi,
+  defaultPublicKey,
   generateSigner,
   publicKey,
 } from '@metaplex-foundation/umi';
@@ -98,7 +99,7 @@ export const createRecipe = async (
           amount: ingredientInput.amount,
         })
       );
-    } else {
+    } else if (ingredientInput.__kind === 'TransferToken') {
       builder = builder.add(
         addIngredient(umi, {
           recipe: recipe.publicKey,
@@ -107,6 +108,18 @@ export const createRecipe = async (
           payer,
           ingredientType: IngredientType.TransferTokenInput,
           amount: ingredientInput.amount,
+          destination: ingredientInput.destination,
+        })
+      );
+    } else {
+      builder = builder.add(
+        addIngredient(umi, {
+          recipe: recipe.publicKey,
+          mint: defaultPublicKey(),
+          authority,
+          payer,
+          ingredientType: IngredientType.TransferSolInput,
+          amount: ingredientInput.lamports,
           destination: ingredientInput.destination,
         })
       );

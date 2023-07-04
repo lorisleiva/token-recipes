@@ -13,6 +13,7 @@ export enum IngredientType {
   TransferTokenInput,
   MintTokenOutput,
   MintTokenWithMaxSupplyOutput,
+  TransferSolInput,
 }
 
 export type IngredientTypeArgs = IngredientType;

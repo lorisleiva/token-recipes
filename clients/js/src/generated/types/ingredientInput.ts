@@ -24,7 +24,8 @@ export type IngredientInput =
       mint: PublicKey;
       amount: bigint;
       destination: PublicKey;
-    };
+    }
+  | { __kind: 'TransferSol'; lamports: bigint; destination: PublicKey };
 
 export type IngredientInputArgs =
   | { __kind: 'BurnToken'; mint: PublicKey; amount: number | bigint }
@@ -32,6 +33,11 @@ export type IngredientInputArgs =
       __kind: 'TransferToken';
       mint: PublicKey;
       amount: number | bigint;
+      destination: PublicKey;
+    }
+  | {
+      __kind: 'TransferSol';
+      lamports: number | bigint;
       destination: PublicKey;
     };
 
@@ -63,6 +69,13 @@ export function getIngredientInputSerializer(
           ['destination', publicKeySerializer()],
         ]),
       ],
+      [
+        'TransferSol',
+        struct<GetDataEnumKindContent<IngredientInput, 'TransferSol'>>([
+          ['lamports', u64()],
+          ['destination', publicKeySerializer()],
+        ]),
+      ],
     ],
     { description: 'IngredientInput' }
   ) as Serializer<IngredientInputArgs, IngredientInput>;
@@ -77,6 +90,10 @@ export function ingredientInput(
   kind: 'TransferToken',
   data: GetDataEnumKindContent<IngredientInputArgs, 'TransferToken'>
 ): GetDataEnumKind<IngredientInputArgs, 'TransferToken'>;
+export function ingredientInput(
+  kind: 'TransferSol',
+  data: GetDataEnumKindContent<IngredientInputArgs, 'TransferSol'>
+): GetDataEnumKind<IngredientInputArgs, 'TransferSol'>;
 export function ingredientInput<K extends IngredientInputArgs['__kind']>(
   kind: K,
   data?: any

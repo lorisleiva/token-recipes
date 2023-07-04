@@ -4,13 +4,14 @@ use crate::{
         assert_token_account, assert_writable,
     },
     error::TokenRecipesError,
-    state::{ingredient_record::IngredientRecord, recipe::Recipe},
-    utils::{burn_tokens, create_associated_token_account, transfer_tokens},
+    state::{ingredient_record::IngredientRecord, recipe::IngredientType, recipe::Recipe},
+    utils::{burn_tokens, create_associated_token_account, transfer_lamports, transfer_tokens},
 };
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
     entrypoint::ProgramResult,
+    msg,
     program_error::ProgramError,
     pubkey::Pubkey,
 };
@@ -27,6 +28,10 @@ pub enum IngredientInput {
         amount: u64,
         destination: Pubkey,
     },
+    TransferSol {
+        lamports: u64,
+        destination: Pubkey,
+    },
 }
 
 impl IngredientInput {
@@ -34,6 +39,7 @@ impl IngredientInput {
         match self {
             Self::BurnToken { .. } => 1 + 32 + 8,
             Self::TransferToken { .. } => 1 + 32 + 8 + 32,
+            Self::TransferSol { .. } => 1 + 8 + 32,
         }
     }
 
@@ -59,6 +65,15 @@ impl IngredientInput {
                 ingredient_record_account.set_input(true)?;
                 ingredient_record_account.save(ingredient_record)
             }
+            Self::TransferSol { .. } => {
+                if let Ok(_) =
+                    recipe_account.find_ingredient(IngredientType::TransferSolInput, mint)
+                {
+                    msg!("Cannot add more than one TransferSol input ingredient");
+                    return Err(TokenRecipesError::IngredientAlreadyAdded.into());
+                }
+                recipe_account.add_ingredient_input(&self, recipe, payer, system_program)
+            }
         }
     }
 
@@ -79,6 +94,10 @@ impl IngredientInput {
                     IngredientRecord::get(ingredient_record, mint, recipe)?;
                 ingredient_record_account.set_input(false)?;
                 ingredient_record_account.save_or_close(ingredient_record, payer)
+            }
+            Self::TransferSol { .. } => {
+                recipe_account.remove_ingredient_input(index, recipe, payer, system_program)?;
+                Ok(())
             }
         }
     }
@@ -160,6 +179,20 @@ impl IngredientInput {
                     input_mint_account.decimals,
                     None,
                 )
+            }
+            Self::TransferSol {
+                lamports,
+                destination,
+            } => {
+                let input_destination = next_account_info(account_info_iter)?;
+                assert_same_pubkeys("input_destination", input_destination, destination)?;
+                assert_writable("input_destination", input_destination)?;
+
+                let multiplied_lamports = lamports
+                    .checked_mul(quantity)
+                    .ok_or(TokenRecipesError::NumericalOverflow)?;
+
+                transfer_lamports(payer, input_destination, multiplied_lamports, None)
             }
         }
     }

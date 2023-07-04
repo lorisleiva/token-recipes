@@ -81,7 +81,22 @@ pub fn close_account<'a>(
     Ok(())
 }
 
-/// Close an account.
+/// Transfer lamports.
+#[inline(always)]
+pub fn transfer_lamports<'a>(
+    from: &AccountInfo<'a>,
+    to: &AccountInfo<'a>,
+    lamports: u64,
+    signer_seeds: Option<&[&[&[u8]]]>,
+) -> ProgramResult {
+    invoke_signed(
+        &system_instruction::transfer(from.key, to.key, lamports),
+        &[from.clone(), to.clone()],
+        signer_seeds.unwrap_or(&[]),
+    )
+}
+
+/// Transfer mint authority.
 #[inline(always)]
 pub fn transfer_mint_authority<'a>(
     mint: &AccountInfo<'a>,

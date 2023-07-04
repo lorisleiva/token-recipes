@@ -87,6 +87,23 @@ impl Recipe {
                 let maybe_index = self.inputs.iter().position(|i| match i {
                     IngredientInput::BurnToken { mint: m, .. }
                     | IngredientInput::TransferToken { mint: m, .. } => m == mint.key,
+                    _ => false,
+                });
+                match maybe_index {
+                    Some(index) => Ok((Ingredient::Input(self.inputs[index].clone()), index)),
+                    None => {
+                        msg!(
+                            "Ingredient [{}] is not part of this recipe as an input.",
+                            mint.key
+                        );
+                        Err(TokenRecipesError::MissingIngredient.into())
+                    }
+                }
+            }
+            IngredientType::TransferSolInput => {
+                let maybe_index = self.inputs.iter().position(|i| match i {
+                    IngredientInput::TransferSol { .. } => true,
+                    _ => false,
                 });
                 match maybe_index {
                     Some(index) => Ok((Ingredient::Input(self.inputs[index].clone()), index)),
@@ -231,6 +248,7 @@ pub enum IngredientType {
     TransferTokenInput,
     MintTokenOutput,
     MintTokenWithMaxSupplyOutput,
+    TransferSolInput,
 }
 
 pub enum Ingredient {

@@ -847,6 +847,19 @@
                 "type": "publicKey"
               }
             ]
+          },
+          {
+            "name": "TransferSol",
+            "fields": [
+              {
+                "name": "lamports",
+                "type": "u64"
+              },
+              {
+                "name": "destination",
+                "type": "publicKey"
+              }
+            ]
           }
         ]
       }
@@ -957,6 +970,9 @@
           },
           {
             "name": "MintTokenWithMaxSupplyOutput"
+          },
+          {
+            "name": "TransferSolInput"
           }
         ]
       }
