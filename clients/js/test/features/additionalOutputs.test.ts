@@ -27,7 +27,7 @@ const unlockMacro = test.macro({
     // And given we own a token from a feature mint.
     const { mint, ata } = await mintFeature(
       umi,
-      `additionalOutputs-${mintSeed}`,
+      `ADDO-${mintSeed}`,
       fromTokens
     );
 

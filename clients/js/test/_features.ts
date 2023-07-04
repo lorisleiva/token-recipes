@@ -45,7 +45,7 @@ export const localnetSigner = (umi: Umi) => {
 
 export const seededSigner = (umi: Umi, seed: string) => {
   const keypair = umi.eddsa.createKeypairFromSeed(
-    string({ size: 32 }).serialize(`token-recipes-${seed}`)
+    string({ size: 32 }).serialize(`TR42-${seed}`)
   );
   return createSignerFromKeypair(umi, keypair);
 };
@@ -76,16 +76,16 @@ export const withFeatures = async (umi: Umi): Promise<FeatureContext> => {
   const [feesFeaturePda] = findFeesFeaturePda(umi);
   const feesFeature: FeesFeatureAccountData = {
     key: Key.FeesFeature,
-    adminDestination: seededSigner(umi, 'fees-adminDestination').publicKey,
-    shardMint: seededSigner(umi, 'fees-shardMint').publicKey,
-    mintBurn1: seededSigner(umi, 'fees-mintBurn1').publicKey,
-    mintBurn2: seededSigner(umi, 'fees-mintBurn2').publicKey,
-    mintBurn3: seededSigner(umi, 'fees-mintBurn3').publicKey,
-    mintBurn4: seededSigner(umi, 'fees-mintBurn4').publicKey,
-    mintBurn5: seededSigner(umi, 'fees-mintBurn5').publicKey,
-    mintSkill1: seededSigner(umi, 'fees-mintSkill1').publicKey,
-    mintSkill2: seededSigner(umi, 'fees-mintSkill2').publicKey,
-    mintSkill3: seededSigner(umi, 'fees-mintSkill3').publicKey,
+    adminDestination: seededSigner(umi, 'FEES-adminDestination').publicKey,
+    shardMint: seededSigner(umi, 'FEES-shardMint').publicKey,
+    mintBurn1: seededSigner(umi, 'FEES-mintBurn1').publicKey,
+    mintBurn2: seededSigner(umi, 'FEES-mintBurn2').publicKey,
+    mintBurn3: seededSigner(umi, 'FEES-mintBurn3').publicKey,
+    mintBurn4: seededSigner(umi, 'FEES-mintBurn4').publicKey,
+    mintBurn5: seededSigner(umi, 'FEES-mintBurn5').publicKey,
+    mintSkill1: seededSigner(umi, 'FEES-mintSkill1').publicKey,
+    mintSkill2: seededSigner(umi, 'FEES-mintSkill2').publicKey,
+    mintSkill3: seededSigner(umi, 'FEES-mintSkill3').publicKey,
   };
   const feesBuilder = adminSetFeature(umi, {
     programId,
@@ -98,11 +98,11 @@ export const withFeatures = async (umi: Umi): Promise<FeatureContext> => {
   const [additionalOutputsFeaturePda] = findAdditionalOutputsFeaturePda(umi);
   const additionalOutputsFeature: AdditionalOutputsFeatureAccountData = {
     key: Key.AdditionalOutputsFeature,
-    mintBurn1: seededSigner(umi, 'additionalOutputs-mintBurn1').publicKey,
-    mintBurn2: seededSigner(umi, 'additionalOutputs-mintBurn2').publicKey,
-    mintBurn3: seededSigner(umi, 'additionalOutputs-mintBurn3').publicKey,
-    mintSkill1: seededSigner(umi, 'additionalOutputs-mintSkill1').publicKey,
-    mintSkill2: seededSigner(umi, 'additionalOutputs-mintSkill2').publicKey,
+    mintBurn1: seededSigner(umi, 'ADDO-mintBurn1').publicKey,
+    mintBurn2: seededSigner(umi, 'ADDO-mintBurn2').publicKey,
+    mintBurn3: seededSigner(umi, 'ADDO-mintBurn3').publicKey,
+    mintSkill1: seededSigner(umi, 'ADDO-mintSkill1').publicKey,
+    mintSkill2: seededSigner(umi, 'ADDO-mintSkill2').publicKey,
   };
   const additionalOutputsBuilder = adminSetFeature(umi, {
     programId,
@@ -115,11 +115,11 @@ export const withFeatures = async (umi: Umi): Promise<FeatureContext> => {
   const [transferInputsFeaturePda] = findTransferInputsFeaturePda(umi);
   const transferInputsFeature: TransferInputsFeatureAccountData = {
     key: Key.TransferInputsFeature,
-    mintBurn1: seededSigner(umi, 'transferInputs-mintBurn1').publicKey,
-    mintBurn2: seededSigner(umi, 'transferInputs-mintBurn2').publicKey,
-    mintBurn3: seededSigner(umi, 'transferInputs-mintBurn3').publicKey,
-    mintSkill1: seededSigner(umi, 'transferInputs-mintSkill1').publicKey,
-    mintSkill2: seededSigner(umi, 'transferInputs-mintSkill2').publicKey,
+    mintBurn1: seededSigner(umi, 'TRIN-mintBurn1').publicKey,
+    mintBurn2: seededSigner(umi, 'TRIN-mintBurn2').publicKey,
+    mintBurn3: seededSigner(umi, 'TRIN-mintBurn3').publicKey,
+    mintSkill1: seededSigner(umi, 'TRIN-mintSkill1').publicKey,
+    mintSkill2: seededSigner(umi, 'TRIN-mintSkill2').publicKey,
   };
   const transferInputsBuilder = adminSetFeature(umi, {
     programId,
@@ -132,8 +132,8 @@ export const withFeatures = async (umi: Umi): Promise<FeatureContext> => {
   const [maxSupplyFeaturePda] = findMaxSupplyFeaturePda(umi);
   const maxSupplyFeature: MaxSupplyFeatureAccountData = {
     key: Key.MaxSupplyFeature,
-    mintBurn1: seededSigner(umi, 'maxSupply-mintBurn1').publicKey,
-    mintSkill1: seededSigner(umi, 'maxSupply-mintSkill1').publicKey,
+    mintBurn1: seededSigner(umi, 'MAXS-mintBurn1').publicKey,
+    mintSkill1: seededSigner(umi, 'MAXS-mintSkill1').publicKey,
   };
   const maxSupplyBuilder = adminSetFeature(umi, {
     programId,
@@ -146,20 +146,20 @@ export const withFeatures = async (umi: Umi): Promise<FeatureContext> => {
   const [solPaymentFeaturePda] = findSolPaymentFeaturePda(umi);
   const solPaymentFeature: SolPaymentFeatureAccountData = {
     key: Key.SolPaymentFeature,
-    mintBurn1: seededSigner(umi, 'solPayment-mintBurn1').publicKey,
-    mintBurn2: seededSigner(umi, 'solPayment-mintBurn2').publicKey,
-    mintBurn3: seededSigner(umi, 'solPayment-mintBurn3').publicKey,
-    mintBurn4: seededSigner(umi, 'solPayment-mintBurn4').publicKey,
-    mintBurn5: seededSigner(umi, 'solPayment-mintBurn5').publicKey,
-    mintBurn6: seededSigner(umi, 'solPayment-mintBurn6').publicKey,
-    mintBurn7: seededSigner(umi, 'solPayment-mintBurn7').publicKey,
-    mintBurn8: seededSigner(umi, 'solPayment-mintBurn8').publicKey,
-    mintBurn9: seededSigner(umi, 'solPayment-mintBurn9').publicKey,
-    mintSkill1: seededSigner(umi, 'solPayment-mintSkill1').publicKey,
-    mintSkill2: seededSigner(umi, 'solPayment-mintSkill2').publicKey,
-    mintSkill3: seededSigner(umi, 'solPayment-mintSkill3').publicKey,
-    mintSkill4: seededSigner(umi, 'solPayment-mintSkill4').publicKey,
-    mintSkill5: seededSigner(umi, 'solPayment-mintSkill5').publicKey,
+    mintBurn1: seededSigner(umi, 'SOLP-mintBurn1').publicKey,
+    mintBurn2: seededSigner(umi, 'SOLP-mintBurn2').publicKey,
+    mintBurn3: seededSigner(umi, 'SOLP-mintBurn3').publicKey,
+    mintBurn4: seededSigner(umi, 'SOLP-mintBurn4').publicKey,
+    mintBurn5: seededSigner(umi, 'SOLP-mintBurn5').publicKey,
+    mintBurn6: seededSigner(umi, 'SOLP-mintBurn6').publicKey,
+    mintBurn7: seededSigner(umi, 'SOLP-mintBurn7').publicKey,
+    mintBurn8: seededSigner(umi, 'SOLP-mintBurn8').publicKey,
+    mintBurn9: seededSigner(umi, 'SOLP-mintBurn9').publicKey,
+    mintSkill1: seededSigner(umi, 'SOLP-mintSkill1').publicKey,
+    mintSkill2: seededSigner(umi, 'SOLP-mintSkill2').publicKey,
+    mintSkill3: seededSigner(umi, 'SOLP-mintSkill3').publicKey,
+    mintSkill4: seededSigner(umi, 'SOLP-mintSkill4').publicKey,
+    mintSkill5: seededSigner(umi, 'SOLP-mintSkill5').publicKey,
   };
   const solPaymentBuilder = adminSetFeature(umi, {
     programId,
@@ -173,8 +173,8 @@ export const withFeatures = async (umi: Umi): Promise<FeatureContext> => {
   const wisdomFeature: WisdomFeatureAccountData = {
     key: Key.WisdomFeature,
     experienceMint: seededSigner(umi, 'wisdom-experienceMint').publicKey,
-    mintBurn1: seededSigner(umi, 'wisdom-mintBurn1').publicKey,
-    mintBurn2: seededSigner(umi, 'wisdom-mintBurn2').publicKey,
+    mintBurn1: seededSigner(umi, 'WISD-mintBurn1').publicKey,
+    mintBurn2: seededSigner(umi, 'WISD-mintBurn2').publicKey,
   };
   const wisdomBuilder = adminSetFeature(umi, {
     programId,
