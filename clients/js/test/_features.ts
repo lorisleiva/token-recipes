@@ -258,9 +258,10 @@ export const mintFeature = async (
 };
 
 export const getUnlockFeatureMacro = (
-  featurePda: (umi: Umi) => Pda | PublicKey,
+  featurePdaFactory: (umi: Umi) => Pda | PublicKey,
   featureKey: keyof FeatureLevels,
-  featurePrefix: string
+  featurePrefix: string,
+  featureMaxIncrementalMintBurnSeed: string
 ) =>
   test.macro({
     title: (providedTitle, _1: any, _2: any, mintSeed: string) =>
@@ -277,8 +278,23 @@ export const getUnlockFeatureMacro = (
       const umi = await createUmi();
       await withFeatures(umi);
       const recipe = await createRecipe(umi);
+      const featurePda = featurePdaFactory(umi);
 
       // And given the recipe has the required initial feature level.
+      if (fromLevel > 0) {
+        const { mint: maxMint } = await mintFeature(
+          umi,
+          `${featurePrefix}-${featureMaxIncrementalMintBurnSeed}`,
+          fromLevel
+        );
+        let builder = transactionBuilder();
+        for (let i = 0; i < fromLevel; i += 1) {
+          builder = builder.add(
+            unlockFeature(umi, { recipe, featurePda, mint: maxMint })
+          );
+        }
+        await builder.sendAndConfirm(umi);
+      }
       let recipeAccount = await fetchRecipe(umi, recipe);
       t.is(recipeAccount.featureLevels[featureKey], fromLevel);
 
@@ -292,7 +308,7 @@ export const getUnlockFeatureMacro = (
       // When we use it to unlock the additional outputs feature.
       await unlockFeature(umi, {
         recipe,
-        featurePda: featurePda(umi),
+        featurePda,
         mint,
       }).sendAndConfirm(umi);
 

@@ -2,7 +2,12 @@ import test from 'ava';
 import { findFeesFeaturePda } from '../../src';
 import { getUnlockFeatureMacro } from '../_features';
 
-const unlockMacro = getUnlockFeatureMacro(findFeesFeaturePda, 'fees', 'FEES');
+const unlockMacro = getUnlockFeatureMacro(
+  findFeesFeaturePda,
+  'fees',
+  'FEES',
+  'mintBurn3'
+);
 
 test(unlockMacro, 1, 0, 'mintBurn1', 0, 1);
 test(unlockMacro, 1, 0, 'mintBurn2', 0, 1);

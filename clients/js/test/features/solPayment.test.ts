@@ -26,7 +26,8 @@ import { createMintWithHolders, createRecipe, createUmi } from '../_setup';
 const unlockMacro = getUnlockFeatureMacro(
   findSolPaymentFeaturePda,
   'solPayment',
-  'SOLP'
+  'SOLP',
+  'mintBurn5'
 );
 
 test(unlockMacro, 1, 0, 'mintBurn1', 0, 1);

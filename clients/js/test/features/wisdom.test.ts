@@ -5,7 +5,8 @@ import { getUnlockFeatureMacro } from '../_features';
 const unlockMacro = getUnlockFeatureMacro(
   findWisdomFeaturePda,
   'wisdom',
-  'WISD'
+  'WISD',
+  'mintBurn2'
 );
 
 test(unlockMacro, 1, 0, 'mintBurn1', 0, 1);
