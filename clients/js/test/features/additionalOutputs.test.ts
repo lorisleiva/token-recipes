@@ -1,12 +1,22 @@
 import {
   Mint,
   Token,
+  createMint,
   fetchMint,
   fetchToken,
 } from '@metaplex-foundation/mpl-toolbox';
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
-import { craft, ingredientInput, ingredientOutput } from '../../src';
+import {
+  IngredientOutput,
+  IngredientType,
+  Recipe,
+  addIngredient,
+  craft,
+  fetchRecipe,
+  ingredientInput,
+  ingredientOutput,
+} from '../../src';
 import { getUnlockFeatureMacro } from '../_macros';
 import { createMintWithHolders, createRecipe, createUmi } from '../_setup';
 
@@ -26,8 +36,42 @@ test(unlockMacro, 1, 2, 'mintSkill1', 1, 2, 'invalid-mint');
 test(unlockMacro, 1, 0, 'mintSkill2', 1, 3);
 test(unlockMacro, 1, 3, 'mintSkill2', 1, 3, 'max-level-reached');
 
-// it cannot add
-// it can add
+test.skip('it cannot add multiple outputs by default', async (t) => {});
+
+test('it can add multiple outputs when unlocked', async (t) => {
+  // Given 2 mint accounts.
+  const umi = await createUmi();
+  const mintA = generateSigner(umi);
+  const mintB = generateSigner(umi);
+  await createMint(umi, { mint: mintA })
+    .add(createMint(umi, { mint: mintB }))
+    .sendAndConfirm(umi);
+
+  // And a recipe that unlocked additional outputs and that has one output ingredient.
+  const recipe = await createRecipe(umi, {
+    features: [['additionalOutputs', 1]],
+    inputs: [],
+    outputs: [
+      ingredientOutput('MintToken', { mint: mintA.publicKey, amount: 1 }),
+    ],
+  });
+
+  // When we add an additional output ingredient.
+  await addIngredient(umi, {
+    recipe,
+    mint: mintB.publicKey,
+    ingredientType: IngredientType.MintTokenOutput,
+    amount: 2n,
+  }).sendAndConfirm(umi);
+
+  // Then the recipe has 2 output ingredients.
+  t.like(await fetchRecipe(umi, recipe), <Recipe>{
+    outputs: <Array<IngredientOutput>>[
+      { __kind: 'MintToken', mint: mintA.publicKey, amount: 1n },
+      { __kind: 'MintToken', mint: mintB.publicKey, amount: 2n },
+    ],
+  });
+});
 
 test('it can craft a recipe with multiple outputs', async (t) => {
   // Given 3 mint accounts A, B and C, such that a crafter owns:
