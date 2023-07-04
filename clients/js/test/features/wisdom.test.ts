@@ -9,5 +9,6 @@ const unlockMacro = getUnlockFeatureMacro(
   'mintBurn2'
 );
 
+// fromTokens, fromLevel, mint, toTokens, toLevel, error?
 test(unlockMacro, 1, 0, 'mintBurn1', 0, 1);
 test(unlockMacro, 1, 0, 'mintBurn2', 0, 1);

@@ -23,10 +23,11 @@ export const getUnlockFeatureMacro = (
       fromLevel: number,
       mintSeed: string,
       toTokens: number,
-      toLevel: number | string
+      toLevel: number,
+      error?: 'invalid-mint' | 'max-level-reached'
     ) => {
       if (providedTitle) return providedTitle;
-      const can = typeof toLevel === 'string' ? 'cannot' : 'can';
+      const can = error ? 'cannot' : 'can';
       const tokens = fromTokens === 1 ? 'token' : 'tokens';
       return `it ${can} unlock using ${fromTokens} ${mintSeed} ${tokens} from level ${fromLevel}`;
     },
@@ -36,7 +37,8 @@ export const getUnlockFeatureMacro = (
       fromLevel: number,
       mintSeed: string,
       toTokens: number,
-      toLevel: number
+      toLevel: number,
+      error?: string
     ) => {
       // Given feature PDAs and an existing recipe.
       const umi = await createUmi();
@@ -76,17 +78,28 @@ export const getUnlockFeatureMacro = (
       );
 
       // When we use it to unlock the additional outputs feature.
-      await unlockFeature(umi, {
+      const promise = unlockFeature(umi, {
         recipe,
         featurePda,
         mint,
       }).sendAndConfirm(umi);
 
-      // Then the recipe was updated to reflect the new feature level.
+      if (!error) {
+        // Then we expect the transaction to succeed.
+        await promise;
+      } else if (error === 'invalid-mint') {
+        // Then we expect a program error.
+        await t.throwsAsync(promise, { name: 'InvalidMintToLevelUpFeature' });
+      } else {
+        // Then we expect a program error.
+        await t.throwsAsync(promise, { name: 'MaxFeatureLevelReached' });
+      }
+
+      // And the recipe has the expected feature level.
       recipeAccount = await fetchRecipe(umi, recipe);
       t.is(recipeAccount.featureLevels[featureKey], toLevel);
 
-      // And the token account was also potentially updated.
+      // And the token account has the expected amount.
       const tokenAccount = await fetchToken(umi, ata);
       t.is(tokenAccount.amount, BigInt(toTokens));
     },
