@@ -78,7 +78,7 @@ pub fn assert_max_max_supply(total_max_supply_outputs: usize, max_allowed: usize
             "You cannot have more than {} max supply outputs for this recipe. Level up the \"Max Supply\" feature to increase the limit.",
             max_allowed
         );
-        Err(TokenRecipesError::InvalidMaxSupply.into())
+        Err(TokenRecipesError::InvalidMaxSupplyFeature.into())
     } else {
         Ok(())
     }

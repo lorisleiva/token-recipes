@@ -93,7 +93,7 @@ pub fn assert_max_transfer_inputs(
             "You cannot have more than {} transfer inputs for this recipe. Level up the \"Transfer Inputs\" feature to increase the limit.",
             max_allowed
         );
-        Err(TokenRecipesError::InvalidTransferInputs.into())
+        Err(TokenRecipesError::InvalidTransferInputsFeature.into())
     } else {
         Ok(())
     }

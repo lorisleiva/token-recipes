@@ -115,7 +115,7 @@ pub fn assert_max_sol_payment(sol_amount: u64, max_allowed: u64) -> ProgramResul
             "You cannot request more than {} lamports for this recipe. Level up the \"SOL Payment\" feature to increase the limit.",
             max_allowed
         );
-        Err(TokenRecipesError::InvalidSolPayment.into())
+        Err(TokenRecipesError::InvalidSolPaymentFeature.into())
     } else {
         Ok(())
     }

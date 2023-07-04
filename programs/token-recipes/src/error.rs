@@ -71,21 +71,27 @@ pub enum TokenRecipesError {
     /// 20 - Missing max supply argument
     #[error("Missing max supply argument")]
     MissingMaxSupplyArgument,
-    /// 21 - Invalid fees
-    #[error("Invalid fees")]
-    InvalidFees,
-    /// 22 - Invalid additional outputs
-    #[error("Invalid additional outputs")]
-    InvalidAdditionalOutputs,
-    /// 23 - Invalid transfer inputs
-    #[error("Invalid transfer inputs")]
-    InvalidTransferInputs,
-    /// 24 - Invalid max supply
-    #[error("Invalid max supply")]
-    InvalidMaxSupply,
-    /// 25 - Invalid sol payment
-    #[error("Invalid sol payment")]
-    InvalidSolPayment,
+    /// 21 - Invalid fees feature
+    #[error("Invalid fees feature")]
+    InvalidFeesFeature,
+    /// 22 - Invalid additional outputs feature
+    #[error("Invalid additional outputs feature")]
+    InvalidAdditionalOutputsFeature,
+    /// 23 - Invalid transfer inputs feature
+    #[error("Invalid transfer inputs feature")]
+    InvalidTransferInputsFeature,
+    /// 24 - Invalid max supply feature
+    #[error("Invalid max supply feature")]
+    InvalidMaxSupplyFeature,
+    /// 25 - Invalid sol payment feature
+    #[error("Invalid sol payment feature")]
+    InvalidSolPaymentFeature,
+    /// 26 - Max feature level reached
+    #[error("Max feature level reached")]
+    MaxFeatureLevelReached,
+    /// 27 - Invalid mint to level up feature
+    #[error("Invalid mint to level up feature")]
+    InvalidMintToLevelUpFeature,
 }
 
 impl PrintProgramError for TokenRecipesError {

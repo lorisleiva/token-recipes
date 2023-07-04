@@ -34,7 +34,7 @@ pub struct FeesFeature {
     pub key: Key,
     /// The admin public key receiving the admin part of the fees.
     pub admin_destination: Pubkey,
-    /// The mint used to mint shards.
+    /// The mint used to mint shards. The mint authority must be set to the fees feature PDA.
     pub shard_mint: Pubkey,
     /// When burned, allows leveling up by 1 from 0 to 1.
     pub mint_burn_1: Pubkey,
@@ -91,7 +91,7 @@ pub fn asserts_can_set_fees(recipe: &Recipe) -> ProgramResult {
         msg!(
             "You cannot set custom fees for this recipe. Level up the \"Fees\" feature to level 11 to enable this feature.",
         );
-        Err(TokenRecipesError::InvalidFees.into())
+        Err(TokenRecipesError::InvalidFeesFeature.into())
     } else {
         Ok(())
     }

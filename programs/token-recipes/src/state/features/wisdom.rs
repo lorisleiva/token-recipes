@@ -23,7 +23,7 @@ use solana_program::{
 pub struct WisdomFeature {
     /// Account discriminator.
     pub key: Key,
-    /// The mint used to mint shards.
+    /// The mint used to mint shards. The mint authority must be set to the wisdom feature PDA.
     pub experience_mint: Pubkey,
     /// When burned, allows leveling up by 1 from 0 to 4.
     pub mint_burn_1: Pubkey,

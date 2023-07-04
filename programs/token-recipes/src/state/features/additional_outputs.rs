@@ -1,6 +1,8 @@
 use crate::{
+    assertions::assert_mint_account,
     error::TokenRecipesError,
     state::{features::UnlockFeatureContext, key::Key, recipe::Recipe},
+    utils::burn_tokens,
 };
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
@@ -34,8 +36,51 @@ pub struct AdditionalOutputsFeature {
 
 impl AdditionalOutputsFeature {
     pub const LEN: usize = 1 + 32 * 5;
+    pub const MAX_LEVEL: u8 = 3;
 
-    pub fn unlock(&self, _context: &UnlockFeatureContext) -> ProgramResult {
+    pub fn unlock(&self, context: &UnlockFeatureContext) -> ProgramResult {
+        let mut recipe_account = Recipe::get_writable(context.recipe)?;
+        let level = recipe_account.feature_levels.additional_outputs;
+        if level >= Self::MAX_LEVEL {
+            return Err(TokenRecipesError::MaxFeatureLevelReached.into());
+        }
+
+        let result: Result<u64, ProgramError> = match context.mint.key {
+            x if *x == self.mint_burn_1 && level < 2 => {
+                recipe_account.feature_levels.additional_outputs += 1;
+                Ok(1)
+            }
+            x if *x == self.mint_burn_2 && level < 3 => {
+                recipe_account.feature_levels.additional_outputs += 1;
+                Ok(1)
+            }
+            x if *x == self.mint_burn_3 && level < 3 => {
+                recipe_account.feature_levels.additional_outputs = 3;
+                Ok(1)
+            }
+            x if *x == self.mint_skill_1 && level < 2 => {
+                recipe_account.feature_levels.additional_outputs = 2;
+                Ok(0)
+            }
+            x if *x == self.mint_skill_2 && level < 3 => {
+                recipe_account.feature_levels.additional_outputs = 3;
+                Ok(0)
+            }
+            _ => Err(TokenRecipesError::InvalidMintToLevelUpFeature.into()),
+        };
+        let tokens_to_burn = result?;
+
+        if tokens_to_burn > 0 {
+            let mint_account = assert_mint_account("mint", context.mint)?;
+            burn_tokens(
+                context.token,
+                context.mint,
+                context.owner,
+                tokens_to_burn,
+                mint_account.decimals,
+            )?;
+        }
+
         Ok(())
     }
 
@@ -86,7 +131,7 @@ pub fn assert_max_outputs(total_outputs: usize, max_allowed: usize) -> ProgramRe
             "You cannot have more than {} outputs for this recipe. Level up the \"Additional Outputs\" feature to increase the limit.",
             max_allowed
         );
-        Err(TokenRecipesError::InvalidAdditionalOutputs.into())
+        Err(TokenRecipesError::InvalidAdditionalOutputsFeature.into())
     } else {
         Ok(())
     }

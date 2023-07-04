@@ -1142,28 +1142,38 @@
     },
     {
       "code": 21,
-      "name": "InvalidFees",
-      "msg": "Invalid fees"
+      "name": "InvalidFeesFeature",
+      "msg": "Invalid fees feature"
     },
     {
       "code": 22,
-      "name": "InvalidAdditionalOutputs",
-      "msg": "Invalid additional outputs"
+      "name": "InvalidAdditionalOutputsFeature",
+      "msg": "Invalid additional outputs feature"
     },
     {
       "code": 23,
-      "name": "InvalidTransferInputs",
-      "msg": "Invalid transfer inputs"
+      "name": "InvalidTransferInputsFeature",
+      "msg": "Invalid transfer inputs feature"
     },
     {
       "code": 24,
-      "name": "InvalidMaxSupply",
-      "msg": "Invalid max supply"
+      "name": "InvalidMaxSupplyFeature",
+      "msg": "Invalid max supply feature"
     },
     {
       "code": 25,
-      "name": "InvalidSolPayment",
-      "msg": "Invalid sol payment"
+      "name": "InvalidSolPaymentFeature",
+      "msg": "Invalid sol payment feature"
+    },
+    {
+      "code": 26,
+      "name": "MaxFeatureLevelReached",
+      "msg": "Max feature level reached"
+    },
+    {
+      "code": 27,
+      "name": "InvalidMintToLevelUpFeature",
+      "msg": "Invalid mint to level up feature"
     }
   ],
   "metadata": {

@@ -301,70 +301,105 @@ export class MissingMaxSupplyArgumentError extends ProgramError {
 codeToErrorMap.set(0x14, MissingMaxSupplyArgumentError);
 nameToErrorMap.set('MissingMaxSupplyArgument', MissingMaxSupplyArgumentError);
 
-/** InvalidFees: Invalid fees */
-export class InvalidFeesError extends ProgramError {
-  readonly name: string = 'InvalidFees';
+/** InvalidFeesFeature: Invalid fees feature */
+export class InvalidFeesFeatureError extends ProgramError {
+  readonly name: string = 'InvalidFeesFeature';
 
   readonly code: number = 0x15; // 21
 
   constructor(program: Program, cause?: Error) {
-    super('Invalid fees', program, cause);
+    super('Invalid fees feature', program, cause);
   }
 }
-codeToErrorMap.set(0x15, InvalidFeesError);
-nameToErrorMap.set('InvalidFees', InvalidFeesError);
+codeToErrorMap.set(0x15, InvalidFeesFeatureError);
+nameToErrorMap.set('InvalidFeesFeature', InvalidFeesFeatureError);
 
-/** InvalidAdditionalOutputs: Invalid additional outputs */
-export class InvalidAdditionalOutputsError extends ProgramError {
-  readonly name: string = 'InvalidAdditionalOutputs';
+/** InvalidAdditionalOutputsFeature: Invalid additional outputs feature */
+export class InvalidAdditionalOutputsFeatureError extends ProgramError {
+  readonly name: string = 'InvalidAdditionalOutputsFeature';
 
   readonly code: number = 0x16; // 22
 
   constructor(program: Program, cause?: Error) {
-    super('Invalid additional outputs', program, cause);
+    super('Invalid additional outputs feature', program, cause);
   }
 }
-codeToErrorMap.set(0x16, InvalidAdditionalOutputsError);
-nameToErrorMap.set('InvalidAdditionalOutputs', InvalidAdditionalOutputsError);
+codeToErrorMap.set(0x16, InvalidAdditionalOutputsFeatureError);
+nameToErrorMap.set(
+  'InvalidAdditionalOutputsFeature',
+  InvalidAdditionalOutputsFeatureError
+);
 
-/** InvalidTransferInputs: Invalid transfer inputs */
-export class InvalidTransferInputsError extends ProgramError {
-  readonly name: string = 'InvalidTransferInputs';
+/** InvalidTransferInputsFeature: Invalid transfer inputs feature */
+export class InvalidTransferInputsFeatureError extends ProgramError {
+  readonly name: string = 'InvalidTransferInputsFeature';
 
   readonly code: number = 0x17; // 23
 
   constructor(program: Program, cause?: Error) {
-    super('Invalid transfer inputs', program, cause);
+    super('Invalid transfer inputs feature', program, cause);
   }
 }
-codeToErrorMap.set(0x17, InvalidTransferInputsError);
-nameToErrorMap.set('InvalidTransferInputs', InvalidTransferInputsError);
+codeToErrorMap.set(0x17, InvalidTransferInputsFeatureError);
+nameToErrorMap.set(
+  'InvalidTransferInputsFeature',
+  InvalidTransferInputsFeatureError
+);
 
-/** InvalidMaxSupply: Invalid max supply */
-export class InvalidMaxSupplyError extends ProgramError {
-  readonly name: string = 'InvalidMaxSupply';
+/** InvalidMaxSupplyFeature: Invalid max supply feature */
+export class InvalidMaxSupplyFeatureError extends ProgramError {
+  readonly name: string = 'InvalidMaxSupplyFeature';
 
   readonly code: number = 0x18; // 24
 
   constructor(program: Program, cause?: Error) {
-    super('Invalid max supply', program, cause);
+    super('Invalid max supply feature', program, cause);
   }
 }
-codeToErrorMap.set(0x18, InvalidMaxSupplyError);
-nameToErrorMap.set('InvalidMaxSupply', InvalidMaxSupplyError);
+codeToErrorMap.set(0x18, InvalidMaxSupplyFeatureError);
+nameToErrorMap.set('InvalidMaxSupplyFeature', InvalidMaxSupplyFeatureError);
 
-/** InvalidSolPayment: Invalid sol payment */
-export class InvalidSolPaymentError extends ProgramError {
-  readonly name: string = 'InvalidSolPayment';
+/** InvalidSolPaymentFeature: Invalid sol payment feature */
+export class InvalidSolPaymentFeatureError extends ProgramError {
+  readonly name: string = 'InvalidSolPaymentFeature';
 
   readonly code: number = 0x19; // 25
 
   constructor(program: Program, cause?: Error) {
-    super('Invalid sol payment', program, cause);
+    super('Invalid sol payment feature', program, cause);
   }
 }
-codeToErrorMap.set(0x19, InvalidSolPaymentError);
-nameToErrorMap.set('InvalidSolPayment', InvalidSolPaymentError);
+codeToErrorMap.set(0x19, InvalidSolPaymentFeatureError);
+nameToErrorMap.set('InvalidSolPaymentFeature', InvalidSolPaymentFeatureError);
+
+/** MaxFeatureLevelReached: Max feature level reached */
+export class MaxFeatureLevelReachedError extends ProgramError {
+  readonly name: string = 'MaxFeatureLevelReached';
+
+  readonly code: number = 0x1a; // 26
+
+  constructor(program: Program, cause?: Error) {
+    super('Max feature level reached', program, cause);
+  }
+}
+codeToErrorMap.set(0x1a, MaxFeatureLevelReachedError);
+nameToErrorMap.set('MaxFeatureLevelReached', MaxFeatureLevelReachedError);
+
+/** InvalidMintToLevelUpFeature: Invalid mint to level up feature */
+export class InvalidMintToLevelUpFeatureError extends ProgramError {
+  readonly name: string = 'InvalidMintToLevelUpFeature';
+
+  readonly code: number = 0x1b; // 27
+
+  constructor(program: Program, cause?: Error) {
+    super('Invalid mint to level up feature', program, cause);
+  }
+}
+codeToErrorMap.set(0x1b, InvalidMintToLevelUpFeatureError);
+nameToErrorMap.set(
+  'InvalidMintToLevelUpFeature',
+  InvalidMintToLevelUpFeatureError
+);
 
 /**
  * Attempts to resolve a custom program error from the provided error code.
