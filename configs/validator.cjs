@@ -28,6 +28,11 @@ module.exports = {
         programId: "SysExL2WDyJi9aRZrXorrjHJut3JwHQ7R9bTyctbNNG",
         deployPath: getProgram("mpl_system_extras.so"),
       },
+      {
+        label: "Mpl Token Extras",
+        programId: "TokExjvjJmhKaRBShsBAsbSvEWMA1AgUNK7ps4SAc2p",
+        deployPath: getProgram("mpl_token_extras.so"),
+      },
     ],
   },
 };

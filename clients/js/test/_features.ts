@@ -1,7 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import {
-  createAssociatedToken,
   createMint,
+  createTokenIfMissing,
   fetchToken,
   findAssociatedTokenPda,
   mintTokensTo,
@@ -244,7 +244,7 @@ export const mintFeature = async (
   }
 
   builder = builder
-    .add(createAssociatedToken(umi, { mint: mint.publicKey, owner }))
+    .add(createTokenIfMissing(umi, { mint: mint.publicKey, owner }))
     .add(
       mintTokensTo(umi, {
         mint: mint.publicKey,
@@ -264,8 +264,19 @@ export const getUnlockFeatureMacro = (
   featureMaxIncrementalMintBurnSeed: string
 ) =>
   test.macro({
-    title: (providedTitle, _1: any, _2: any, mintSeed: string) =>
-      providedTitle ?? `it can unlock using ${mintSeed} tokens`,
+    title: (
+      providedTitle,
+      fromTokens: number,
+      fromLevel: number,
+      mintSeed: string,
+      toTokens: number,
+      toLevel: number | string
+    ) => {
+      if (providedTitle) return providedTitle;
+      const can = typeof toLevel === 'string' ? 'cannot' : 'can';
+      const tokens = fromTokens === 1 ? 'token' : 'tokens';
+      return `it ${can} unlock using ${fromTokens} ${mintSeed} ${tokens} from level ${fromLevel}`;
+    },
     exec: async (
       t,
       fromTokens: number,
