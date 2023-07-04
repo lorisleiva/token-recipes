@@ -66,66 +66,66 @@ impl SolPaymentFeature {
 
     pub fn unlock(&self, context: &UnlockFeatureContext) -> ProgramResult {
         let mut recipe_account = Recipe::get_writable(context.recipe)?;
-        let level = recipe_account.feature_levels.additional_outputs;
+        let level = recipe_account.feature_levels.sol_payment;
         if level >= Self::MAX_LEVEL {
             return Err(TokenRecipesError::MaxFeatureLevelReached.into());
         }
 
         let result: Result<u64, ProgramError> = match context.mint.key {
             x if *x == self.mint_burn_1 && level < 1 => {
-                recipe_account.feature_levels.additional_outputs += 1;
+                recipe_account.feature_levels.sol_payment += 1;
                 Ok(1)
             }
             x if *x == self.mint_burn_2 && level < 3 => {
-                recipe_account.feature_levels.additional_outputs += 1;
+                recipe_account.feature_levels.sol_payment += 1;
                 Ok(1)
             }
             x if *x == self.mint_burn_3 && level < 6 => {
-                recipe_account.feature_levels.additional_outputs += 1;
+                recipe_account.feature_levels.sol_payment += 1;
                 Ok(1)
             }
             x if *x == self.mint_burn_4 && level < 10 => {
-                recipe_account.feature_levels.additional_outputs += 1;
+                recipe_account.feature_levels.sol_payment += 1;
                 Ok(1)
             }
             x if *x == self.mint_burn_5 && level < 11 => {
-                recipe_account.feature_levels.additional_outputs += 1;
+                recipe_account.feature_levels.sol_payment += 1;
                 Ok(1)
             }
             x if *x == self.mint_burn_6 && level < 3 => {
-                recipe_account.feature_levels.additional_outputs = 3;
+                recipe_account.feature_levels.sol_payment = 3;
                 Ok(1)
             }
             x if *x == self.mint_burn_7 && level < 6 => {
-                recipe_account.feature_levels.additional_outputs = 6;
+                recipe_account.feature_levels.sol_payment = 6;
                 Ok(1)
             }
             x if *x == self.mint_burn_8 && level < 10 => {
-                recipe_account.feature_levels.additional_outputs = 10;
+                recipe_account.feature_levels.sol_payment = 10;
                 Ok(1)
             }
             x if *x == self.mint_burn_9 && level < 11 => {
-                recipe_account.feature_levels.additional_outputs = 11;
+                recipe_account.feature_levels.sol_payment = 11;
                 Ok(1)
             }
             x if *x == self.mint_skill_1 && level < 1 => {
-                recipe_account.feature_levels.additional_outputs = 1;
+                recipe_account.feature_levels.sol_payment = 1;
                 Ok(0)
             }
             x if *x == self.mint_skill_2 && level < 3 => {
-                recipe_account.feature_levels.additional_outputs = 3;
+                recipe_account.feature_levels.sol_payment = 3;
                 Ok(0)
             }
             x if *x == self.mint_skill_3 && level < 6 => {
-                recipe_account.feature_levels.additional_outputs = 6;
+                recipe_account.feature_levels.sol_payment = 6;
                 Ok(0)
             }
             x if *x == self.mint_skill_4 && level < 10 => {
-                recipe_account.feature_levels.additional_outputs = 10;
+                recipe_account.feature_levels.sol_payment = 10;
                 Ok(0)
             }
             x if *x == self.mint_skill_5 && level < 11 => {
-                recipe_account.feature_levels.additional_outputs = 11;
+                recipe_account.feature_levels.sol_payment = 11;
                 Ok(0)
             }
             _ => Err(TokenRecipesError::InvalidMintToLevelUpFeature.into()),

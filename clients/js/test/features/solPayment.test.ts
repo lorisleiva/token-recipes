@@ -11,15 +11,63 @@ import {
   subtractAmounts,
 } from '@metaplex-foundation/umi';
 import test from 'ava';
+import { mintFeature, withFeatures } from '../_features';
 import {
   Recipe,
   RecipeStatus,
   craft,
   fetchRecipe,
+  findSolPaymentFeaturePda,
   ingredientInput,
   ingredientOutput,
+  unlockFeature,
 } from '../../src';
 import { createMintWithHolders, createRecipe, createUmi } from '../_setup';
+
+const unlockMacro = test.macro({
+  title: (providedTitle, _: number, mintSeed: string) =>
+    providedTitle ?? `it can unlock using ${mintSeed} tokens`,
+  exec: async (
+    t,
+    fromTokens: number,
+    mintSeed: string,
+    toTokens: number,
+    toLevel: number
+  ) => {
+    // Given feature PDAs and an existing recipe.
+    const umi = await createUmi();
+    await withFeatures(umi);
+    const recipe = await createRecipe(umi);
+
+    // And given we own a token from a feature mint.
+    const { mint, ata } = await mintFeature(
+      umi,
+      `SOLP-${mintSeed}`,
+      fromTokens
+    );
+
+    // When we use it to unlock the additional outputs feature.
+    await unlockFeature(umi, {
+      recipe,
+      featurePda: findSolPaymentFeaturePda(umi),
+      mint,
+    }).sendAndConfirm(umi);
+
+    // Then the recipe was updated to reflect the new feature level.
+    t.like(await fetchRecipe(umi, recipe), <Recipe>{
+      featureLevels: { solPayment: toLevel },
+    });
+
+    // And the token was burned.
+    t.like(await fetchToken(umi, ata), <Token>{
+      amount: BigInt(toTokens),
+    });
+  },
+});
+
+test(unlockMacro, 1, 'mintBurn1', 0, 1);
+test(unlockMacro, 1, 'mintBurn2', 0, 1);
+test(unlockMacro, 1, 'mintBurn3', 0, 1);
 
 test('it can craft a recipe with a transfer sol input', async (t) => {
   // Given an output mint not owned by the crafter.
