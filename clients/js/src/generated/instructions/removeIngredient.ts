@@ -38,7 +38,7 @@ export type RemoveIngredientInstructionAccounts = {
   /** The address of the recipe account */
   recipe: PublicKey | Pda;
   /** The mint account of the ingredient */
-  mint: PublicKey | Pda;
+  mint?: PublicKey | Pda;
   /** The ingredient record PDA to discover their recipes */
   ingredientRecord?: PublicKey | Pda;
   /** The delegated ingredient PDA for output ingredients that takes over the mint authority */
@@ -120,9 +120,13 @@ export function removeIngredient(
   // Resolved inputs.
   const resolvedAccounts = {
     recipe: [input.recipe, true] as const,
-    mint: [input.mint, true] as const,
   };
   const resolvingArgs = {};
+  addObjectProperty(
+    resolvedAccounts,
+    'mint',
+    input.mint ? ([input.mint, true] as const) : ([programId, false] as const)
+  );
   addObjectProperty(
     resolvedAccounts,
     'ingredientRecord',
@@ -130,7 +134,7 @@ export function removeIngredient(
       ? ([input.ingredientRecord, true] as const)
       : ([
           findIngredientRecordPda(context, {
-            mint: publicKey(input.mint, false),
+            mint: publicKey(resolvedAccounts.mint[0], false),
             recipe: publicKey(input.recipe, false),
           }),
           true,
@@ -143,7 +147,7 @@ export function removeIngredient(
       ? ([input.delegatedIngredient, true] as const)
       : ([
           findDelegatedIngredientPda(context, {
-            mint: publicKey(input.mint, false),
+            mint: publicKey(resolvedAccounts.mint[0], false),
           }),
           true,
         ] as const)

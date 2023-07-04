@@ -1,5 +1,5 @@
 use crate::{
-    assertions::{assert_mint_account, assert_same_pubkeys, assert_signer, assert_writable},
+    assertions::{assert_same_pubkeys, assert_signer, assert_writable},
     state::recipe::{Ingredient, IngredientType, Recipe},
 };
 use solana_program::{
@@ -23,23 +23,13 @@ pub(crate) fn remove_ingredient(
     let system_program = next_account_info(account_info_iter)?;
     let token_program = next_account_info(account_info_iter)?;
 
-    // Check: recipe.
+    // Check accounts.
     let mut recipe_account = Recipe::get_writable(recipe)?;
     recipe_account.assert_signer_authority(authority)?;
-
-    // Check: payer.
     assert_writable("payer", payer)?;
     assert_signer("payer", payer)?;
-
-    // Check: system_program.
     assert_same_pubkeys("system_program", system_program, &system_program::id())?;
-
-    // Check: token_program.
     assert_same_pubkeys("token_program", token_program, &spl_token::id())?;
-
-    // Check: mint.
-    assert_writable("mint", mint)?;
-    assert_mint_account("mint", mint)?;
 
     let (ingredient, index) = recipe_account.find_ingredient(ingredient_type, mint)?;
     match ingredient {

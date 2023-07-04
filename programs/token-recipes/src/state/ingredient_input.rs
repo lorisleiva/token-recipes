@@ -54,6 +54,8 @@ impl IngredientInput {
     ) -> ProgramResult {
         match self {
             Self::BurnToken { .. } | Self::TransferToken { .. } => {
+                assert_writable("mint", mint)?;
+                assert_mint_account("mint", mint)?;
                 recipe_account.add_ingredient_input(&self, recipe, payer, system_program)?;
                 let mut ingredient_record_account = IngredientRecord::get_or_create(
                     ingredient_record,
@@ -89,6 +91,8 @@ impl IngredientInput {
     ) -> ProgramResult {
         match self {
             Self::BurnToken { .. } | Self::TransferToken { .. } => {
+                assert_writable("mint", mint)?;
+                assert_mint_account("mint", mint)?;
                 recipe_account.remove_ingredient_input(index, recipe, payer, system_program)?;
                 let mut ingredient_record_account =
                     IngredientRecord::get(ingredient_record, mint, recipe)?;

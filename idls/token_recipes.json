@@ -49,13 +49,15 @@
           "name": "mint",
           "isMut": true,
           "isSigner": false,
-          "desc": "The mint account of the ingredient"
+          "desc": "The mint account of the ingredient",
+          "optional": true
         },
         {
           "name": "ingredientRecord",
           "isMut": true,
           "isSigner": false,
-          "desc": "The ingredient record PDA to discover their recipes"
+          "desc": "The ingredient record PDA to discover their recipes",
+          "optional": true
         },
         {
           "name": "delegatedIngredient",
@@ -132,13 +134,15 @@
           "name": "mint",
           "isMut": true,
           "isSigner": false,
-          "desc": "The mint account of the ingredient"
+          "desc": "The mint account of the ingredient",
+          "optional": true
         },
         {
           "name": "ingredientRecord",
           "isMut": true,
           "isSigner": false,
-          "desc": "The ingredient record PDA to discover their recipes"
+          "desc": "The ingredient record PDA to discover their recipes",
+          "optional": true
         },
         {
           "name": "delegatedIngredient",

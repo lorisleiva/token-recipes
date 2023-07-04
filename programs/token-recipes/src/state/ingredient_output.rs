@@ -53,6 +53,8 @@ impl IngredientOutput {
     ) -> ProgramResult {
         match self {
             Self::MintToken { .. } | Self::MintTokenWithMaxSupply { .. } => {
+                assert_writable("mint", mint)?;
+                assert_mint_account("mint", mint)?;
                 recipe_account.add_ingredient_output(&self, recipe, payer, system_program)?;
                 let mut ingredient_record_account = IngredientRecord::get_or_create(
                     ingredient_record,
@@ -88,6 +90,8 @@ impl IngredientOutput {
     ) -> ProgramResult {
         match self {
             Self::MintToken { .. } | Self::MintTokenWithMaxSupply { .. } => {
+                assert_writable("mint", mint)?;
+                assert_mint_account("mint", mint)?;
                 recipe_account.remove_ingredient_output(index, recipe, payer, system_program)?;
                 let mut ingredient_record_account =
                     IngredientRecord::get(ingredient_record, mint, recipe)?;
