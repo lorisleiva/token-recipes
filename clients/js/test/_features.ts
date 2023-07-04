@@ -1,5 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import {
+  createAssociatedToken,
   createMint,
   findAssociatedTokenPda,
   mintTokensTo,
@@ -221,6 +222,8 @@ export const mintFeature = async (
   const mint = seededSigner(umi, seed);
   const programId = localnetSigner(umi);
   let builder = transactionBuilder();
+  const owner = destination ?? umi.identity.publicKey;
+  const [ata] = findAssociatedTokenPda(umi, { mint: mint.publicKey, owner });
 
   if (!(await umi.rpc.accountExists(mint.publicKey))) {
     builder = builder.add(
@@ -232,18 +235,16 @@ export const mintFeature = async (
     );
   }
 
-  const [ata] = findAssociatedTokenPda(umi, {
-    mint: mint.publicKey,
-    owner: destination ?? umi.identity.publicKey,
-  });
-  builder = builder.add(
-    mintTokensTo(umi, {
-      mint: mint.publicKey,
-      token: ata,
-      amount,
-      mintAuthority: programId,
-    })
-  );
+  builder = builder
+    .add(createAssociatedToken(umi, { mint: mint.publicKey, owner }))
+    .add(
+      mintTokensTo(umi, {
+        mint: mint.publicKey,
+        token: ata,
+        amount,
+        mintAuthority: programId,
+      })
+    );
   await builder.sendAndConfirm(umi);
   return { mint: mint.publicKey, ata };
 };
