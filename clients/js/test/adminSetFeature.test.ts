@@ -1,15 +1,30 @@
 import { Token, fetchToken } from '@metaplex-foundation/mpl-toolbox';
 import test from 'ava';
 import { createUmi, mintFeature } from './_setup';
+import {
+  Key,
+  fetchAdditionalOutputsFeatureFromSeeds,
+  fetchFeesFeatureFromSeeds,
+  fetchMaxSupplyFeatureFromSeeds,
+  fetchSolPaymentFeatureFromSeeds,
+  fetchTransferInputsFeatureFromSeeds,
+  fetchWisdomFeatureFromSeeds,
+} from '../src';
 
-test.skip('the program ID owner can set feature account', async (t) => {
-  // const umi = await createUmi();
-  // t.is(context.feesFeature.key, Key.FeesFeature);
-  // t.is(context.additionalOutputsFeature.key, Key.AdditionalOutputsFeature);
-  // t.is(context.transferInputsFeature.key, Key.TransferInputsFeature);
-  // t.is(context.maxSupplyFeature.key, Key.MaxSupplyFeature);
-  // t.is(context.solPaymentFeature.key, Key.SolPaymentFeature);
-  // t.is(context.wisdomFeature.key, Key.WisdomFeature);
+test('the program ID owner can set feature account', async (t) => {
+  const umi = await createUmi();
+  const feesFeature = await fetchFeesFeatureFromSeeds(umi);
+  t.is(feesFeature.key, Key.FeesFeature);
+  const addOutputsFeature = await fetchAdditionalOutputsFeatureFromSeeds(umi);
+  t.is(addOutputsFeature.key, Key.AdditionalOutputsFeature);
+  const transferInputsFeature = await fetchTransferInputsFeatureFromSeeds(umi);
+  t.is(transferInputsFeature.key, Key.TransferInputsFeature);
+  const maxSupplyFeature = await fetchMaxSupplyFeatureFromSeeds(umi);
+  t.is(maxSupplyFeature.key, Key.MaxSupplyFeature);
+  const solPaymentFeature = await fetchSolPaymentFeatureFromSeeds(umi);
+  t.is(solPaymentFeature.key, Key.SolPaymentFeature);
+  const wisdomFeature = await fetchWisdomFeatureFromSeeds(umi);
+  t.is(wisdomFeature.key, Key.WisdomFeature);
 });
 
 test('it can mint token from feature mints', async (t) => {

@@ -15,7 +15,6 @@ import {
   defaultPublicKey,
   generateSigner,
   publicKey,
-  transactionBuilder,
 } from '@metaplex-foundation/umi';
 import { createUmi as baseCreateUmi } from '@metaplex-foundation/umi-bundle-tests';
 import { string } from '@metaplex-foundation/umi/serializers';
@@ -198,12 +197,10 @@ export const mintFeature = async (
 }> => {
   const mint = seededSigner(umi, seed);
   const programId = localnetSigner(umi);
-  let builder = transactionBuilder();
   const owner = destination ?? umi.identity.publicKey;
   const [ata] = findAssociatedTokenPda(umi, { mint: mint.publicKey, owner });
 
-  builder = builder
-    .add(createTokenIfMissing(umi, { mint: mint.publicKey, owner }))
+  await createTokenIfMissing(umi, { mint: mint.publicKey, owner })
     .add(
       mintTokensTo(umi, {
         mint: mint.publicKey,
@@ -211,7 +208,8 @@ export const mintFeature = async (
         amount,
         mintAuthority: programId,
       })
-    );
-  await builder.sendAndConfirm(umi);
+    )
+    .sendAndConfirm(umi);
+
   return { mint: mint.publicKey, ata };
 };
