@@ -1,13 +1,7 @@
 import test from 'ava';
-import { findFeesFeaturePda } from '../../src';
 import { getUnlockFeatureMacro } from '../_macros';
 
-const unlockMacro = getUnlockFeatureMacro(
-  findFeesFeaturePda,
-  'fees',
-  'FEES',
-  'mintBurn3'
-);
+const unlockMacro = getUnlockFeatureMacro('fees');
 
 // fromTokens, fromLevel, mint, toTokens, toLevel, error?
 test(unlockMacro, 1, 0, 'mintBurn1', 0, 1);

@@ -6,21 +6,11 @@ import {
 } from '@metaplex-foundation/mpl-toolbox';
 import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
-import {
-  craft,
-  findAdditionalOutputsFeaturePda,
-  ingredientInput,
-  ingredientOutput,
-} from '../../src';
+import { craft, ingredientInput, ingredientOutput } from '../../src';
 import { getUnlockFeatureMacro } from '../_macros';
 import { createMintWithHolders, createRecipe, createUmi } from '../_setup';
 
-const unlockMacro = getUnlockFeatureMacro(
-  findAdditionalOutputsFeaturePda,
-  'additionalOutputs',
-  'ADDO',
-  'mintBurn2'
-);
+const unlockMacro = getUnlockFeatureMacro('additionalOutputs');
 
 // fromTokens, fromLevel, mint, toTokens, toLevel, error?
 test(unlockMacro, 1, 0, 'mintBurn1', 0, 1);

@@ -17,19 +17,13 @@ import {
   addIngredient,
   craft,
   fetchRecipe,
-  findTransferInputsFeaturePda,
   ingredientInput,
   ingredientOutput,
 } from '../../src';
 import { getUnlockFeatureMacro } from '../_macros';
 import { createMintWithHolders, createRecipe, createUmi } from '../_setup';
 
-const unlockMacro = getUnlockFeatureMacro(
-  findTransferInputsFeaturePda,
-  'transferInputs',
-  'TRIN',
-  'mintBurn2'
-);
+const unlockMacro = getUnlockFeatureMacro('transferInputs');
 
 // fromTokens, fromLevel, mint, toTokens, toLevel, error?
 test(unlockMacro, 1, 0, 'mintBurn1', 0, 1);

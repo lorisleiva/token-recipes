@@ -1,5 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import {
+  closeToken,
   createAssociatedToken,
   createMint,
   createTokenIfMissing,
@@ -7,6 +8,7 @@ import {
   mintTokensTo,
 } from '@metaplex-foundation/mpl-toolbox';
 import {
+  Pda,
   PublicKey,
   PublicKeyInput,
   Signer,
@@ -15,19 +17,28 @@ import {
   defaultPublicKey,
   generateSigner,
   publicKey,
+  transactionBuilder,
 } from '@metaplex-foundation/umi';
 import { createUmi as baseCreateUmi } from '@metaplex-foundation/umi-bundle-tests';
 import { string } from '@metaplex-foundation/umi/serializers';
 import { readFileSync } from 'fs';
 import path from 'path';
 import {
+  FeatureLevels,
   IngredientInputArgs,
   IngredientOutputArgs,
   IngredientType,
   activateRecipe,
   addIngredient,
   createRecipe as baseCreateRecipe,
+  findAdditionalOutputsFeaturePda,
+  findFeesFeaturePda,
+  findMaxSupplyFeaturePda,
+  findSolPaymentFeaturePda,
+  findTransferInputsFeaturePda,
+  findWisdomFeaturePda,
   tokenRecipes,
+  unlockFeature,
 } from '../src';
 
 export const createUmi = async () =>
@@ -186,6 +197,52 @@ export const seededSigner = (umi: Umi, seed: string) => {
   return createSignerFromKeypair(umi, keypair);
 };
 
+export type FeatureConfig = {
+  featureLevelKey: keyof FeatureLevels;
+  seedPrefix: string;
+  maxBurnSeed: string;
+  pdaFactory: (umi: Umi) => Pda | PublicKey;
+};
+
+export const featureConfigs: Record<string, FeatureConfig> = {
+  fees: {
+    featureLevelKey: 'fees',
+    seedPrefix: 'FEES',
+    maxBurnSeed: 'mintBurn3',
+    pdaFactory: findFeesFeaturePda,
+  },
+  additionalOutputs: {
+    featureLevelKey: 'additionalOutputs',
+    seedPrefix: 'ADDO',
+    maxBurnSeed: 'mintBurn2',
+    pdaFactory: findAdditionalOutputsFeaturePda,
+  },
+  transferInputs: {
+    featureLevelKey: 'transferInputs',
+    seedPrefix: 'TRIN',
+    maxBurnSeed: 'mintBurn2',
+    pdaFactory: findTransferInputsFeaturePda,
+  },
+  maxSupply: {
+    featureLevelKey: 'maxSupply',
+    seedPrefix: 'MAXS',
+    maxBurnSeed: 'mintBurn1',
+    pdaFactory: findMaxSupplyFeaturePda,
+  },
+  solPayment: {
+    featureLevelKey: 'solPayment',
+    seedPrefix: 'SOLP',
+    maxBurnSeed: 'mintBurn5',
+    pdaFactory: findSolPaymentFeaturePda,
+  },
+  wisdom: {
+    featureLevelKey: 'wisdom',
+    seedPrefix: 'WISD',
+    maxBurnSeed: 'mintBurn2',
+    pdaFactory: findWisdomFeaturePda,
+  },
+};
+
 export const mintFeature = async (
   umi: Umi,
   seed: string,
@@ -212,4 +269,33 @@ export const mintFeature = async (
     .sendAndConfirm(umi);
 
   return { mint: mint.publicKey, ata };
+};
+
+export const setFeatureLevel = async (
+  umi: Umi,
+  recipe: PublicKey,
+  feature: string,
+  level: number
+) => {
+  const featureConfig = featureConfigs[feature];
+  const featurePda = featureConfig.pdaFactory(umi);
+  const { mint: maxMint, ata: ataMax } = await mintFeature(
+    umi,
+    `${featureConfig.seedPrefix}-${featureConfig.maxBurnSeed}`,
+    level
+  );
+  let builder = transactionBuilder();
+  for (let i = 0; i < level; i += 1) {
+    builder = builder.add(
+      unlockFeature(umi, { recipe, featurePda, mint: maxMint })
+    );
+  }
+  builder = builder.add(
+    closeToken(umi, {
+      account: ataMax,
+      destination: umi.identity.publicKey,
+      owner: umi.identity,
+    })
+  );
+  await builder.sendAndConfirm(umi);
 };

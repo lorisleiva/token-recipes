@@ -1,22 +1,18 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import { closeToken, fetchToken } from '@metaplex-foundation/mpl-toolbox';
-import {
-  Pda,
-  PublicKey,
-  Umi,
-  transactionBuilder,
-} from '@metaplex-foundation/umi';
+import { fetchToken } from '@metaplex-foundation/mpl-toolbox';
 import test from 'ava';
-import { FeatureLevels, fetchRecipe, unlockFeature } from '../src';
-import { createRecipe, createUmi, mintFeature } from './_setup';
+import { fetchRecipe, unlockFeature } from '../src';
+import {
+  createRecipe,
+  createUmi,
+  featureConfigs,
+  mintFeature,
+  setFeatureLevel,
+} from './_setup';
 
-export const getUnlockFeatureMacro = (
-  featurePdaFactory: (umi: Umi) => Pda | PublicKey,
-  featureKey: keyof FeatureLevels,
-  featurePrefix: string,
-  featureMaxIncrementalMintBurnSeed: string
-) =>
-  test.macro({
+export const getUnlockFeatureMacro = (feature: string) => {
+  const featureConfig = featureConfigs[feature];
+  return test.macro({
     title: (
       providedTitle,
       fromTokens: number,
@@ -43,37 +39,22 @@ export const getUnlockFeatureMacro = (
       // Given feature PDAs and an existing recipe.
       const umi = await createUmi();
       const recipe = await createRecipe(umi);
-      const featurePda = featurePdaFactory(umi);
+      const featurePda = featureConfig.pdaFactory(umi);
 
       // And given the recipe has the required initial feature level.
       if (fromLevel > 0) {
-        const { mint: maxMint, ata: ataMax } = await mintFeature(
-          umi,
-          `${featurePrefix}-${featureMaxIncrementalMintBurnSeed}`,
-          fromLevel
-        );
-        let builder = transactionBuilder();
-        for (let i = 0; i < fromLevel; i += 1) {
-          builder = builder.add(
-            unlockFeature(umi, { recipe, featurePda, mint: maxMint })
-          );
-        }
-        builder = builder.add(
-          closeToken(umi, {
-            account: ataMax,
-            destination: umi.identity.publicKey,
-            owner: umi.identity,
-          })
-        );
-        await builder.sendAndConfirm(umi);
+        await setFeatureLevel(umi, recipe, feature, fromLevel);
       }
       let recipeAccount = await fetchRecipe(umi, recipe);
-      t.is(recipeAccount.featureLevels[featureKey], fromLevel);
+      t.is(
+        recipeAccount.featureLevels[featureConfig.featureLevelKey],
+        fromLevel
+      );
 
       // And given we own a token from a feature mint.
       const { mint, ata } = await mintFeature(
         umi,
-        `${featurePrefix}-${mintSeed}`,
+        `${featureConfig.seedPrefix}-${mintSeed}`,
         fromTokens
       );
 
@@ -97,10 +78,11 @@ export const getUnlockFeatureMacro = (
 
       // And the recipe has the expected feature level.
       recipeAccount = await fetchRecipe(umi, recipe);
-      t.is(recipeAccount.featureLevels[featureKey], toLevel);
+      t.is(recipeAccount.featureLevels[featureConfig.featureLevelKey], toLevel);
 
       // And the token account has the expected amount.
       const tokenAccount = await fetchToken(umi, ata);
       t.is(tokenAccount.amount, BigInt(toTokens));
     },
   });
+};
