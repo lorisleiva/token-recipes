@@ -287,39 +287,6 @@ test('it can add a specific amount of an ingredient input and output', async (t)
   });
 });
 
-test('it can add a destination to an ingredient input', async (t) => {
-  // Given an empty recipe and a mint account.
-  const umi = await createUmi();
-  const recipe = generateSigner(umi);
-  const mint = generateSigner(umi);
-  await createRecipe(umi, { recipe })
-    .add(createMint(umi, { mint }))
-    .sendAndConfirm(umi);
-
-  // When we add that mint as an ingredient input with a destination.
-  const destination = generateSigner(umi).publicKey;
-  await addIngredient(umi, {
-    recipe: recipe.publicKey,
-    mint: mint.publicKey,
-    ingredientType: IngredientType.TransferTokenInput,
-    destination,
-  }).sendAndConfirm(umi);
-
-  // Then the recipe account stores the destination for that ingredient.
-  t.like(await fetchRecipe(umi, recipe.publicKey), <Recipe>{
-    status: RecipeStatus.Paused,
-    inputs: <Array<IngredientInput>>[
-      {
-        __kind: 'TransferToken',
-        mint: mint.publicKey,
-        amount: 1n,
-        destination,
-      },
-    ],
-    outputs: [] as Array<IngredientOutput>,
-  });
-});
-
 test('it can add a max supply to an ingredient output', async (t) => {
   // Given an empty recipe and a mint account.
   const umi = await createUmi();

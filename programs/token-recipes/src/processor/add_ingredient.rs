@@ -2,6 +2,10 @@ use crate::{
     assertions::{assert_same_pubkeys, assert_signer, assert_writable},
     error::TokenRecipesError,
     state::{
+        features::{
+            additional_outputs::assert_valid_additional_outputs,
+            transfer_inputs::assert_valid_transfer_inputs,
+        },
         ingredient_input::IngredientInput,
         ingredient_output::IngredientOutput,
         recipe::{Ingredient, IngredientType, Recipe},
@@ -91,5 +95,10 @@ pub(crate) fn add_ingredient(
             payer,
             system_program,
         ),
-    }
+    }?;
+
+    assert_valid_additional_outputs(&recipe_account)?;
+    assert_valid_transfer_inputs(&recipe_account)?;
+
+    Ok(())
 }
