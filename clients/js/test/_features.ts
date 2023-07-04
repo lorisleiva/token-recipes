@@ -263,11 +263,12 @@ export const getUnlockFeatureMacro = (
   featurePrefix: string
 ) =>
   test.macro({
-    title: (providedTitle, _: number, mintSeed: string) =>
+    title: (providedTitle, _1: any, _2: any, mintSeed: string) =>
       providedTitle ?? `it can unlock using ${mintSeed} tokens`,
     exec: async (
       t,
       fromTokens: number,
+      fromLevel: number,
       mintSeed: string,
       toTokens: number,
       toLevel: number
@@ -276,6 +277,10 @@ export const getUnlockFeatureMacro = (
       const umi = await createUmi();
       await withFeatures(umi);
       const recipe = await createRecipe(umi);
+
+      // And given the recipe has the required initial feature level.
+      let recipeAccount = await fetchRecipe(umi, recipe);
+      t.is(recipeAccount.featureLevels[featureKey], fromLevel);
 
       // And given we own a token from a feature mint.
       const { mint, ata } = await mintFeature(
@@ -292,7 +297,7 @@ export const getUnlockFeatureMacro = (
       }).sendAndConfirm(umi);
 
       // Then the recipe was updated to reflect the new feature level.
-      const recipeAccount = await fetchRecipe(umi, recipe);
+      recipeAccount = await fetchRecipe(umi, recipe);
       t.is(recipeAccount.featureLevels[featureKey], toLevel);
 
       // And the token account was also potentially updated.

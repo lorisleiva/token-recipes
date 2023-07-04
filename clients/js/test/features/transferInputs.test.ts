@@ -8,8 +8,8 @@ const unlockMacro = getUnlockFeatureMacro(
   'TRIN'
 );
 
-test(unlockMacro, 1, 'mintBurn1', 0, 1);
-test(unlockMacro, 1, 'mintBurn2', 0, 1);
-test(unlockMacro, 1, 'mintBurn3', 0, 3);
-test(unlockMacro, 1, 'mintSkill1', 1, 2);
-test(unlockMacro, 1, 'mintSkill2', 1, 3);
+test(unlockMacro, 1, 0, 'mintBurn1', 0, 1);
+test(unlockMacro, 1, 0, 'mintBurn2', 0, 1);
+test(unlockMacro, 1, 0, 'mintBurn3', 0, 3);
+test(unlockMacro, 1, 0, 'mintSkill1', 1, 2);
+test(unlockMacro, 1, 0, 'mintSkill2', 1, 3);

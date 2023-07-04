@@ -8,5 +8,5 @@ const unlockMacro = getUnlockFeatureMacro(
   'WISD'
 );
 
-test(unlockMacro, 1, 'mintBurn1', 0, 1);
-test(unlockMacro, 1, 'mintBurn2', 0, 1);
+test(unlockMacro, 1, 0, 'mintBurn1', 0, 1);
+test(unlockMacro, 1, 0, 'mintBurn2', 0, 1);

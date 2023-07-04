@@ -29,20 +29,20 @@ const unlockMacro = getUnlockFeatureMacro(
   'SOLP'
 );
 
-test(unlockMacro, 1, 'mintBurn1', 0, 1);
-test(unlockMacro, 1, 'mintBurn2', 0, 1);
-test(unlockMacro, 1, 'mintBurn3', 0, 1);
-test(unlockMacro, 1, 'mintBurn4', 0, 1);
-test(unlockMacro, 1, 'mintBurn5', 0, 1);
-test(unlockMacro, 1, 'mintBurn6', 0, 3);
-test(unlockMacro, 1, 'mintBurn7', 0, 6);
-test(unlockMacro, 1, 'mintBurn8', 0, 10);
-test(unlockMacro, 1, 'mintBurn9', 0, 11);
-test(unlockMacro, 1, 'mintSkill1', 1, 1);
-test(unlockMacro, 1, 'mintSkill2', 1, 3);
-test(unlockMacro, 1, 'mintSkill3', 1, 6);
-test(unlockMacro, 1, 'mintSkill4', 1, 10);
-test(unlockMacro, 1, 'mintSkill5', 1, 11);
+test(unlockMacro, 1, 0, 'mintBurn1', 0, 1);
+test(unlockMacro, 1, 0, 'mintBurn2', 0, 1);
+test(unlockMacro, 1, 0, 'mintBurn3', 0, 1);
+test(unlockMacro, 1, 0, 'mintBurn4', 0, 1);
+test(unlockMacro, 1, 0, 'mintBurn5', 0, 1);
+test(unlockMacro, 1, 0, 'mintBurn6', 0, 3);
+test(unlockMacro, 1, 0, 'mintBurn7', 0, 6);
+test(unlockMacro, 1, 0, 'mintBurn8', 0, 10);
+test(unlockMacro, 1, 0, 'mintBurn9', 0, 11);
+test(unlockMacro, 1, 0, 'mintSkill1', 1, 1);
+test(unlockMacro, 1, 0, 'mintSkill2', 1, 3);
+test(unlockMacro, 1, 0, 'mintSkill3', 1, 6);
+test(unlockMacro, 1, 0, 'mintSkill4', 1, 10);
+test(unlockMacro, 1, 0, 'mintSkill5', 1, 11);
 
 test('it can craft a recipe with a transfer sol input', async (t) => {
   // Given an output mint not owned by the crafter.
