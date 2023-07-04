@@ -2,6 +2,7 @@
 import {
   createAssociatedToken,
   createMint,
+  createTokenIfMissing,
   findAssociatedTokenPda,
   mintTokensTo,
 } from '@metaplex-foundation/mpl-toolbox';
@@ -10,11 +11,16 @@ import {
   PublicKeyInput,
   Signer,
   Umi,
+  createSignerFromKeypair,
   defaultPublicKey,
   generateSigner,
   publicKey,
+  transactionBuilder,
 } from '@metaplex-foundation/umi';
 import { createUmi as baseCreateUmi } from '@metaplex-foundation/umi-bundle-tests';
+import { string } from '@metaplex-foundation/umi/serializers';
+import { readFileSync } from 'fs';
+import path from 'path';
 import {
   IngredientInputArgs,
   IngredientOutputArgs,
@@ -162,4 +168,50 @@ export const createRecipe = async (
   await builder.sendAndConfirm(umi);
 
   return recipe.publicKey;
+};
+
+const rootDir = path.join(__dirname, '..', '..', '..', '..');
+const programScripts = path.join(rootDir, 'configs', 'program-scripts');
+const localnet = path.join(programScripts, 'localnet.json');
+
+export const localnetSigner = (umi: Umi) => {
+  const secretKey = new Uint8Array(JSON.parse(readFileSync(localnet, 'utf8')));
+  const keypair = umi.eddsa.createKeypairFromSecretKey(secretKey);
+  return createSignerFromKeypair(umi, keypair);
+};
+
+export const seededSigner = (umi: Umi, seed: string) => {
+  const keypair = umi.eddsa.createKeypairFromSeed(
+    string({ size: 32 }).serialize(`TR42-${seed}`)
+  );
+  return createSignerFromKeypair(umi, keypair);
+};
+
+export const mintFeature = async (
+  umi: Umi,
+  seed: string,
+  amount: number | bigint,
+  destination?: PublicKey
+): Promise<{
+  mint: PublicKey;
+  ata: PublicKey;
+}> => {
+  const mint = seededSigner(umi, seed);
+  const programId = localnetSigner(umi);
+  let builder = transactionBuilder();
+  const owner = destination ?? umi.identity.publicKey;
+  const [ata] = findAssociatedTokenPda(umi, { mint: mint.publicKey, owner });
+
+  builder = builder
+    .add(createTokenIfMissing(umi, { mint: mint.publicKey, owner }))
+    .add(
+      mintTokensTo(umi, {
+        mint: mint.publicKey,
+        token: ata,
+        amount,
+        mintAuthority: programId,
+      })
+    );
+  await builder.sendAndConfirm(umi);
+  return { mint: mint.publicKey, ata };
 };

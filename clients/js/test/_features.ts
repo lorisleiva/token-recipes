@@ -1,27 +1,13 @@
+/* eslint-disable no-console */
 /* eslint-disable import/no-extraneous-dependencies */
+import { createMint } from '@metaplex-foundation/mpl-toolbox';
 import {
-  closeToken,
-  createMint,
-  createTokenIfMissing,
-  fetchToken,
-  findAssociatedTokenPda,
-  mintTokensTo,
-} from '@metaplex-foundation/mpl-toolbox';
-import {
-  Pda,
-  PublicKey,
-  Umi,
-  createSignerFromKeypair,
+  Signer,
   transactionBuilder,
   transactionBuilderGroup,
 } from '@metaplex-foundation/umi';
-import { string } from '@metaplex-foundation/umi/serializers';
-import test from 'ava';
-import { readFileSync } from 'fs';
-import path from 'path';
 import {
   AdditionalOutputsFeatureAccountData,
-  FeatureLevels,
   FeesFeatureAccountData,
   Key,
   MaxSupplyFeatureAccountData,
@@ -30,58 +16,31 @@ import {
   WisdomFeatureAccountData,
   adminSetFeature,
   feature,
-  fetchRecipe,
   findAdditionalOutputsFeaturePda,
   findFeesFeaturePda,
   findMaxSupplyFeaturePda,
   findSolPaymentFeaturePda,
   findTransferInputsFeaturePda,
   findWisdomFeaturePda,
-  unlockFeature,
 } from '../src';
-import { createRecipe, createUmi } from './_setup';
+import { createUmi, localnetSigner, seededSigner } from './_setup';
 
-const rootDir = path.join(__dirname, '..', '..', '..', '..');
-const programScripts = path.join(rootDir, 'configs', 'program-scripts');
-const localnet = path.join(programScripts, 'localnet.json');
-
-export const localnetSigner = (umi: Umi) => {
-  const secretKey = new Uint8Array(JSON.parse(readFileSync(localnet, 'utf8')));
-  const keypair = umi.eddsa.createKeypairFromSecretKey(secretKey);
-  return createSignerFromKeypair(umi, keypair);
-};
-
-export const seededSigner = (umi: Umi, seed: string) => {
-  const keypair = umi.eddsa.createKeypairFromSeed(
-    string({ size: 32 }).serialize(`TR42-${seed}`)
-  );
-  return createSignerFromKeypair(umi, keypair);
-};
-
-export type FeatureContext = {
-  feesFeaturePda: PublicKey;
-  feesFeature: FeesFeatureAccountData;
-  additionalOutputsFeaturePda: PublicKey;
-  additionalOutputsFeature: AdditionalOutputsFeatureAccountData;
-  transferInputsFeaturePda: PublicKey;
-  transferInputsFeature: TransferInputsFeatureAccountData;
-  maxSupplyFeaturePda: PublicKey;
-  maxSupplyFeature: MaxSupplyFeatureAccountData;
-  solPaymentFeaturePda: PublicKey;
-  solPaymentFeature: SolPaymentFeatureAccountData;
-  wisdomFeaturePda: PublicKey;
-  wisdomFeature: WisdomFeatureAccountData;
-};
-
-let featureContext: FeatureContext | undefined;
-
-export const withFeatures = async (umi: Umi): Promise<FeatureContext> => {
-  if (featureContext) return featureContext;
+export const setupFeatures = async () => {
+  const umi = await createUmi();
   const programId = localnetSigner(umi);
   const { payer } = umi;
+  const mints = [] as Signer[];
+
+  // Check if features are already set up.
+  const [feesFeaturePda] = findFeesFeaturePda(umi);
+  const featuresExist = await umi.rpc.accountExists(feesFeaturePda);
+  if (featuresExist) {
+    console.log('>> Features already set up. Skipping.');
+    return;
+  }
+  console.log('>> Setting up features...');
 
   // Fees.
-  const [feesFeaturePda] = findFeesFeaturePda(umi);
   const feesFeature: FeesFeatureAccountData = {
     key: Key.FeesFeature,
     adminDestination: seededSigner(umi, 'FEES-adminDestination').publicKey,
@@ -95,6 +54,18 @@ export const withFeatures = async (umi: Umi): Promise<FeatureContext> => {
     mintSkill2: seededSigner(umi, 'FEES-mintSkill2').publicKey,
     mintSkill3: seededSigner(umi, 'FEES-mintSkill3').publicKey,
   };
+  mints.push(
+    seededSigner(umi, 'FEES-adminDestination'),
+    seededSigner(umi, 'FEES-shardMint'),
+    seededSigner(umi, 'FEES-mintBurn1'),
+    seededSigner(umi, 'FEES-mintBurn2'),
+    seededSigner(umi, 'FEES-mintBurn3'),
+    seededSigner(umi, 'FEES-mintBurn4'),
+    seededSigner(umi, 'FEES-mintBurn5'),
+    seededSigner(umi, 'FEES-mintSkill1'),
+    seededSigner(umi, 'FEES-mintSkill2'),
+    seededSigner(umi, 'FEES-mintSkill3')
+  );
   const feesBuilder = adminSetFeature(umi, {
     programId,
     featurePda: feesFeaturePda,
@@ -112,6 +83,13 @@ export const withFeatures = async (umi: Umi): Promise<FeatureContext> => {
     mintSkill1: seededSigner(umi, 'ADDO-mintSkill1').publicKey,
     mintSkill2: seededSigner(umi, 'ADDO-mintSkill2').publicKey,
   };
+  mints.push(
+    seededSigner(umi, 'ADDO-mintBurn1'),
+    seededSigner(umi, 'ADDO-mintBurn2'),
+    seededSigner(umi, 'ADDO-mintBurn3'),
+    seededSigner(umi, 'ADDO-mintSkill1'),
+    seededSigner(umi, 'ADDO-mintSkill2')
+  );
   const additionalOutputsBuilder = adminSetFeature(umi, {
     programId,
     featurePda: additionalOutputsFeaturePda,
@@ -129,6 +107,13 @@ export const withFeatures = async (umi: Umi): Promise<FeatureContext> => {
     mintSkill1: seededSigner(umi, 'TRIN-mintSkill1').publicKey,
     mintSkill2: seededSigner(umi, 'TRIN-mintSkill2').publicKey,
   };
+  mints.push(
+    seededSigner(umi, 'TRIN-mintBurn1'),
+    seededSigner(umi, 'TRIN-mintBurn2'),
+    seededSigner(umi, 'TRIN-mintBurn3'),
+    seededSigner(umi, 'TRIN-mintSkill1'),
+    seededSigner(umi, 'TRIN-mintSkill2')
+  );
   const transferInputsBuilder = adminSetFeature(umi, {
     programId,
     featurePda: transferInputsFeaturePda,
@@ -143,6 +128,10 @@ export const withFeatures = async (umi: Umi): Promise<FeatureContext> => {
     mintBurn1: seededSigner(umi, 'MAXS-mintBurn1').publicKey,
     mintSkill1: seededSigner(umi, 'MAXS-mintSkill1').publicKey,
   };
+  mints.push(
+    seededSigner(umi, 'MAXS-mintBurn1'),
+    seededSigner(umi, 'MAXS-mintSkill1')
+  );
   const maxSupplyBuilder = adminSetFeature(umi, {
     programId,
     featurePda: maxSupplyFeaturePda,
@@ -169,6 +158,22 @@ export const withFeatures = async (umi: Umi): Promise<FeatureContext> => {
     mintSkill4: seededSigner(umi, 'SOLP-mintSkill4').publicKey,
     mintSkill5: seededSigner(umi, 'SOLP-mintSkill5').publicKey,
   };
+  mints.push(
+    seededSigner(umi, 'SOLP-mintBurn1'),
+    seededSigner(umi, 'SOLP-mintBurn2'),
+    seededSigner(umi, 'SOLP-mintBurn3'),
+    seededSigner(umi, 'SOLP-mintBurn4'),
+    seededSigner(umi, 'SOLP-mintBurn5'),
+    seededSigner(umi, 'SOLP-mintBurn6'),
+    seededSigner(umi, 'SOLP-mintBurn7'),
+    seededSigner(umi, 'SOLP-mintBurn8'),
+    seededSigner(umi, 'SOLP-mintBurn9'),
+    seededSigner(umi, 'SOLP-mintSkill1'),
+    seededSigner(umi, 'SOLP-mintSkill2'),
+    seededSigner(umi, 'SOLP-mintSkill3'),
+    seededSigner(umi, 'SOLP-mintSkill4'),
+    seededSigner(umi, 'SOLP-mintSkill5')
+  );
   const solPaymentBuilder = adminSetFeature(umi, {
     programId,
     featurePda: solPaymentFeaturePda,
@@ -180,10 +185,15 @@ export const withFeatures = async (umi: Umi): Promise<FeatureContext> => {
   const [wisdomFeaturePda] = findWisdomFeaturePda(umi);
   const wisdomFeature: WisdomFeatureAccountData = {
     key: Key.WisdomFeature,
-    experienceMint: seededSigner(umi, 'wisdom-experienceMint').publicKey,
+    experienceMint: seededSigner(umi, 'WISD-experienceMint').publicKey,
     mintBurn1: seededSigner(umi, 'WISD-mintBurn1').publicKey,
     mintBurn2: seededSigner(umi, 'WISD-mintBurn2').publicKey,
   };
+  mints.push(
+    seededSigner(umi, 'WISD-experienceMint'),
+    seededSigner(umi, 'WISD-mintBurn1'),
+    seededSigner(umi, 'WISD-mintBurn2')
+  );
   const wisdomBuilder = adminSetFeature(umi, {
     programId,
     featurePda: wisdomFeaturePda,
@@ -191,6 +201,16 @@ export const withFeatures = async (umi: Umi): Promise<FeatureContext> => {
     feature: feature('Wisdom', [wisdomFeature]),
   });
 
+  // Mints.
+  const mintBuilders = mints.map((mint) =>
+    createMint(umi, {
+      mint,
+      mintAuthority: programId.publicKey,
+      freezeAuthority: programId.publicKey,
+    })
+  );
+
+  // Send all transactions.
   await transactionBuilderGroup(
     transactionBuilder()
       .add(feesBuilder)
@@ -199,144 +219,9 @@ export const withFeatures = async (umi: Umi): Promise<FeatureContext> => {
       .add(maxSupplyBuilder)
       .add(solPaymentBuilder)
       .add(wisdomBuilder)
+      .add(mintBuilders)
       .unsafeSplitByTransactionSize(umi)
   ).sendAndConfirm(umi);
-
-  featureContext = {
-    feesFeaturePda,
-    feesFeature,
-    additionalOutputsFeaturePda,
-    additionalOutputsFeature,
-    transferInputsFeaturePda,
-    transferInputsFeature,
-    maxSupplyFeaturePda,
-    maxSupplyFeature,
-    solPaymentFeaturePda,
-    solPaymentFeature,
-    wisdomFeaturePda,
-    wisdomFeature,
-  };
-  return featureContext;
 };
 
-export const mintFeature = async (
-  umi: Umi,
-  seed: string,
-  amount: number | bigint,
-  destination?: PublicKey
-): Promise<{
-  mint: PublicKey;
-  ata: PublicKey;
-}> => {
-  const mint = seededSigner(umi, seed);
-  const programId = localnetSigner(umi);
-  let builder = transactionBuilder();
-  const owner = destination ?? umi.identity.publicKey;
-  const [ata] = findAssociatedTokenPda(umi, { mint: mint.publicKey, owner });
-
-  if (!(await umi.rpc.accountExists(mint.publicKey))) {
-    builder = builder.add(
-      createMint(umi, {
-        mint,
-        mintAuthority: programId.publicKey,
-        freezeAuthority: programId.publicKey,
-      })
-    );
-  }
-
-  builder = builder
-    .add(createTokenIfMissing(umi, { mint: mint.publicKey, owner }))
-    .add(
-      mintTokensTo(umi, {
-        mint: mint.publicKey,
-        token: ata,
-        amount,
-        mintAuthority: programId,
-      })
-    );
-  await builder.sendAndConfirm(umi);
-  return { mint: mint.publicKey, ata };
-};
-
-export const getUnlockFeatureMacro = (
-  featurePdaFactory: (umi: Umi) => Pda | PublicKey,
-  featureKey: keyof FeatureLevels,
-  featurePrefix: string,
-  featureMaxIncrementalMintBurnSeed: string
-) =>
-  test.macro({
-    title: (
-      providedTitle,
-      fromTokens: number,
-      fromLevel: number,
-      mintSeed: string,
-      toTokens: number,
-      toLevel: number | string
-    ) => {
-      if (providedTitle) return providedTitle;
-      const can = typeof toLevel === 'string' ? 'cannot' : 'can';
-      const tokens = fromTokens === 1 ? 'token' : 'tokens';
-      return `it ${can} unlock using ${fromTokens} ${mintSeed} ${tokens} from level ${fromLevel}`;
-    },
-    exec: async (
-      t,
-      fromTokens: number,
-      fromLevel: number,
-      mintSeed: string,
-      toTokens: number,
-      toLevel: number
-    ) => {
-      // Given feature PDAs and an existing recipe.
-      const umi = await createUmi();
-      await withFeatures(umi);
-      const recipe = await createRecipe(umi);
-      const featurePda = featurePdaFactory(umi);
-
-      // And given the recipe has the required initial feature level.
-      if (fromLevel > 0) {
-        const { mint: maxMint, ata: ataMax } = await mintFeature(
-          umi,
-          `${featurePrefix}-${featureMaxIncrementalMintBurnSeed}`,
-          fromLevel
-        );
-        let builder = transactionBuilder();
-        for (let i = 0; i < fromLevel; i += 1) {
-          builder = builder.add(
-            unlockFeature(umi, { recipe, featurePda, mint: maxMint })
-          );
-        }
-        builder = builder.add(
-          closeToken(umi, {
-            account: ataMax,
-            destination: umi.identity.publicKey,
-            owner: umi.identity,
-          })
-        );
-        await builder.sendAndConfirm(umi);
-      }
-      let recipeAccount = await fetchRecipe(umi, recipe);
-      t.is(recipeAccount.featureLevels[featureKey], fromLevel);
-
-      // And given we own a token from a feature mint.
-      const { mint, ata } = await mintFeature(
-        umi,
-        `${featurePrefix}-${mintSeed}`,
-        fromTokens
-      );
-
-      // When we use it to unlock the additional outputs feature.
-      await unlockFeature(umi, {
-        recipe,
-        featurePda,
-        mint,
-      }).sendAndConfirm(umi);
-
-      // Then the recipe was updated to reflect the new feature level.
-      recipeAccount = await fetchRecipe(umi, recipe);
-      t.is(recipeAccount.featureLevels[featureKey], toLevel);
-
-      // And the token account was also potentially updated.
-      const tokenAccount = await fetchToken(umi, ata);
-      t.is(tokenAccount.amount, BigInt(toTokens));
-    },
-  });
+setupFeatures();

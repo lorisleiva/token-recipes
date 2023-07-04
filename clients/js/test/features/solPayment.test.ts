@@ -20,7 +20,7 @@ import {
   ingredientInput,
   ingredientOutput,
 } from '../../src';
-import { getUnlockFeatureMacro } from '../_features';
+import { getUnlockFeatureMacro } from '../_macros';
 import { createMintWithHolders, createRecipe, createUmi } from '../_setup';
 
 const unlockMacro = getUnlockFeatureMacro(

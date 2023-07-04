@@ -1,6 +1,6 @@
 import test from 'ava';
 import { findFeesFeaturePda } from '../../src';
-import { getUnlockFeatureMacro } from '../_features';
+import { getUnlockFeatureMacro } from '../_macros';
 
 const unlockMacro = getUnlockFeatureMacro(
   findFeesFeaturePda,
