@@ -60,8 +60,11 @@ test('it can craft a recipe', async (t) => {
   await craft(umi, {
     recipe,
     owner: crafter,
-    inputs: [{ mint: mintA }, { mint: mintB }],
-    outputs: [{ mint: mintC }],
+    inputs: [
+      { __kind: 'BurnToken', mint: mintA },
+      { __kind: 'BurnToken', mint: mintB },
+    ],
+    outputs: [{ __kind: 'MintToken', mint: mintC }],
   }).sendAndConfirm(umi);
 
   // Then the crafter burned 2 mint A.
@@ -109,8 +112,11 @@ test('it can craft a recipe in multiple quantities', async (t) => {
   await craft(umi, {
     recipe,
     owner: crafter,
-    inputs: [{ mint: mintA }, { mint: mintB }],
-    outputs: [{ mint: mintC }],
+    inputs: [
+      { __kind: 'BurnToken', mint: mintA },
+      { __kind: 'BurnToken', mint: mintB },
+    ],
+    outputs: [{ __kind: 'MintToken', mint: mintC }],
     quantity: 14,
   }).sendAndConfirm(umi);
 
@@ -158,8 +164,11 @@ test('it can craft a recipe with multiple outputs', async (t) => {
   await craft(umi, {
     recipe,
     owner: crafter,
-    inputs: [{ mint: mintA }],
-    outputs: [{ mint: mintB }, { mint: mintC }],
+    inputs: [{ __kind: 'BurnToken', mint: mintA }],
+    outputs: [
+      { __kind: 'MintToken', mint: mintB },
+      { __kind: 'MintToken', mint: mintC },
+    ],
   }).sendAndConfirm(umi);
 
   // Then the crafter burned 5 mint A.
@@ -208,8 +217,11 @@ test('it can craft a recipe with an input ingredient that transfers tokens', asy
   await craft(umi, {
     recipe,
     owner: crafter,
-    inputs: [{ mint: mintA, destination }, { mint: mintB }],
-    outputs: [{ mint: mintC }],
+    inputs: [
+      { __kind: 'TransferToken', mint: mintA, destination },
+      { __kind: 'BurnToken', mint: mintB },
+    ],
+    outputs: [{ __kind: 'MintToken', mint: mintC }],
   }).sendAndConfirm(umi);
 
   // Then the crafter sent 2 mint A to the destination.
@@ -254,7 +266,7 @@ test('it creates a new associated token account if not yet initialized', async (
   await craft(umi, {
     recipe,
     owner: crafter,
-    outputs: [{ mint: mint.publicKey }],
+    outputs: [{ __kind: 'MintToken', mint: mint.publicKey }],
   }).sendAndConfirm(umi);
 
   // Then the associated token account was created.
@@ -293,7 +305,9 @@ test('it can use an existing non-associated token account', async (t) => {
   await craft(umi, {
     recipe,
     owner: crafter,
-    outputs: [{ mint: mint.publicKey, token: token.publicKey }],
+    outputs: [
+      { __kind: 'MintToken', mint: mint.publicKey, token: token.publicKey },
+    ],
   }).sendAndConfirm(umi);
 
   // Then the existing token account was used to receive the token.
@@ -343,8 +357,8 @@ test('it cannot craft a recipe if an input has not enough tokens', async (t) => 
   const promise = craft(umi, {
     recipe,
     owner: crafter,
-    inputs: [{ mint: mintA }],
-    outputs: [{ mint: mintB }],
+    inputs: [{ __kind: 'BurnToken', mint: mintA }],
+    outputs: [{ __kind: 'MintToken', mint: mintB }],
   }).sendAndConfirm(umi);
 
   // Then we expect a program error.
@@ -375,8 +389,8 @@ test('it cannot craft a recipe if an input has not enough tokens for multiple qu
   const promise = craft(umi, {
     recipe,
     owner: crafter,
-    inputs: [{ mint: mintA }],
-    outputs: [{ mint: mintB }],
+    inputs: [{ __kind: 'BurnToken', mint: mintA }],
+    outputs: [{ __kind: 'MintToken', mint: mintB }],
     quantity: 4,
   }).sendAndConfirm(umi);
 
@@ -415,8 +429,8 @@ test('it cannot craft a recipe if an output has reached its maximum supply', asy
   const promise = craft(umi, {
     recipe,
     owner: crafter,
-    inputs: [{ mint: mintA }],
-    outputs: [{ mint: mintB }],
+    inputs: [{ __kind: 'BurnToken', mint: mintA }],
+    outputs: [{ __kind: 'MintTokenWithMaxSupply', mint: mintB }],
     quantity: 2,
   }).sendAndConfirm(umi);
 
@@ -478,7 +492,7 @@ test('it cannot create an uninitialized token account if it is not associated', 
   const promise = craft(umi, {
     recipe,
     owner: crafter,
-    outputs: [{ mint: mint.publicKey, token }],
+    outputs: [{ __kind: 'MintToken', mint: mint.publicKey, token }],
   }).sendAndConfirm(umi);
 
   // Then we expect a program error.
@@ -511,8 +525,8 @@ test('it keep tracks of the total amount of crafts and experience accumulated', 
   await craft(umi, {
     recipe,
     owner: crafter,
-    inputs: [{ mint: mintA }],
-    outputs: [{ mint: mintB }],
+    inputs: [{ __kind: 'BurnToken', mint: mintA }],
+    outputs: [{ __kind: 'MintToken', mint: mintB }],
     quantity: 42,
   }).sendAndConfirm(umi);
 

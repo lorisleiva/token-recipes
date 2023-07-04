@@ -111,7 +111,7 @@ export const createRecipe = async (
           destination: ingredientInput.destination,
         })
       );
-    } else {
+    } else if (ingredientInput.__kind === 'TransferSol') {
       builder = builder.add(
         addIngredient(umi, {
           recipe: recipe.publicKey,
@@ -138,7 +138,7 @@ export const createRecipe = async (
           amount: ingredientOutput.amount,
         })
       );
-    } else {
+    } else if (ingredientOutput.__kind === 'MintTokenWithMaxSupply') {
       builder = builder.add(
         addIngredient(umi, {
           recipe: recipe.publicKey,
