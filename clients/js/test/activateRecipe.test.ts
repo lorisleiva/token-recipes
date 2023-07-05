@@ -6,23 +6,25 @@ import {
   activateRecipe,
   createRecipe,
   fetchRecipe,
+  findRecipePda,
 } from '../src';
 import { createUmi } from './_setup';
 
 test('it can activate a recipe', async (t) => {
   // Given a paused recipe account.
   const umi = await createUmi();
-  const recipe = generateSigner(umi);
-  await createRecipe(umi, { recipe }).sendAndConfirm(umi);
-  t.like(await fetchRecipe(umi, recipe.publicKey), <Recipe>{
+  const base = generateSigner(umi);
+  const [recipe] = findRecipePda(umi, { base: base.publicKey });
+  await createRecipe(umi, { base }).sendAndConfirm(umi);
+  t.like(await fetchRecipe(umi, recipe), <Recipe>{
     status: RecipeStatus.Paused,
   });
 
   // When we activate the recipe.
-  await activateRecipe(umi, { recipe: recipe.publicKey }).sendAndConfirm(umi);
+  await activateRecipe(umi, { recipe }).sendAndConfirm(umi);
 
   // Then the recipe account is now marked as active.
-  t.like(await fetchRecipe(umi, recipe.publicKey), <Recipe>{
+  t.like(await fetchRecipe(umi, recipe), <Recipe>{
     status: RecipeStatus.Active,
   });
 });
@@ -30,13 +32,14 @@ test('it can activate a recipe', async (t) => {
 test('it cannot activate a recipe as the wrong authority', async (t) => {
   // Given a paused recipe account owned by authority A.
   const umi = await createUmi();
-  const recipe = generateSigner(umi);
+  const base = generateSigner(umi);
+  const [recipe] = findRecipePda(umi, { base: base.publicKey });
   const authorityA = generateSigner(umi);
   await createRecipe(umi, {
-    recipe,
+    base,
     authority: authorityA.publicKey,
   }).sendAndConfirm(umi);
-  t.like(await fetchRecipe(umi, recipe.publicKey), <Recipe>{
+  t.like(await fetchRecipe(umi, recipe), <Recipe>{
     status: RecipeStatus.Paused,
   });
 
@@ -44,7 +47,7 @@ test('it cannot activate a recipe as the wrong authority', async (t) => {
   const authorityB = generateSigner(umi);
   const promise = activateRecipe(umi, {
     authority: authorityB,
-    recipe: recipe.publicKey,
+    recipe,
   }).sendAndConfirm(umi);
 
   // Then we expect a program error.

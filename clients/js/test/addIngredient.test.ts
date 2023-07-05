@@ -15,19 +15,18 @@ import {
   Recipe,
   RecipeStatus,
   addIngredient,
-  createRecipe,
   fetchDelegatedIngredient,
   fetchIngredientRecordFromSeeds,
   fetchRecipe,
   findDelegatedIngredientPda,
+  ingredientInput,
 } from '../src';
-import { createUmi } from './_setup';
+import { createRecipe, createUmi } from './_setup';
 
 test('it can add an ingredient input', async (t) => {
   // Given an empty recipe.
   const umi = await createUmi();
-  const recipe = generateSigner(umi);
-  await createRecipe(umi, { recipe }).sendAndConfirm(umi);
+  const recipe = await createRecipe(umi);
 
   // And a mint account.
   const mint = generateSigner(umi);
@@ -35,13 +34,13 @@ test('it can add an ingredient input', async (t) => {
 
   // When we add that mint as an ingredient input.
   await addIngredient(umi, {
-    recipe: recipe.publicKey,
+    recipe,
     mint: mint.publicKey,
     ingredientType: IngredientType.BurnTokenInput,
   }).sendAndConfirm(umi);
 
   // Then the recipe account now contains that ingredient input.
-  t.like(await fetchRecipe(umi, recipe.publicKey), <Recipe>{
+  t.like(await fetchRecipe(umi, recipe), <Recipe>{
     status: RecipeStatus.Paused,
     inputs: <Array<IngredientInput>>[
       { __kind: 'BurnToken', mint: mint.publicKey, amount: 1n },
@@ -51,16 +50,13 @@ test('it can add an ingredient input', async (t) => {
 
   // And a new ingredient record account was created.
   t.like(
-    await fetchIngredientRecordFromSeeds(umi, {
-      mint: mint.publicKey,
-      recipe: recipe.publicKey,
-    }),
+    await fetchIngredientRecordFromSeeds(umi, { mint: mint.publicKey, recipe }),
     <IngredientRecord>{
       key: Key.IngredientRecord,
       input: true,
       output: false,
       mint: mint.publicKey,
-      recipe: recipe.publicKey,
+      recipe,
     }
   );
 
@@ -74,8 +70,7 @@ test('it can add an ingredient input', async (t) => {
 test('it can add an ingredient output', async (t) => {
   // Given an empty recipe.
   const umi = await createUmi();
-  const recipe = generateSigner(umi);
-  await createRecipe(umi, { recipe }).sendAndConfirm(umi);
+  const recipe = await createRecipe(umi);
 
   // And a mint account.
   const mint = generateSigner(umi);
@@ -83,13 +78,13 @@ test('it can add an ingredient output', async (t) => {
 
   // When we add that mint as an ingredient output.
   await addIngredient(umi, {
-    recipe: recipe.publicKey,
+    recipe,
     mint: mint.publicKey,
     ingredientType: IngredientType.MintTokenOutput,
   }).sendAndConfirm(umi);
 
   // Then the recipe account now contains that ingredient output.
-  t.like(await fetchRecipe(umi, recipe.publicKey), <Recipe>{
+  t.like(await fetchRecipe(umi, recipe), <Recipe>{
     status: RecipeStatus.Paused,
     inputs: [] as Array<IngredientInput>,
     outputs: <Array<IngredientOutput>>[
@@ -101,14 +96,14 @@ test('it can add an ingredient output', async (t) => {
   t.like(
     await fetchIngredientRecordFromSeeds(umi, {
       mint: mint.publicKey,
-      recipe: recipe.publicKey,
+      recipe,
     }),
     <IngredientRecord>{
       key: Key.IngredientRecord,
       input: false,
       output: true,
       mint: mint.publicKey,
-      recipe: recipe.publicKey,
+      recipe,
     }
   );
 
@@ -133,8 +128,7 @@ test('it can add an ingredient output', async (t) => {
 test('it can add an ingredient as both input and output', async (t) => {
   // Given an empty recipe.
   const umi = await createUmi();
-  const recipe = generateSigner(umi);
-  await createRecipe(umi, { recipe }).sendAndConfirm(umi);
+  const recipe = await createRecipe(umi);
 
   // And a mint account.
   const mint = generateSigner(umi);
@@ -144,14 +138,14 @@ test('it can add an ingredient as both input and output', async (t) => {
   await transactionBuilder()
     .add(
       addIngredient(umi, {
-        recipe: recipe.publicKey,
+        recipe,
         mint: mint.publicKey,
         ingredientType: IngredientType.BurnTokenInput,
       })
     )
     .add(
       addIngredient(umi, {
-        recipe: recipe.publicKey,
+        recipe,
         mint: mint.publicKey,
         ingredientType: IngredientType.MintTokenOutput,
       })
@@ -159,7 +153,7 @@ test('it can add an ingredient as both input and output', async (t) => {
     .sendAndConfirm(umi);
 
   // Then the recipe account now contains that ingredient as both input and output.
-  t.like(await fetchRecipe(umi, recipe.publicKey), <Recipe>{
+  t.like(await fetchRecipe(umi, recipe), <Recipe>{
     status: RecipeStatus.Paused,
     inputs: <Array<IngredientInput>>[
       { __kind: 'BurnToken', mint: mint.publicKey, amount: 1n },
@@ -173,14 +167,14 @@ test('it can add an ingredient as both input and output', async (t) => {
   t.like(
     await fetchIngredientRecordFromSeeds(umi, {
       mint: mint.publicKey,
-      recipe: recipe.publicKey,
+      recipe,
     }),
     <IngredientRecord>{
       key: Key.IngredientRecord,
       input: true,
       output: true,
       mint: mint.publicKey,
-      recipe: recipe.publicKey,
+      recipe,
     }
   );
 
@@ -206,25 +200,24 @@ test('it increments the counter when adding the same ingredient output to anothe
   // Given an a mint account and 2 recipes.
   const umi = await createUmi();
   const mint = generateSigner(umi);
-  const recipeA = generateSigner(umi);
-  const recipeB = generateSigner(umi);
-  await createMint(umi, { mint })
-    .add(createRecipe(umi, { recipe: recipeA }))
-    .add(createRecipe(umi, { recipe: recipeB }))
-    .sendAndConfirm(umi);
+  await createMint(umi, { mint }).sendAndConfirm(umi);
+  const [recipeA, recipeB] = await Promise.all([
+    createRecipe(umi),
+    createRecipe(umi),
+  ]);
 
   // When we add that mint as an ingredient output to both recipes.
   await transactionBuilder()
     .add(
       addIngredient(umi, {
-        recipe: recipeA.publicKey,
+        recipe: recipeA,
         mint: mint.publicKey,
         ingredientType: IngredientType.MintTokenOutput,
       })
     )
     .add(
       addIngredient(umi, {
-        recipe: recipeB.publicKey,
+        recipe: recipeB,
         mint: mint.publicKey,
         ingredientType: IngredientType.MintTokenOutput,
       })
@@ -247,11 +240,10 @@ test('it increments the counter when adding the same ingredient output to anothe
 test('it can add a specific amount of an ingredient input and output', async (t) => {
   // Given an empty recipe and two mint accounts.
   const umi = await createUmi();
-  const recipe = generateSigner(umi);
+  const recipe = await createRecipe(umi);
   const mintA = generateSigner(umi);
   const mintB = generateSigner(umi);
-  await createRecipe(umi, { recipe })
-    .add(createMint(umi, { mint: mintA }))
+  await createMint(umi, { mint: mintA })
     .add(createMint(umi, { mint: mintB }))
     .sendAndConfirm(umi);
 
@@ -259,7 +251,7 @@ test('it can add a specific amount of an ingredient input and output', async (t)
   await transactionBuilder()
     .add(
       addIngredient(umi, {
-        recipe: recipe.publicKey,
+        recipe,
         mint: mintA.publicKey,
         ingredientType: IngredientType.BurnTokenInput,
         amount: 2,
@@ -267,7 +259,7 @@ test('it can add a specific amount of an ingredient input and output', async (t)
     )
     .add(
       addIngredient(umi, {
-        recipe: recipe.publicKey,
+        recipe,
         mint: mintB.publicKey,
         ingredientType: IngredientType.MintTokenOutput,
         amount: 3,
@@ -276,7 +268,7 @@ test('it can add a specific amount of an ingredient input and output', async (t)
     .sendAndConfirm(umi);
 
   // Then the recipe account contains the correct amounts.
-  t.like(await fetchRecipe(umi, recipe.publicKey), <Recipe>{
+  t.like(await fetchRecipe(umi, recipe), <Recipe>{
     status: RecipeStatus.Paused,
     inputs: <Array<IngredientInput>>[
       { __kind: 'BurnToken', mint: mintA.publicKey, amount: 2n },
@@ -290,12 +282,10 @@ test('it can add a specific amount of an ingredient input and output', async (t)
 test('it cannot add an ingredient as the wrong authority', async (t) => {
   // Given an empty recipe owned by authority A.
   const umi = await createUmi();
-  const recipe = generateSigner(umi);
   const authorityA = generateSigner(umi);
-  await createRecipe(umi, {
-    recipe,
-    authority: authorityA.publicKey,
-  }).sendAndConfirm(umi);
+  const recipe = await createRecipe(umi, {
+    authority: authorityA,
+  });
 
   // And a mint account.
   const mint = generateSigner(umi);
@@ -305,7 +295,7 @@ test('it cannot add an ingredient as the wrong authority', async (t) => {
   const authorityB = generateSigner(umi);
   const promise = addIngredient(umi, {
     authority: authorityB,
-    recipe: recipe.publicKey,
+    recipe,
     mint: mint.publicKey,
     ingredientType: IngredientType.BurnTokenInput,
   }).sendAndConfirm(umi);
@@ -317,22 +307,17 @@ test('it cannot add an ingredient as the wrong authority', async (t) => {
 test('it cannot add an ingredient input that is already an input', async (t) => {
   // Given a recipe with an ingredient input.
   const umi = await createUmi();
-  const recipe = generateSigner(umi);
   const mint = generateSigner(umi);
-  await createRecipe(umi, { recipe })
-    .add(createMint(umi, { mint }))
-    .add(
-      addIngredient(umi, {
-        recipe: recipe.publicKey,
-        mint: mint.publicKey,
-        ingredientType: IngredientType.BurnTokenInput,
-      })
-    )
-    .sendAndConfirm(umi);
+  await createMint(umi, { mint }).sendAndConfirm(umi);
+  const recipe = await createRecipe(umi, {
+    inputs: <Array<IngredientInput>>[
+      ingredientInput('BurnToken', { mint: mint.publicKey, amount: 1n }),
+    ],
+  });
 
   // When we try to add that ingredient input again.
   const promise = addIngredient(umi, {
-    recipe: recipe.publicKey,
+    recipe,
     mint: mint.publicKey,
     ingredientType: IngredientType.BurnTokenInput,
   }).sendAndConfirm(umi);
@@ -344,13 +329,12 @@ test('it cannot add an ingredient input that is already an input', async (t) => 
 test('it cannot add an ingredient output that is already an output', async (t) => {
   // Given a recipe with an ingredient output.
   const umi = await createUmi();
-  const recipe = generateSigner(umi);
+  const recipe = await createRecipe(umi);
   const mint = generateSigner(umi);
-  await createRecipe(umi, { recipe })
-    .add(createMint(umi, { mint }))
+  await createMint(umi, { mint })
     .add(
       addIngredient(umi, {
-        recipe: recipe.publicKey,
+        recipe,
         mint: mint.publicKey,
         ingredientType: IngredientType.MintTokenOutput,
       })
@@ -359,7 +343,7 @@ test('it cannot add an ingredient output that is already an output', async (t) =
 
   // When we try to add that ingredient output again.
   const promise = addIngredient(umi, {
-    recipe: recipe.publicKey,
+    recipe,
     mint: mint.publicKey,
     ingredientType: IngredientType.MintTokenOutput,
   }).sendAndConfirm(umi);
@@ -371,12 +355,8 @@ test('it cannot add an ingredient output that is already an output', async (t) =
 test('it cannot add an ingredient output if the authority is not its mint authority', async (t) => {
   // Given a recipe owned by authority A.
   const umi = await createUmi();
-  const recipe = generateSigner(umi);
   const authorityA = generateSigner(umi);
-  await createRecipe(umi, {
-    recipe,
-    authority: authorityA.publicKey,
-  }).sendAndConfirm(umi);
+  const recipe = await createRecipe(umi, { authority: authorityA });
 
   // And a mint account with mint authority B.
   const mint = generateSigner(umi);
@@ -389,7 +369,7 @@ test('it cannot add an ingredient output if the authority is not its mint author
   // When authority A tries to add that ingredient as an output.
   const promise = addIngredient(umi, {
     authority: authorityA,
-    recipe: recipe.publicKey,
+    recipe,
     mint: mint.publicKey,
     ingredientType: IngredientType.MintTokenOutput,
   }).sendAndConfirm(umi);
@@ -401,15 +381,14 @@ test('it cannot add an ingredient output if the authority is not its mint author
 test('it cannot add an ingredient output already delegated if the authority does not match', async (t) => {
   // Given a recipe A owned by authority A with a delegated ingredient output.
   const umi = await createUmi();
-  const recipeA = generateSigner(umi);
   const authorityA = generateSigner(umi);
+  const recipeA = await createRecipe(umi, { authority: authorityA });
   const mint = generateSigner(umi);
-  await createRecipe(umi, { recipe: recipeA, authority: authorityA.publicKey })
-    .add(createMint(umi, { mint, mintAuthority: authorityA.publicKey }))
+  await createMint(umi, { mint, mintAuthority: authorityA.publicKey })
     .add(
       addIngredient(umi, {
         authority: authorityA,
-        recipe: recipeA.publicKey,
+        recipe: recipeA,
         mint: mint.publicKey,
         ingredientType: IngredientType.MintTokenOutput,
       })
@@ -417,17 +396,13 @@ test('it cannot add an ingredient output already delegated if the authority does
     .sendAndConfirm(umi);
 
   // And an empty recipe B owned by authority B.
-  const recipeB = generateSigner(umi);
   const authorityB = generateSigner(umi);
-  await createRecipe(umi, {
-    recipe: recipeB,
-    authority: authorityB.publicKey,
-  }).sendAndConfirm(umi);
+  const recipeB = await createRecipe(umi, { authority: authorityB });
 
   // When authority B tries to add that ingredient as an output to its own recipe.
   const promise = addIngredient(umi, {
     authority: authorityB,
-    recipe: recipeB.publicKey,
+    recipe: recipeB,
     mint: mint.publicKey,
     ingredientType: IngredientType.MintTokenOutput,
   }).sendAndConfirm(umi);
@@ -439,15 +414,13 @@ test('it cannot add an ingredient output already delegated if the authority does
 test('it cannot add an ingredient with zero amount', async (t) => {
   // Given an empty recipe and a mint.
   const umi = await createUmi();
-  const recipe = generateSigner(umi);
+  const recipe = await createRecipe(umi);
   const mint = generateSigner(umi);
-  await createRecipe(umi, { recipe })
-    .add(createMint(umi, { mint }))
-    .sendAndConfirm(umi);
+  await createMint(umi, { mint }).sendAndConfirm(umi);
 
   // When we try to add that mint to the recipe with zero amount.
   const promise = addIngredient(umi, {
-    recipe: recipe.publicKey,
+    recipe,
     mint: mint.publicKey,
     ingredientType: IngredientType.MintTokenOutput,
     amount: 0,

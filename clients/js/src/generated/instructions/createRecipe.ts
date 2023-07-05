@@ -14,6 +14,7 @@ import {
   PublicKey,
   Signer,
   TransactionBuilder,
+  publicKey,
   transactionBuilder,
 } from '@metaplex-foundation/umi';
 import {
@@ -22,12 +23,15 @@ import {
   struct,
   u8,
 } from '@metaplex-foundation/umi/serializers';
+import { findRecipePda } from '../accounts';
 import { addAccountMeta, addObjectProperty } from '../shared';
 
 // Accounts.
 export type CreateRecipeInstructionAccounts = {
-  /** The address of the new recipe account */
-  recipe: Signer;
+  /** An address to derive the recipe address from */
+  base: Signer;
+  /** The PDA of the new recipe account */
+  recipe?: PublicKey | Pda;
   /** The authority of the new recipe account */
   authority?: PublicKey | Pda;
   /** The account paying for the storage fees */
@@ -66,7 +70,7 @@ export function getCreateRecipeInstructionDataSerializer(
 
 // Instruction.
 export function createRecipe(
-  context: Pick<Context, 'programs' | 'identity' | 'payer'>,
+  context: Pick<Context, 'programs' | 'eddsa' | 'identity' | 'payer'>,
   input: CreateRecipeInstructionAccounts
 ): TransactionBuilder {
   const signers: Signer[] = [];
@@ -80,8 +84,18 @@ export function createRecipe(
 
   // Resolved inputs.
   const resolvedAccounts = {
-    recipe: [input.recipe, true] as const,
+    base: [input.base, false] as const,
   };
+  addObjectProperty(
+    resolvedAccounts,
+    'recipe',
+    input.recipe
+      ? ([input.recipe, true] as const)
+      : ([
+          findRecipePda(context, { base: publicKey(input.base, false) }),
+          true,
+        ] as const)
+  );
   addObjectProperty(
     resolvedAccounts,
     'authority',
@@ -110,6 +124,7 @@ export function createRecipe(
         ] as const)
   );
 
+  addAccountMeta(keys, signers, resolvedAccounts.base, false);
   addAccountMeta(keys, signers, resolvedAccounts.recipe, false);
   addAccountMeta(keys, signers, resolvedAccounts.authority, false);
   addAccountMeta(keys, signers, resolvedAccounts.payer, false);

@@ -10,10 +10,11 @@ use solana_program::{
 #[rustfmt::skip]
 pub enum TokenRecipesInstruction {
     /// Create a new empty recipe.
-    #[account(0, writable, signer, name="recipe", desc = "The address of the new recipe account")]
-    #[account(1, name="authority", desc = "The authority of the new recipe account")]
-    #[account(2, writable, signer, name="payer", desc = "The account paying for the storage fees")]
-    #[account(3, name="system_program", desc = "The system program")]
+    #[account(0, signer, name="base", desc = "An address to derive the recipe address from")]
+    #[account(1, writable, name="recipe", desc = "The PDA of the new recipe account")]
+    #[account(2, name="authority", desc = "The authority of the new recipe account")]
+    #[account(3, writable, signer, name="payer", desc = "The account paying for the storage fees")]
+    #[account(4, name="system_program", desc = "The system program")]
     CreateRecipe,
 
     /// Add an ingredient to a recipe.

@@ -22,6 +22,7 @@ use solana_program::pubkey::Pubkey;
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, ShankAccount)]
 pub struct Recipe {
     pub key: Key,
+    pub base: Pubkey,
     pub authority: Pubkey,
     pub status: RecipeStatus,
     pub total_crafts: u64,
@@ -37,6 +38,7 @@ pub struct Recipe {
 
 impl Recipe {
     pub const INITIAL_LEN: usize = Key::LEN // key
+        + 32 // base
         + 32 // authority
         + RecipeStatus::LEN // status
         + 8 // total_crafts
@@ -211,6 +213,10 @@ impl Recipe {
                 Err(TokenRecipesError::MissingIngredient.into())
             }
         }
+    }
+
+    pub fn seeds(base: &Pubkey) -> Vec<&[u8]> {
+        vec!["recipe".as_bytes(), base.as_ref()]
     }
 
     pub fn load(account: &AccountInfo) -> Result<Self, ProgramError> {

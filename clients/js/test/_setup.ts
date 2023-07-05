@@ -35,6 +35,7 @@ import {
   findAdditionalOutputsFeaturePda,
   findFeesFeaturePda,
   findMaxSupplyFeaturePda,
+  findRecipePda,
   findSolPaymentFeaturePda,
   findTransferInputsFeaturePda,
   findWisdomFeaturePda,
@@ -96,26 +97,25 @@ export const createRecipe = async (
     features?: Partial<Record<keyof FeatureLevels, number>>;
   } = {}
 ): Promise<PublicKey> => {
-  const recipe = input.recipe ?? generateSigner(umi);
+  const base = input.base ?? generateSigner(umi);
+  const [recipe] = findRecipePda(umi, { base: base.publicKey });
   const authority = input.authority ?? umi.identity;
   const payer = input.payer ?? umi.payer;
   let builder = baseCreateRecipe(umi, {
-    recipe,
+    base,
     authority: authority.publicKey,
     payer,
   });
 
   Object.entries(input.features ?? {}).forEach(([feature, level]) => {
-    builder = builder.add(
-      setFeatureLevelBuilder(umi, recipe.publicKey, feature, level)
-    );
+    builder = builder.add(setFeatureLevelBuilder(umi, recipe, feature, level));
   });
 
   input.inputs?.forEach((ingredientInput) => {
     if (ingredientInput.__kind === 'BurnToken') {
       builder = builder.add(
         addIngredient(umi, {
-          recipe: recipe.publicKey,
+          recipe,
           mint: publicKey(ingredientInput.mint),
           authority,
           payer,
@@ -126,7 +126,7 @@ export const createRecipe = async (
     } else if (ingredientInput.__kind === 'TransferToken') {
       builder = builder.add(
         addIngredient(umi, {
-          recipe: recipe.publicKey,
+          recipe,
           mint: publicKey(ingredientInput.mint),
           authority,
           payer,
@@ -138,7 +138,7 @@ export const createRecipe = async (
     } else if (ingredientInput.__kind === 'TransferSol') {
       builder = builder.add(
         addIngredient(umi, {
-          recipe: recipe.publicKey,
+          recipe,
           mint: defaultPublicKey(),
           authority,
           payer,
@@ -154,7 +154,7 @@ export const createRecipe = async (
     if (ingredientOutput.__kind === 'MintToken') {
       builder = builder.add(
         addIngredient(umi, {
-          recipe: recipe.publicKey,
+          recipe,
           mint: publicKey(ingredientOutput.mint),
           authority,
           payer,
@@ -165,7 +165,7 @@ export const createRecipe = async (
     } else if (ingredientOutput.__kind === 'MintTokenWithMaxSupply') {
       builder = builder.add(
         addIngredient(umi, {
-          recipe: recipe.publicKey,
+          recipe,
           mint: publicKey(ingredientOutput.mint),
           authority,
           payer,
@@ -178,16 +178,14 @@ export const createRecipe = async (
   });
 
   if (input.active === true) {
-    builder = builder.add(
-      activateRecipe(umi, { recipe: recipe.publicKey, authority })
-    );
+    builder = builder.add(activateRecipe(umi, { recipe, authority }));
   }
 
   await transactionBuilderGroup(
     builder.unsafeSplitByTransactionSize(umi)
   ).sendAndConfirm(umi);
 
-  return recipe.publicKey;
+  return recipe;
 };
 
 const rootDir = path.join(__dirname, '..', '..', '..', '..');

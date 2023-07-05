@@ -6,10 +6,16 @@
       "name": "CreateRecipe",
       "accounts": [
         {
+          "name": "base",
+          "isMut": false,
+          "isSigner": true,
+          "desc": "An address to derive the recipe address from"
+        },
+        {
           "name": "recipe",
           "isMut": true,
-          "isSigner": true,
-          "desc": "The address of the new recipe account"
+          "isSigner": false,
+          "desc": "The PDA of the new recipe account"
         },
         {
           "name": "authority",
@@ -714,6 +720,10 @@
             "type": {
               "defined": "Key"
             }
+          },
+          {
+            "name": "base",
+            "type": "publicKey"
           },
           {
             "name": "authority",

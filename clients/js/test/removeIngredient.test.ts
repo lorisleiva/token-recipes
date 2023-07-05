@@ -10,7 +10,6 @@ import {
   Recipe,
   RecipeStatus,
   addIngredient,
-  createRecipe,
   fetchDelegatedIngredient,
   fetchIngredientRecord,
   fetchRecipe,
@@ -18,18 +17,17 @@ import {
   findIngredientRecordPda,
   removeIngredient,
 } from '../src';
-import { createUmi } from './_setup';
+import { createRecipe, createUmi } from './_setup';
 
 test('it can remove an ingredient input', async (t) => {
   // Given a recipe with an ingredient input.
   const umi = await createUmi();
-  const recipe = generateSigner(umi);
+  const recipe = await createRecipe(umi);
   const mint = generateSigner(umi);
-  await createRecipe(umi, { recipe })
-    .add(createMint(umi, { mint }))
+  await createMint(umi, { mint })
     .add(
       addIngredient(umi, {
-        recipe: recipe.publicKey,
+        recipe,
         mint: mint.publicKey,
         ingredientType: IngredientType.BurnTokenInput,
       })
@@ -38,20 +36,20 @@ test('it can remove an ingredient input', async (t) => {
 
   // And given the ingredient record PDA exists for that ingredient input.
   const [ingredientRecord] = findIngredientRecordPda(umi, {
-    recipe: recipe.publicKey,
+    recipe,
     mint: mint.publicKey,
   });
   t.true(await umi.rpc.accountExists(ingredientRecord));
 
   // When we remove that ingredient input.
   await removeIngredient(umi, {
-    recipe: recipe.publicKey,
+    recipe,
     mint: mint.publicKey,
     ingredientType: IngredientType.BurnTokenInput,
   }).sendAndConfirm(umi);
 
   // Then the recipe account now has no ingredient inputs.
-  t.like(await fetchRecipe(umi, recipe.publicKey), <Recipe>{
+  t.like(await fetchRecipe(umi, recipe), <Recipe>{
     status: RecipeStatus.Paused,
     inputs: [] as Array<IngredientInput>,
     outputs: [] as Array<IngredientOutput>,
@@ -64,13 +62,12 @@ test('it can remove an ingredient input', async (t) => {
 test('it can remove an ingredient output', async (t) => {
   // Given a recipe with an ingredient output.
   const umi = await createUmi();
-  const recipe = generateSigner(umi);
+  const recipe = await createRecipe(umi);
   const mint = generateSigner(umi);
-  await createRecipe(umi, { recipe })
-    .add(createMint(umi, { mint }))
+  await createMint(umi, { mint })
     .add(
       addIngredient(umi, {
-        recipe: recipe.publicKey,
+        recipe,
         mint: mint.publicKey,
         ingredientType: IngredientType.MintTokenOutput,
       })
@@ -79,7 +76,7 @@ test('it can remove an ingredient output', async (t) => {
 
   // And given the ingredient record PDA exists for that ingredient output.
   const [ingredientRecord] = findIngredientRecordPda(umi, {
-    recipe: recipe.publicKey,
+    recipe,
     mint: mint.publicKey,
   });
   t.true(await umi.rpc.accountExists(ingredientRecord));
@@ -97,13 +94,13 @@ test('it can remove an ingredient output', async (t) => {
 
   // When we remove that ingredient output.
   await removeIngredient(umi, {
-    recipe: recipe.publicKey,
+    recipe,
     mint: mint.publicKey,
     ingredientType: IngredientType.MintTokenOutput,
   }).sendAndConfirm(umi);
 
   // Then the recipe account now has no ingredient outputs.
-  t.like(await fetchRecipe(umi, recipe.publicKey), <Recipe>{
+  t.like(await fetchRecipe(umi, recipe), <Recipe>{
     status: RecipeStatus.Paused,
     inputs: [] as Array<IngredientInput>,
     outputs: [] as Array<IngredientOutput>,
@@ -124,13 +121,12 @@ test('it can remove an ingredient output', async (t) => {
 test('it decrements the counter when removing an ingredient output that is still used in another recipe', async (t) => {
   // Given a recipe A with an ingredient output.
   const umi = await createUmi();
-  const recipeA = generateSigner(umi);
+  const recipeA = await createRecipe(umi);
   const mint = generateSigner(umi);
-  await createRecipe(umi, { recipe: recipeA })
-    .add(createMint(umi, { mint }))
+  await createMint(umi, { mint })
     .add(
       addIngredient(umi, {
-        recipe: recipeA.publicKey,
+        recipe: recipeA,
         mint: mint.publicKey,
         ingredientType: IngredientType.MintTokenOutput,
       })
@@ -138,16 +134,12 @@ test('it decrements the counter when removing an ingredient output that is still
     .sendAndConfirm(umi);
 
   // And given that ingredient output is used in another recipe B.
-  const recipeB = generateSigner(umi);
-  await createRecipe(umi, { recipe: recipeB })
-    .add(
-      addIngredient(umi, {
-        recipe: recipeB.publicKey,
-        mint: mint.publicKey,
-        ingredientType: IngredientType.MintTokenOutput,
-      })
-    )
-    .sendAndConfirm(umi);
+  const recipeB = await createRecipe(umi);
+  await addIngredient(umi, {
+    recipe: recipeB,
+    mint: mint.publicKey,
+    ingredientType: IngredientType.MintTokenOutput,
+  }).sendAndConfirm(umi);
 
   // And given the delegated ingredient PDA has a counter of 2.
   const [delegatedIngredient] = findDelegatedIngredientPda(umi, {
@@ -159,7 +151,7 @@ test('it decrements the counter when removing an ingredient output that is still
 
   // When we remove that ingredient output from recipe A.
   await removeIngredient(umi, {
-    recipe: recipeA.publicKey,
+    recipe: recipeA,
     mint: mint.publicKey,
     ingredientType: IngredientType.MintTokenOutput,
   }).sendAndConfirm(umi);
@@ -173,20 +165,19 @@ test('it decrements the counter when removing an ingredient output that is still
 test('it can remove an ingredient that is both input and output', async (t) => {
   // Given ingredient that is both input and output in a recipe.
   const umi = await createUmi();
-  const recipe = generateSigner(umi);
+  const recipe = await createRecipe(umi);
   const mint = generateSigner(umi);
-  await createRecipe(umi, { recipe })
-    .add(createMint(umi, { mint }))
+  await createMint(umi, { mint })
     .add(
       addIngredient(umi, {
-        recipe: recipe.publicKey,
+        recipe,
         mint: mint.publicKey,
         ingredientType: IngredientType.BurnTokenInput,
       })
     )
     .add(
       addIngredient(umi, {
-        recipe: recipe.publicKey,
+        recipe,
         mint: mint.publicKey,
         ingredientType: IngredientType.MintTokenOutput,
       })
@@ -195,7 +186,7 @@ test('it can remove an ingredient that is both input and output', async (t) => {
 
   // And given the ingredient record PDA shows the ingredient is both input and output.
   const [ingredientRecord] = findIngredientRecordPda(umi, {
-    recipe: recipe.publicKey,
+    recipe,
     mint: mint.publicKey,
   });
   t.like(await fetchIngredientRecord(umi, ingredientRecord), <IngredientRecord>{
@@ -205,13 +196,13 @@ test('it can remove an ingredient that is both input and output', async (t) => {
 
   // When we remove that ingredient as input.
   await removeIngredient(umi, {
-    recipe: recipe.publicKey,
+    recipe,
     mint: mint.publicKey,
     ingredientType: IngredientType.BurnTokenInput,
   }).sendAndConfirm(umi);
 
   // Then the recipe and ingredient record accounts now show the ingredient is only an output.
-  t.like(await fetchRecipe(umi, recipe.publicKey), <Recipe>{
+  t.like(await fetchRecipe(umi, recipe), <Recipe>{
     status: RecipeStatus.Paused,
     inputs: [] as Array<IngredientInput>,
     outputs: [{ __kind: 'MintToken', mint: mint.publicKey, amount: 1n }],
@@ -223,13 +214,13 @@ test('it can remove an ingredient that is both input and output', async (t) => {
 
   // And when we remove that ingredient as output.
   await removeIngredient(umi, {
-    recipe: recipe.publicKey,
+    recipe,
     mint: mint.publicKey,
     ingredientType: IngredientType.MintTokenOutput,
   }).sendAndConfirm(umi);
 
   // Then the recipe shows no ingredients.
-  t.like(await fetchRecipe(umi, recipe.publicKey), <Recipe>{
+  t.like(await fetchRecipe(umi, recipe), <Recipe>{
     status: RecipeStatus.Paused,
     inputs: [] as Array<IngredientInput>,
     outputs: [] as Array<IngredientOutput>,
@@ -242,15 +233,14 @@ test('it can remove an ingredient that is both input and output', async (t) => {
 test('it cannot remove an ingredient as the wrong authority', async (t) => {
   // Given a recipe owned by authority A with an ingredient input.
   const umi = await createUmi();
-  const recipe = generateSigner(umi);
   const authorityA = generateSigner(umi);
+  const recipe = await createRecipe(umi, { authority: authorityA });
   const mint = generateSigner(umi);
-  await createRecipe(umi, { recipe, authority: authorityA.publicKey })
-    .add(createMint(umi, { mint }))
+  await createMint(umi, { mint })
     .add(
       addIngredient(umi, {
         authority: authorityA,
-        recipe: recipe.publicKey,
+        recipe,
         mint: mint.publicKey,
         ingredientType: IngredientType.BurnTokenInput,
       })
@@ -261,7 +251,7 @@ test('it cannot remove an ingredient as the wrong authority', async (t) => {
   const authorityB = generateSigner(umi);
   const promise = removeIngredient(umi, {
     authority: authorityB,
-    recipe: recipe.publicKey,
+    recipe,
     mint: mint.publicKey,
     ingredientType: IngredientType.BurnTokenInput,
   }).sendAndConfirm(umi);
@@ -273,15 +263,13 @@ test('it cannot remove an ingredient as the wrong authority', async (t) => {
 test('it cannot remove an ingredient that is not in the recipe', async (t) => {
   // Given an empty recipe and an mint account.
   const umi = await createUmi();
-  const recipe = generateSigner(umi);
+  const recipe = await createRecipe(umi);
   const mint = generateSigner(umi);
-  await createRecipe(umi, { recipe })
-    .add(createMint(umi, { mint }))
-    .sendAndConfirm(umi);
+  await createMint(umi, { mint }).sendAndConfirm(umi);
 
   // When we try to remove an ingredient that is not in the recipe.
   const promise = removeIngredient(umi, {
-    recipe: recipe.publicKey,
+    recipe,
     mint: mint.publicKey,
     ingredientType: IngredientType.BurnTokenInput,
   }).sendAndConfirm(umi);

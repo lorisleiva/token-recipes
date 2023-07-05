@@ -24,6 +24,7 @@ import {
   array,
   mapSerializer,
   publicKey as publicKeySerializer,
+  string,
   struct,
   u64,
 } from '@metaplex-foundation/umi/serializers';
@@ -49,6 +50,7 @@ export type Recipe = Account<RecipeAccountData>;
 
 export type RecipeAccountData = {
   key: Key;
+  base: PublicKey;
   authority: PublicKey;
   status: RecipeStatus;
   totalCrafts: bigint;
@@ -63,6 +65,7 @@ export type RecipeAccountData = {
 };
 
 export type RecipeAccountDataArgs = {
+  base: PublicKey;
   authority: PublicKey;
   status: RecipeStatusArgs;
   totalCrafts: number | bigint;
@@ -91,6 +94,7 @@ export function getRecipeAccountDataSerializer(
     struct<RecipeAccountData>(
       [
         ['key', getKeySerializer()],
+        ['base', publicKeySerializer()],
         ['authority', publicKeySerializer()],
         ['status', getRecipeStatusSerializer()],
         ['totalCrafts', u64()],
@@ -189,6 +193,7 @@ export function getRecipeGpaBuilder(
   return gpaBuilder(context, programId)
     .registerFields<{
       key: KeyArgs;
+      base: PublicKey;
       authority: PublicKey;
       status: RecipeStatusArgs;
       totalCrafts: number | bigint;
@@ -202,18 +207,52 @@ export function getRecipeGpaBuilder(
       outputs: Array<IngredientOutputArgs>;
     }>({
       key: [0, getKeySerializer()],
-      authority: [1, publicKeySerializer()],
-      status: [33, getRecipeStatusSerializer()],
-      totalCrafts: [34, u64()],
-      totalCraftsWithQuantity: [42, u64()],
-      fees: [50, u64()],
-      accumulatedAdminFees: [58, u64()],
-      accumulatedShards: [66, u64()],
-      accumulatedExperience: [74, u64()],
-      featureLevels: [82, getFeatureLevelsSerializer()],
-      inputs: [98, array(getIngredientInputSerializer())],
+      base: [1, publicKeySerializer()],
+      authority: [33, publicKeySerializer()],
+      status: [65, getRecipeStatusSerializer()],
+      totalCrafts: [66, u64()],
+      totalCraftsWithQuantity: [74, u64()],
+      fees: [82, u64()],
+      accumulatedAdminFees: [90, u64()],
+      accumulatedShards: [98, u64()],
+      accumulatedExperience: [106, u64()],
+      featureLevels: [114, getFeatureLevelsSerializer()],
+      inputs: [130, array(getIngredientInputSerializer())],
       outputs: [null, array(getIngredientOutputSerializer())],
     })
     .deserializeUsing<Recipe>((account) => deserializeRecipe(account))
     .whereField('key', Key.Recipe);
+}
+
+export function findRecipePda(
+  context: Pick<Context, 'eddsa' | 'programs'>,
+  seeds: {
+    /** An address to derive the recipe address from */
+    base: PublicKey;
+  }
+): Pda {
+  const programId = context.programs.getPublicKey(
+    'tokenRecipes',
+    'C7zZZJpLzAehgidrbwdpBwN6RZCJo98qb55Zjep1a28T'
+  );
+  return context.eddsa.findPda(programId, [
+    string({ size: 'variable' }).serialize('recipe'),
+    publicKeySerializer().serialize(seeds.base),
+  ]);
+}
+
+export async function fetchRecipeFromSeeds(
+  context: Pick<Context, 'eddsa' | 'programs' | 'rpc'>,
+  seeds: Parameters<typeof findRecipePda>[1],
+  options?: RpcGetAccountOptions
+): Promise<Recipe> {
+  return fetchRecipe(context, findRecipePda(context, seeds), options);
+}
+
+export async function safeFetchRecipeFromSeeds(
+  context: Pick<Context, 'eddsa' | 'programs' | 'rpc'>,
+  seeds: Parameters<typeof findRecipePda>[1],
+  options?: RpcGetAccountOptions
+): Promise<Recipe | null> {
+  return safeFetchRecipe(context, findRecipePda(context, seeds), options);
 }
