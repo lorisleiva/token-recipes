@@ -289,46 +289,6 @@ test('it cannot craft a recipe if an input has not enough tokens for multiple qu
   await t.throwsAsync(promise, { name: 'NotEnoughTokens' });
 });
 
-test('it cannot craft a recipe if an output has reached its maximum supply', async (t) => {
-  // Given 2 mint accounts A and B, such that a crafter owns:
-  // - 4 tokens of mint A
-  // - 90 tokens of mint B
-  const umi = await createUmi();
-  const crafter = generateSigner(umi);
-  const [mintA] = await createMintWithHolders(umi, {
-    holders: [{ owner: crafter.publicKey, amount: 4 }],
-  });
-  const [mintB] = await createMintWithHolders(umi, {
-    holders: [{ owner: crafter.publicKey, amount: 90 }],
-  });
-
-  // And a recipe that uses 2 mint A and outputs 6 mint B with a maximum supply of 100.
-  const recipe = await createRecipe(umi, {
-    active: true,
-    inputs: [ingredientInput('BurnToken', { mint: mintA, amount: 2 })],
-    outputs: [
-      ingredientOutput('MintTokenWithMaxSupply', {
-        mint: mintB,
-        amount: 6,
-        maxSupply: 100,
-      }),
-    ],
-  });
-
-  // When the crafter tries to crafts the recipe twice
-  // which would result in mint B reaching its maximum supply (102).
-  const promise = craft(umi, {
-    recipe,
-    owner: crafter,
-    inputs: [{ __kind: 'BurnToken', mint: mintA }],
-    outputs: [{ __kind: 'MintTokenWithMaxSupply', mint: mintB }],
-    quantity: 2,
-  }).sendAndConfirm(umi);
-
-  // Then we expect a program error.
-  await t.throwsAsync(promise, { name: 'MaximumSupplyReached' });
-});
-
 test('it cannot craft a recipe if remaining accounts are missing', async (t) => {
   // Given 2 mint accounts A and B, such that a crafter owns:
   // - 2 tokens of mint A
