@@ -45,15 +45,16 @@ test('it adds experience to the recipe when crafting by default', async (t) => {
     owner: crafter,
     inputs: [{ __kind: 'BurnToken', mint: inputMint }],
     outputs: [{ __kind: 'MintToken', mint: outputMint }],
+    quantity: 2,
   }).sendAndConfirm(umi);
 
-  // Then the recipe has accumulated experience.
+  // Then the recipe has accumulated experience regardless of the quantity.
   t.like(await fetchRecipe(umi, recipe), <Recipe>{
     accumulatedExperience: 100n,
   });
 });
 
-test.skip('it adds more experience to the recipe when crafting when unlocked', async (t) => {
+test('it adds more experience to the recipe when crafting when unlocked', async (t) => {
   // Given an output mint and output mint such that the craft owns 10 input tokens.
   const umi = await createUmi();
   const crafter = generateSigner(umi);
@@ -80,10 +81,12 @@ test.skip('it adds more experience to the recipe when crafting when unlocked', a
     owner: crafter,
     inputs: [{ __kind: 'BurnToken', mint: inputMint }],
     outputs: [{ __kind: 'MintToken', mint: outputMint }],
+    quantity: 2,
   }).sendAndConfirm(umi);
 
   // Then the recipe has accumulated more experience.
+  // Still regardless of the quantity.
   t.like(await fetchRecipe(umi, recipe), <Recipe>{
-    accumulatedExperience: 150n,
+    accumulatedExperience: 125n,
   });
 });

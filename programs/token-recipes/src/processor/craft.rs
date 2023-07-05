@@ -1,6 +1,6 @@
 use crate::{
     assertions::{assert_same_pubkeys, assert_signer, assert_writable},
-    state::recipe::Recipe,
+    state::{features::wisdom::get_experience_per_craft, recipe::Recipe},
 };
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
@@ -59,7 +59,7 @@ pub(crate) fn craft<'a>(accounts: &'a [AccountInfo<'a>], quantity: u64) -> Progr
     // TODO: Handle fees and shards.
 
     // Recipe experience.
-    recipe_account.accumulated_experience += 100;
+    recipe_account.accumulated_experience += get_experience_per_craft(&recipe_account);
 
     // Recipe statistics.
     recipe_account.total_crafts += 1;

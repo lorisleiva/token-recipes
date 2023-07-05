@@ -94,4 +94,14 @@ impl WisdomFeature {
     }
 }
 
-// TODO: Function that returns experience based on level.
+pub fn get_experience_per_craft(recipe: &Recipe) -> u64 {
+    match recipe.feature_levels.wisdom {
+        1 => 125,
+        2 => 150,
+        3 => 175,
+        4 => 200,
+        5 => 250,
+        6 => 300,
+        _ => 100,
+    }
+}
