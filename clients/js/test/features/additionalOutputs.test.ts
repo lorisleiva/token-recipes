@@ -36,7 +36,40 @@ test(unlockMacro, 1, 2, 'mintSkill1', 1, 2, 'invalid-mint');
 test(unlockMacro, 1, 0, 'mintSkill2', 1, 3);
 test(unlockMacro, 1, 3, 'mintSkill2', 1, 3, 'max-level-reached');
 
-test.skip('it cannot add multiple outputs by default', async (t) => {});
+test('it cannot add multiple outputs by default', async (t) => {
+  // Given 2 mint accounts.
+  const umi = await createUmi();
+  const mintA = generateSigner(umi);
+  const mintB = generateSigner(umi);
+  await createMint(umi, { mint: mintA })
+    .add(createMint(umi, { mint: mintB }))
+    .sendAndConfirm(umi);
+
+  // And a recipe that hasn't unlocked additional outputs and that has one output ingredient.
+  const recipe = await createRecipe(umi, {
+    outputs: [
+      ingredientOutput('MintToken', { mint: mintA.publicKey, amount: 1 }),
+    ],
+  });
+
+  // When we try to add an additional output ingredient.
+  const promise = addIngredient(umi, {
+    recipe,
+    mint: mintB.publicKey,
+    ingredientType: IngredientType.MintTokenOutput,
+    amount: 2n,
+  }).sendAndConfirm(umi);
+
+  // Then we expect a program error.
+  await t.throwsAsync(promise, { name: 'InvalidAdditionalOutputsFeature' });
+
+  // And the recipe still has only 1 output ingredient.
+  t.like(await fetchRecipe(umi, recipe), <Recipe>{
+    outputs: <Array<IngredientOutput>>[
+      { __kind: 'MintToken', mint: mintA.publicKey, amount: 1n },
+    ],
+  });
+});
 
 test('it can add multiple outputs when unlocked', async (t) => {
   // Given 2 mint accounts.
@@ -50,7 +83,6 @@ test('it can add multiple outputs when unlocked', async (t) => {
   // And a recipe that unlocked additional outputs and that has one output ingredient.
   const recipe = await createRecipe(umi, {
     features: [['additionalOutputs', 1]],
-    inputs: [],
     outputs: [
       ingredientOutput('MintToken', { mint: mintA.publicKey, amount: 1 }),
     ],
