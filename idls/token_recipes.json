@@ -411,6 +411,119 @@
         "type": "u8",
         "value": 8
       }
+    },
+    {
+      "name": "SetFees",
+      "accounts": [
+        {
+          "name": "recipe",
+          "isMut": true,
+          "isSigner": false,
+          "desc": "The address of the recipe account"
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "desc": "The authority of the recipe account"
+        }
+      ],
+      "args": [
+        {
+          "name": "fees",
+          "type": "u64"
+        }
+      ],
+      "discriminant": {
+        "type": "u8",
+        "value": 9
+      }
+    },
+    {
+      "name": "CollectFees",
+      "accounts": [
+        {
+          "name": "recipe",
+          "isMut": true,
+          "isSigner": false,
+          "desc": "The address of the recipe account"
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "desc": "The authority of the recipe account"
+        },
+        {
+          "name": "adminFeesDestination",
+          "isMut": true,
+          "isSigner": false,
+          "desc": "The account that receives admin fees"
+        },
+        {
+          "name": "feesFeaturePda",
+          "isMut": false,
+          "isSigner": false,
+          "desc": "The fees feature PDA storing the valid shard mint"
+        },
+        {
+          "name": "shardsMint",
+          "isMut": true,
+          "isSigner": false,
+          "desc": "The mint account of shard tokens"
+        },
+        {
+          "name": "shardsToken",
+          "isMut": true,
+          "isSigner": false,
+          "desc": "The shards token account of the authority"
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 10
+      }
+    },
+    {
+      "name": "CollectExperience",
+      "accounts": [
+        {
+          "name": "recipe",
+          "isMut": true,
+          "isSigner": false,
+          "desc": "The address of the recipe account"
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true,
+          "desc": "The authority of the recipe account"
+        },
+        {
+          "name": "wisdomFeaturePda",
+          "isMut": false,
+          "isSigner": false,
+          "desc": "The wisdom feature PDA storing the valid experience mint"
+        },
+        {
+          "name": "experienceMint",
+          "isMut": true,
+          "isSigner": false,
+          "desc": "The mint account of experience tokens"
+        },
+        {
+          "name": "experienceToken",
+          "isMut": true,
+          "isSigner": false,
+          "desc": "The experience token account of the authority"
+        }
+      ],
+      "args": [],
+      "discriminant": {
+        "type": "u8",
+        "value": 11
+      }
     }
   ],
   "accounts": [
