@@ -1,8 +1,15 @@
 use crate::{
-    assertions::assert_mint_account,
+    assertions::{
+        assert_account_key, assert_mint_account, assert_pda, assert_program_owner,
+        assert_same_pubkeys, assert_token_account, assert_writable,
+    },
     error::TokenRecipesError,
-    state::{features::UnlockFeatureContext, key::Key, recipe::Recipe},
-    utils::burn_tokens,
+    state::{
+        features::{fees::BASE_FEES, UnlockFeatureContext},
+        key::Key,
+        recipe::Recipe,
+    },
+    utils::{burn_tokens, mint_tokens},
 };
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
@@ -10,8 +17,6 @@ use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
     pubkey::Pubkey,
 };
-
-use super::fees::BASE_FEES;
 
 /// Unlocks more experience when crafting.
 ///
@@ -77,6 +82,12 @@ impl WisdomFeature {
         vec!["features".as_bytes(), "wisdom".as_bytes()]
     }
 
+    pub fn get(wisdom_feature_pda: &AccountInfo) -> Result<Self, ProgramError> {
+        assert_program_owner("wisdom_feature_pda", wisdom_feature_pda, &crate::id())?;
+        assert_account_key("wisdom_feature_pda", wisdom_feature_pda, Key::WisdomFeature)?;
+        Self::load(wisdom_feature_pda)
+    }
+
     pub fn load(account: &AccountInfo) -> Result<Self, ProgramError> {
         let mut bytes: &[u8] = &(*account.data).borrow();
         WisdomFeature::deserialize(&mut bytes).map_err(|error| {
@@ -114,4 +125,51 @@ pub fn get_experience_per_craft(recipe: &Recipe) -> u64 {
     }
 }
 
-// TODO: Function that collects experience.
+pub fn collect_experience<'a>(
+    accumulated_experience: u64,
+    authority: &'a AccountInfo<'a>,
+    experience_mint: &'a AccountInfo<'a>,
+    experience_token: &'a AccountInfo<'a>,
+    wisdom_feature_pda: &'a AccountInfo<'a>,
+) -> ProgramResult {
+    // Check: wisdom_feature_pda.
+    let wisdom_feature_account = WisdomFeature::get(wisdom_feature_pda)?;
+    let bump = assert_pda(
+        "wisdom_feature_pda",
+        wisdom_feature_pda,
+        &crate::id(),
+        &WisdomFeature::seeds(),
+    )?;
+
+    // Check: experience_mint
+    assert_same_pubkeys(
+        "experience_mint",
+        experience_mint,
+        &wisdom_feature_account.experience_mint,
+    )?;
+    assert_writable("experience_mint", experience_mint)?;
+    let experience_mint_account = assert_mint_account("experience_mint", experience_mint)?;
+
+    // Check: experience_token.
+    assert_writable("experience_token", experience_token)?;
+    let experience_token_account = assert_token_account("experience_token", experience_token)?;
+    assert_same_pubkeys(
+        "experience_mint",
+        experience_mint,
+        &experience_token_account.mint,
+    )?;
+    assert_same_pubkeys("authority", authority, &experience_token_account.owner)?;
+
+    // Mint experience.
+    let mut seeds = WisdomFeature::seeds();
+    let bump = &[bump];
+    seeds.push(bump);
+    mint_tokens(
+        experience_token,
+        experience_mint,
+        wisdom_feature_pda,
+        accumulated_experience,
+        experience_mint_account.decimals,
+        Some(&[&seeds]),
+    )
+}
