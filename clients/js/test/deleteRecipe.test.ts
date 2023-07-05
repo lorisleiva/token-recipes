@@ -1,8 +1,14 @@
 import { createMint } from '@metaplex-foundation/mpl-toolbox';
-import { generateSigner } from '@metaplex-foundation/umi';
+import { Umi, generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
 import { deleteRecipe, ingredientInput, ingredientOutput } from '../src';
-import { createRecipe, createUmi } from './_setup';
+import { createRecipe, createUmi, seededSigner } from './_setup';
+
+const collectingAccounts = (umi: Umi) => ({
+  adminFeesDestination: seededSigner(umi, 'FEES-adminDestination').publicKey,
+  shardsMint: seededSigner(umi, 'FEES-shardMint').publicKey,
+  experienceMint: seededSigner(umi, 'WISD-experienceMint').publicKey,
+});
 
 test('it can delete a recipe', async (t) => {
   // Given an empty recipe account.
@@ -11,7 +17,10 @@ test('it can delete a recipe', async (t) => {
   t.true(await umi.rpc.accountExists(recipe));
 
   // When we delete the recipe.
-  await deleteRecipe(umi, { recipe }).sendAndConfirm(umi);
+  await deleteRecipe(umi, {
+    recipe,
+    ...collectingAccounts(umi),
+  }).sendAndConfirm(umi);
 
   // Then the recipe account no longer exists.
   t.false(await umi.rpc.accountExists(recipe));
@@ -28,6 +37,7 @@ test('it cannot delete a recipe as the wrong authority', async (t) => {
   const promise = deleteRecipe(umi, {
     authority: authorityB,
     recipe,
+    ...collectingAccounts(umi),
   }).sendAndConfirm(umi);
 
   // Then we expect a program error.
@@ -52,7 +62,10 @@ test('it cannot delete a recipe that is not empty', async (t) => {
   });
 
   // When we try to delete the recipe.
-  const promise = deleteRecipe(umi, { recipe }).sendAndConfirm(umi);
+  const promise = deleteRecipe(umi, {
+    recipe,
+    ...collectingAccounts(umi),
+  }).sendAndConfirm(umi);
 
   // Then we expect a program error.
   await t.throwsAsync(promise, {
