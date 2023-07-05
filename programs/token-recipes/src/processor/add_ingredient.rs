@@ -4,6 +4,7 @@ use crate::{
     state::{
         features::{
             additional_outputs::assert_valid_additional_outputs,
+            max_supply::assert_valid_max_supply_outputs,
             sol_payment::assert_valid_sol_payment_inputs,
             transfer_inputs::assert_valid_transfer_inputs,
         },
@@ -50,6 +51,7 @@ pub(crate) fn add_ingredient(
         return Err(TokenRecipesError::CannotAddIngredientWithZeroAmount.into());
     }
 
+    // Get ingredient from type.
     let ingredient: Ingredient = match ingredient_type {
         IngredientType::BurnTokenInput => Ingredient::Input(IngredientInput::BurnToken {
             mint: *mint.key,
@@ -77,6 +79,7 @@ pub(crate) fn add_ingredient(
         }
     };
 
+    // Add the ingredient.
     match ingredient {
         Ingredient::Input(input) => input.add(
             &mut recipe_account,
@@ -98,9 +101,11 @@ pub(crate) fn add_ingredient(
         ),
     }?;
 
-    assert_valid_additional_outputs(&recipe_account)?;
+    // Check feature invariants.
     assert_valid_transfer_inputs(&recipe_account)?;
     assert_valid_sol_payment_inputs(&recipe_account)?;
+    assert_valid_additional_outputs(&recipe_account)?;
+    assert_valid_max_supply_outputs(&recipe_account)?;
 
     Ok(())
 }

@@ -22,7 +22,7 @@ test(unlockMacro, 1, 1, 'mintBurn1', 1, 1, 'max-level-reached');
 test(unlockMacro, 1, 0, 'mintSkill1', 1, 1);
 test(unlockMacro, 1, 1, 'mintSkill1', 1, 1, 'max-level-reached');
 
-test.skip('it cannot add max supply outputs by default', async (t) => {
+test('it cannot add max supply outputs by default', async (t) => {
   // Given a mint account.
   const umi = await createUmi();
   const mint = generateSigner(umi);

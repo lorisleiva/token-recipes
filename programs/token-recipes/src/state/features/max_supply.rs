@@ -92,7 +92,7 @@ impl MaxSupplyFeature {
 
 /// Asserts that the recipe has a valid number of transfer inputs.
 /// Make sure to use AFTER the recipe was updated.
-pub fn assert_valid_max_supply(recipe: &Recipe) -> ProgramResult {
+pub fn assert_valid_max_supply_outputs(recipe: &Recipe) -> ProgramResult {
     let total_max_supply_outputs = recipe
         .outputs
         .iter()
