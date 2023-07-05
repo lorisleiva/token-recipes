@@ -6,6 +6,7 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
+import { findAssociatedTokenPda } from '@metaplex-foundation/mpl-toolbox';
 import {
   AccountMeta,
   Context,
@@ -13,6 +14,7 @@ import {
   PublicKey,
   Signer,
   TransactionBuilder,
+  publicKey,
   transactionBuilder,
 } from '@metaplex-foundation/umi';
 import {
@@ -21,6 +23,7 @@ import {
   struct,
   u8,
 } from '@metaplex-foundation/umi/serializers';
+import { findWisdomFeaturePda } from '../accounts';
 import { addAccountMeta, addObjectProperty } from '../shared';
 
 // Accounts.
@@ -30,11 +33,11 @@ export type CollectExperienceInstructionAccounts = {
   /** The authority of the recipe account */
   authority?: Signer;
   /** The wisdom feature PDA storing the valid experience mint */
-  wisdomFeaturePda: PublicKey | Pda;
+  wisdomFeaturePda?: PublicKey | Pda;
   /** The mint account of experience tokens */
   experienceMint: PublicKey | Pda;
   /** The experience token account of the authority */
-  experienceToken: PublicKey | Pda;
+  experienceToken?: PublicKey | Pda;
 };
 
 // Data.
@@ -76,7 +79,7 @@ export function getCollectExperienceInstructionDataSerializer(
 
 // Instruction.
 export function collectExperience(
-  context: Pick<Context, 'programs' | 'identity'>,
+  context: Pick<Context, 'programs' | 'eddsa' | 'identity'>,
   input: CollectExperienceInstructionAccounts
 ): TransactionBuilder {
   const signers: Signer[] = [];
@@ -91,9 +94,7 @@ export function collectExperience(
   // Resolved inputs.
   const resolvedAccounts = {
     recipe: [input.recipe, true] as const,
-    wisdomFeaturePda: [input.wisdomFeaturePda, false] as const,
     experienceMint: [input.experienceMint, true] as const,
-    experienceToken: [input.experienceToken, true] as const,
   };
   addObjectProperty(
     resolvedAccounts,
@@ -101,6 +102,26 @@ export function collectExperience(
     input.authority
       ? ([input.authority, false] as const)
       : ([context.identity, false] as const)
+  );
+  addObjectProperty(
+    resolvedAccounts,
+    'wisdomFeaturePda',
+    input.wisdomFeaturePda
+      ? ([input.wisdomFeaturePda, false] as const)
+      : ([findWisdomFeaturePda(context), false] as const)
+  );
+  addObjectProperty(
+    resolvedAccounts,
+    'experienceToken',
+    input.experienceToken
+      ? ([input.experienceToken, true] as const)
+      : ([
+          findAssociatedTokenPda(context, {
+            mint: publicKey(input.experienceMint, false),
+            owner: publicKey(resolvedAccounts.authority[0], false),
+          }),
+          true,
+        ] as const)
   );
 
   addAccountMeta(keys, signers, resolvedAccounts.recipe, false);

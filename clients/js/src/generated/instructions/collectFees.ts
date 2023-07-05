@@ -6,6 +6,7 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
+import { findAssociatedTokenPda } from '@metaplex-foundation/mpl-toolbox';
 import {
   AccountMeta,
   Context,
@@ -13,6 +14,7 @@ import {
   PublicKey,
   Signer,
   TransactionBuilder,
+  publicKey,
   transactionBuilder,
 } from '@metaplex-foundation/umi';
 import {
@@ -21,6 +23,7 @@ import {
   struct,
   u8,
 } from '@metaplex-foundation/umi/serializers';
+import { findFeesFeaturePda } from '../accounts';
 import { addAccountMeta, addObjectProperty } from '../shared';
 
 // Accounts.
@@ -32,11 +35,11 @@ export type CollectFeesInstructionAccounts = {
   /** The account that receives admin fees */
   adminFeesDestination: PublicKey | Pda;
   /** The fees feature PDA storing the valid shard mint */
-  feesFeaturePda: PublicKey | Pda;
+  feesFeaturePda?: PublicKey | Pda;
   /** The mint account of shard tokens */
   shardsMint: PublicKey | Pda;
   /** The shards token account of the authority */
-  shardsToken: PublicKey | Pda;
+  shardsToken?: PublicKey | Pda;
 };
 
 // Data.
@@ -69,7 +72,7 @@ export function getCollectFeesInstructionDataSerializer(
 
 // Instruction.
 export function collectFees(
-  context: Pick<Context, 'programs' | 'identity'>,
+  context: Pick<Context, 'programs' | 'eddsa' | 'identity'>,
   input: CollectFeesInstructionAccounts
 ): TransactionBuilder {
   const signers: Signer[] = [];
@@ -85,9 +88,7 @@ export function collectFees(
   const resolvedAccounts = {
     recipe: [input.recipe, true] as const,
     adminFeesDestination: [input.adminFeesDestination, true] as const,
-    feesFeaturePda: [input.feesFeaturePda, false] as const,
     shardsMint: [input.shardsMint, true] as const,
-    shardsToken: [input.shardsToken, true] as const,
   };
   addObjectProperty(
     resolvedAccounts,
@@ -95,6 +96,26 @@ export function collectFees(
     input.authority
       ? ([input.authority, false] as const)
       : ([context.identity, false] as const)
+  );
+  addObjectProperty(
+    resolvedAccounts,
+    'feesFeaturePda',
+    input.feesFeaturePda
+      ? ([input.feesFeaturePda, false] as const)
+      : ([findFeesFeaturePda(context), false] as const)
+  );
+  addObjectProperty(
+    resolvedAccounts,
+    'shardsToken',
+    input.shardsToken
+      ? ([input.shardsToken, true] as const)
+      : ([
+          findAssociatedTokenPda(context, {
+            mint: publicKey(input.shardsMint, false),
+            owner: publicKey(resolvedAccounts.authority[0], false),
+          }),
+          true,
+        ] as const)
   );
 
   addAccountMeta(keys, signers, resolvedAccounts.recipe, false);

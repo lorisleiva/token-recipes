@@ -64,16 +64,22 @@ kinobi.update(
 );
 
 // Global default intruction accounts.
+const ataPda = (mint = "mint", owner = "owner") =>
+  k.pdaDefault("associatedToken", {
+    importFrom: "mplToolbox",
+    seeds: {
+      mint: k.accountDefault(mint),
+      owner: k.accountDefault(owner),
+    },
+  });
 kinobi.update(
   new k.SetInstructionAccountDefaultValuesVisitor([
-    {
-      account: "ingredientRecord",
-      ...k.pdaDefault("ingredientRecord"),
-    },
-    {
-      account: "delegatedIngredient",
-      ...k.pdaDefault("delegatedIngredient"),
-    },
+    { account: "ingredientRecord", ...k.pdaDefault("ingredientRecord") },
+    { account: "delegatedIngredient", ...k.pdaDefault("delegatedIngredient") },
+    { account: "shardsToken", ...ataPda("shardsMint", "authority") },
+    { account: "experienceToken", ...ataPda("experienceMint", "authority") },
+    { account: "feesFeaturePda", ...k.pdaDefault("feesFeature") },
+    { account: "wisdomFeaturePda", ...k.pdaDefault("wisdomFeature") },
   ])
 );
 
@@ -100,15 +106,7 @@ kinobi.update(
     unlockFeature: {
       accounts: {
         owner: { defaultsTo: k.identityDefault() },
-        token: {
-          defaultsTo: k.pdaDefault("associatedToken", {
-            importFrom: "mplToolbox",
-            seeds: {
-              mint: k.accountDefault("mint"),
-              owner: k.accountDefault("owner"),
-            },
-          }),
-        },
+        token: { defaultsTo: ataPda() },
       },
     },
   })

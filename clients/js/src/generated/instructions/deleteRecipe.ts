@@ -6,6 +6,7 @@
  * @see https://github.com/metaplex-foundation/kinobi
  */
 
+import { findAssociatedTokenPda } from '@metaplex-foundation/mpl-toolbox';
 import {
   AccountMeta,
   Context,
@@ -13,6 +14,7 @@ import {
   PublicKey,
   Signer,
   TransactionBuilder,
+  publicKey,
   transactionBuilder,
 } from '@metaplex-foundation/umi';
 import {
@@ -21,6 +23,7 @@ import {
   struct,
   u8,
 } from '@metaplex-foundation/umi/serializers';
+import { findFeesFeaturePda, findWisdomFeaturePda } from '../accounts';
 import { addAccountMeta, addObjectProperty } from '../shared';
 
 // Accounts.
@@ -34,17 +37,17 @@ export type DeleteRecipeInstructionAccounts = {
   /** The account that receives admin fees */
   adminFeesDestination: PublicKey | Pda;
   /** The fees feature PDA storing the valid shard mint */
-  feesFeaturePda: PublicKey | Pda;
+  feesFeaturePda?: PublicKey | Pda;
   /** The mint account of shard tokens */
   shardsMint: PublicKey | Pda;
   /** The shards token account of the authority */
-  shardsToken: PublicKey | Pda;
+  shardsToken?: PublicKey | Pda;
   /** The wisdom feature PDA storing the valid experience mint */
-  wisdomFeaturePda: PublicKey | Pda;
+  wisdomFeaturePda?: PublicKey | Pda;
   /** The mint account of experience tokens */
   experienceMint: PublicKey | Pda;
   /** The experience token account of the authority */
-  experienceToken: PublicKey | Pda;
+  experienceToken?: PublicKey | Pda;
 };
 
 // Data.
@@ -77,7 +80,7 @@ export function getDeleteRecipeInstructionDataSerializer(
 
 // Instruction.
 export function deleteRecipe(
-  context: Pick<Context, 'programs' | 'identity' | 'payer'>,
+  context: Pick<Context, 'programs' | 'eddsa' | 'identity' | 'payer'>,
   input: DeleteRecipeInstructionAccounts
 ): TransactionBuilder {
   const signers: Signer[] = [];
@@ -93,12 +96,8 @@ export function deleteRecipe(
   const resolvedAccounts = {
     recipe: [input.recipe, true] as const,
     adminFeesDestination: [input.adminFeesDestination, true] as const,
-    feesFeaturePda: [input.feesFeaturePda, false] as const,
     shardsMint: [input.shardsMint, true] as const,
-    shardsToken: [input.shardsToken, true] as const,
-    wisdomFeaturePda: [input.wisdomFeaturePda, false] as const,
     experienceMint: [input.experienceMint, true] as const,
-    experienceToken: [input.experienceToken, true] as const,
   };
   addObjectProperty(
     resolvedAccounts,
@@ -113,6 +112,46 @@ export function deleteRecipe(
     input.payer
       ? ([input.payer, true] as const)
       : ([context.payer.publicKey, true] as const)
+  );
+  addObjectProperty(
+    resolvedAccounts,
+    'feesFeaturePda',
+    input.feesFeaturePda
+      ? ([input.feesFeaturePda, false] as const)
+      : ([findFeesFeaturePda(context), false] as const)
+  );
+  addObjectProperty(
+    resolvedAccounts,
+    'shardsToken',
+    input.shardsToken
+      ? ([input.shardsToken, true] as const)
+      : ([
+          findAssociatedTokenPda(context, {
+            mint: publicKey(input.shardsMint, false),
+            owner: publicKey(resolvedAccounts.authority[0], false),
+          }),
+          true,
+        ] as const)
+  );
+  addObjectProperty(
+    resolvedAccounts,
+    'wisdomFeaturePda',
+    input.wisdomFeaturePda
+      ? ([input.wisdomFeaturePda, false] as const)
+      : ([findWisdomFeaturePda(context), false] as const)
+  );
+  addObjectProperty(
+    resolvedAccounts,
+    'experienceToken',
+    input.experienceToken
+      ? ([input.experienceToken, true] as const)
+      : ([
+          findAssociatedTokenPda(context, {
+            mint: publicKey(input.experienceMint, false),
+            owner: publicKey(resolvedAccounts.authority[0], false),
+          }),
+          true,
+        ] as const)
   );
 
   addAccountMeta(keys, signers, resolvedAccounts.recipe, false);
