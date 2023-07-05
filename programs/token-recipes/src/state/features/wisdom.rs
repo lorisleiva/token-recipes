@@ -11,6 +11,8 @@ use solana_program::{
     pubkey::Pubkey,
 };
 
+use super::fees::BASE_FEES;
+
 /// Unlocks more experience when crafting.
 ///
 /// - Level 0: 100 experience points per craft.
@@ -95,6 +97,12 @@ impl WisdomFeature {
 }
 
 pub fn get_experience_per_craft(recipe: &Recipe) -> u64 {
+    if recipe.feature_levels.fees == 10 && recipe.fees < BASE_FEES {
+        return 0;
+    }
+    if recipe.feature_levels.fees == 11 {
+        return 0;
+    }
     match recipe.feature_levels.wisdom {
         1 => 125,
         2 => 150,
@@ -102,6 +110,8 @@ pub fn get_experience_per_craft(recipe: &Recipe) -> u64 {
         4 => 200,
         5 => 250,
         6 => 300,
-        _ => 100,
+        _ => 100, // Level 0.
     }
 }
+
+// TODO: Function that collects experience.

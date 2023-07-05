@@ -11,12 +11,17 @@ use solana_program::{
     pubkey::Pubkey,
 };
 
+/// Base fees for crafting.
+/// 0.02 SOL.
+pub const BASE_FEES: u64 = 20_000_000;
+
 /// Unlocks recipe fees.
+/// Aside from level 0, for every lamport that goes to the program admin, a shard is accumulated on the recipe.
+/// Accumulated shards are automatically minted as a special ingredient when collecting fees.
 ///
-/// - Level 0: No fees when crafting.
-/// - Level 1: 10% of base fees (see below) when crafting, the rest goes to the program admin.
-///            90% of base fee lamports are added as "shards" to the recipe to be minted
-///            as a special ingredient when collecting fees.
+/// - Level 0: 0% of base fees (see above) when crafting,
+///            100% of base fees go to the program admin but no shards are accumulated.
+/// - Level 1: 10% of base fees, 90% shards.
 /// - Level 2: 20% of base fees, 80% shards.
 /// - Level 3: 30% of base fees, 70% shards.
 /// - Level 4: 40% of base fees, 60% shards.
@@ -25,10 +30,8 @@ use solana_program::{
 /// - Level 7: 70% of base fees, 30% shards.
 /// - Level 8: 80% of base fees, 20% shards.
 /// - Level 9: 90% of base fees, 10% shards.
-/// - Level 10: 100% of base fees, 10% shards. From this level, the program admin no longer receives fees.
-/// - Level 11: 100% of custom fees. 10% shards based on base fees.
-///
-/// Base fee: 0.02 SOL.
+/// - Level 10: 90% of custom fees, 10% shards. If custom fees are set below base fees, no experience is gained on crafting.
+/// - Level 11: 100% of custom fees. No shards nor experience are gained on crafting.
 #[repr(C)]
 #[derive(Clone, BorshSerialize, BorshDeserialize, Debug, ShankAccount)]
 pub struct FeesFeature {
@@ -115,6 +118,11 @@ impl FeesFeature {
             )?;
         }
 
+        // If level 10 is reached for the first time, set custom fees to base fees.
+        if level < 10 && recipe_account.feature_levels.fees >= 10 {
+            recipe_account.fees = BASE_FEES;
+        }
+
         recipe_account.save(context.recipe)
     }
 
@@ -141,17 +149,57 @@ impl FeesFeature {
     }
 }
 
-// TODO: Function that returns fees, admin fees and shards base on level and recipe.
+/// Returns the total fees, admin fees and shards per craft.
+/// Returns (total fees, admin fees, shards).
+pub fn get_fees_and_shards_per_craft(recipe: &Recipe) -> Result<(u64, u64, u64), ProgramError> {
+    let fee_percent: u64 = match recipe.feature_levels.fees {
+        1 => 10,
+        2 => 20,
+        3 => 30,
+        4 => 40,
+        5 => 50,
+        6 => 60,
+        7 => 70,
+        8 => 70,
+        9 => 90,
+        10 => 90,
+        11 => 100,
+        _ => 0, // Level 0.
+    };
+
+    let total_fees: u64 = match recipe.feature_levels.fees {
+        10 | 11 => recipe.fees,
+        _ => BASE_FEES,
+    };
+
+    let recipe_fees = total_fees
+        .checked_mul(fee_percent)
+        .and_then(|result| result.checked_div(100))
+        .ok_or::<ProgramError>(TokenRecipesError::NumericalOverflow.into())?;
+
+    let admin_fees = total_fees
+        .checked_sub(recipe_fees)
+        .ok_or::<ProgramError>(TokenRecipesError::NumericalOverflow.into())?;
+
+    let shards = match recipe.feature_levels.fees {
+        0 => 0,
+        _ => admin_fees,
+    };
+
+    Ok((total_fees, admin_fees, shards))
+}
 
 /// Asserts that the recipe can set custom fees.
 pub fn asserts_can_set_fees(recipe: &Recipe) -> ProgramResult {
     let level = recipe.feature_levels.fees;
-    if level < 11 {
+    if level < 10 {
         msg!(
-            "You cannot set custom fees for this recipe. Level up the \"Fees\" feature to level 11 to enable this feature.",
+            "You cannot set custom fees for this recipe. Level up the \"Fees\" feature to level 10 to enable this feature.",
         );
         Err(TokenRecipesError::InvalidFeesFeature.into())
     } else {
         Ok(())
     }
 }
+
+// TODO: Function that collects fees and shards.
