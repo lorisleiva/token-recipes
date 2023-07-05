@@ -1,5 +1,8 @@
 use crate::{
-    assertions::assert_mint_account,
+    assertions::{
+        assert_account_key, assert_mint_account, assert_pda, assert_program_owner,
+        assert_same_pubkeys, assert_token_account, assert_writable,
+    },
     error::TokenRecipesError,
     state::{features::UnlockFeatureContext, key::Key, recipe::Recipe},
     utils::{burn_tokens, mint_tokens, transfer_lamports},
@@ -130,6 +133,12 @@ impl FeesFeature {
         vec!["features".as_bytes(), "fees".as_bytes()]
     }
 
+    pub fn get(fees_feature_pda: &AccountInfo) -> Result<Self, ProgramError> {
+        assert_program_owner("fees_feature_pda", fees_feature_pda, &crate::id())?;
+        assert_account_key("fees_feature_pda", fees_feature_pda, Key::FeesFeature)?;
+        Self::load(fees_feature_pda)
+    }
+
     pub fn load(account: &AccountInfo) -> Result<Self, ProgramError> {
         let mut bytes: &[u8] = &(*account.data).borrow();
         FeesFeature::deserialize(&mut bytes).map_err(|error| {
@@ -202,9 +211,9 @@ pub fn asserts_can_set_fees(recipe: &Recipe) -> ProgramResult {
     }
 }
 
-// TODO: Function that collects fees and shards.
-pub fn collect_fees_and_shards<'a>(
+pub fn collect_fees<'a>(
     accumulated_admin_fees: u64,
+    base: &'a Pubkey,
     recipe: &'a AccountInfo<'a>,
     authority: &'a AccountInfo<'a>,
     fee_destination: &'a AccountInfo<'a>,
@@ -225,17 +234,56 @@ pub fn collect_fees_and_shards<'a>(
         .checked_sub(accumulated_admin_fees)
         .ok_or::<ProgramError>(TokenRecipesError::NumericalOverflow.into())?;
 
-    transfer_lamports(recipe, authority, authority_fees, None)?; // TODO: Sign as recipe PDA.
-    transfer_lamports(recipe, fee_destination, accumulated_admin_fees, None) // TODO: Sign as recipe PDA.
+    let mut seeds = Recipe::seeds(base);
+    let bump = assert_pda("recipe", recipe, &crate::id(), &Recipe::seeds(base))?;
+    let bump = &[bump];
+    seeds.push(bump);
+    transfer_lamports(recipe, authority, authority_fees, Some(&[&seeds]))?;
+    transfer_lamports(
+        recipe,
+        fee_destination,
+        accumulated_admin_fees,
+        Some(&[&seeds]),
+    )
 }
 
 pub fn collect_shards<'a>(
     accumulated_shards: u64,
-    mint: &'a AccountInfo<'a>,
-    token: &'a AccountInfo<'a>,
-    feature_pda: &'a AccountInfo<'a>,
+    authority: &'a AccountInfo<'a>,
+    shards_mint: &'a AccountInfo<'a>,
+    shards_token: &'a AccountInfo<'a>,
+    fees_feature_pda: &'a AccountInfo<'a>,
 ) -> ProgramResult {
-    // TODO: Check mint and token accounts and get real decimals.
-    // TODO: Sign as feature PDA.
-    mint_tokens(token, mint, feature_pda, accumulated_shards, 0, None)
+    // Check: fees_feature_pda.
+    let fees_feature_account = FeesFeature::get(fees_feature_pda)?;
+    let bump = assert_pda(
+        "fees_feature_pda",
+        fees_feature_pda,
+        &crate::id(),
+        &FeesFeature::seeds(),
+    )?;
+
+    // Check: shards_mint
+    assert_same_pubkeys("shards_mint", shards_mint, &fees_feature_account.shard_mint)?;
+    assert_writable("shards_mint", shards_mint)?;
+    let shards_mint_account = assert_mint_account("shards_mint", shards_mint)?;
+
+    // Check: shards_token.
+    assert_writable("shards_token", shards_token)?;
+    let shards_token_account = assert_token_account("shards_token", shards_token)?;
+    assert_same_pubkeys("shards_mint", shards_mint, &shards_token_account.mint)?;
+    assert_same_pubkeys("authority", authority, &shards_token_account.owner)?;
+
+    // Mint shards.
+    let mut seeds = FeesFeature::seeds();
+    let bump = &[bump];
+    seeds.push(bump);
+    mint_tokens(
+        shards_token,
+        shards_mint,
+        fees_feature_pda,
+        accumulated_shards,
+        shards_mint_account.decimals,
+        Some(&[&seeds]),
+    )
 }
