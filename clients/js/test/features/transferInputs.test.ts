@@ -95,7 +95,7 @@ test('it can add a transfer token ingredient input when unlocked', async (t) => 
   });
 });
 
-test.skip('it can craft a recipe with a transfer token input', async (t) => {
+test('it can craft a recipe with a transfer token input', async (t) => {
   // Given 3 mint accounts A, B and C, such that a crafter owns:
   // - 100 tokens of mint A
   // - 100 tokens of mint B

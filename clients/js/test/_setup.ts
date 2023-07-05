@@ -105,6 +105,12 @@ export const createRecipe = async (
     payer,
   });
 
+  input.features?.forEach(([feature, level]) => {
+    builder = builder.add(
+      setFeatureLevelBuilder(umi, recipe.publicKey, feature, level)
+    );
+  });
+
   input.inputs?.forEach((ingredientInput) => {
     if (ingredientInput.__kind === 'BurnToken') {
       builder = builder.add(
@@ -142,12 +148,6 @@ export const createRecipe = async (
         })
       );
     }
-  });
-
-  input.features?.forEach(([feature, level]) => {
-    builder = builder.add(
-      setFeatureLevelBuilder(umi, recipe.publicKey, feature, level)
-    );
   });
 
   input.outputs?.forEach((ingredientOutput) => {
