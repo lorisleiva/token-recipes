@@ -73,7 +73,7 @@ test('it can add a transfer token ingredient input when unlocked', async (t) => 
     features: [['transferInputs', 1]],
   });
 
-  // When we add that mint as an transfer token input ingredient.
+  // When we add that mint as a transfer token input ingredient.
   const destination = generateSigner(umi).publicKey;
   await addIngredient(umi, {
     recipe,
