@@ -31,6 +31,20 @@ export type DeleteRecipeInstructionAccounts = {
   authority?: Signer;
   /** The account that receives the rent fees */
   payer?: PublicKey | Pda;
+  /** The account that receives admin fees */
+  adminFeesDestination: PublicKey | Pda;
+  /** The fees feature PDA storing the valid shard mint */
+  feesFeaturePda: PublicKey | Pda;
+  /** The mint account of shard tokens */
+  shardsMint: PublicKey | Pda;
+  /** The shards token account of the authority */
+  shardsToken: PublicKey | Pda;
+  /** The wisdom feature PDA storing the valid experience mint */
+  wisdomFeaturePda: PublicKey | Pda;
+  /** The mint account of experience tokens */
+  experienceMint: PublicKey | Pda;
+  /** The experience token account of the authority */
+  experienceToken: PublicKey | Pda;
 };
 
 // Data.
@@ -78,6 +92,13 @@ export function deleteRecipe(
   // Resolved inputs.
   const resolvedAccounts = {
     recipe: [input.recipe, true] as const,
+    adminFeesDestination: [input.adminFeesDestination, true] as const,
+    feesFeaturePda: [input.feesFeaturePda, false] as const,
+    shardsMint: [input.shardsMint, true] as const,
+    shardsToken: [input.shardsToken, true] as const,
+    wisdomFeaturePda: [input.wisdomFeaturePda, false] as const,
+    experienceMint: [input.experienceMint, true] as const,
+    experienceToken: [input.experienceToken, true] as const,
   };
   addObjectProperty(
     resolvedAccounts,
@@ -97,6 +118,13 @@ export function deleteRecipe(
   addAccountMeta(keys, signers, resolvedAccounts.recipe, false);
   addAccountMeta(keys, signers, resolvedAccounts.authority, false);
   addAccountMeta(keys, signers, resolvedAccounts.payer, false);
+  addAccountMeta(keys, signers, resolvedAccounts.adminFeesDestination, false);
+  addAccountMeta(keys, signers, resolvedAccounts.feesFeaturePda, false);
+  addAccountMeta(keys, signers, resolvedAccounts.shardsMint, false);
+  addAccountMeta(keys, signers, resolvedAccounts.shardsToken, false);
+  addAccountMeta(keys, signers, resolvedAccounts.wisdomFeaturePda, false);
+  addAccountMeta(keys, signers, resolvedAccounts.experienceMint, false);
+  addAccountMeta(keys, signers, resolvedAccounts.experienceToken, false);
 
   // Data.
   const data = getDeleteRecipeInstructionDataSerializer().serialize({});

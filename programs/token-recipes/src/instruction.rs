@@ -98,10 +98,16 @@ pub enum TokenRecipesInstruction {
     },
 
     /// Delete a recipe.
-    /// TODO: collect fees and experience too.
     #[account(0, writable, name="recipe", desc = "The address of the recipe account")]
     #[account(1, signer, name="authority", desc = "The authority of the recipe account")]
     #[account(2, writable, name="payer", desc = "The account that receives the rent fees")]
+    #[account(3, writable, name="admin_fees_destination", desc = "The account that receives admin fees")]
+    #[account(4, name="fees_feature_pda", desc = "The fees feature PDA storing the valid shard mint")]
+    #[account(5, writable, name="shards_mint", desc = "The mint account of shard tokens")]
+    #[account(6, writable, name="shards_token", desc = "The shards token account of the authority")]
+    #[account(7, name="wisdom_feature_pda", desc = "The wisdom feature PDA storing the valid experience mint")]
+    #[account(8, writable, name="experience_mint", desc = "The mint account of experience tokens")]
+    #[account(9, writable, name="experience_token", desc = "The experience token account of the authority")]
     DeleteRecipe,
 
     /// [ADMIN ONLY] Set a feature on the program.

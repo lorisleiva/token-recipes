@@ -20,10 +20,8 @@ pub(crate) fn collect_experience<'a>(accounts: &'a [AccountInfo<'a>]) -> Program
     let mut recipe_account = Recipe::get_writable(recipe)?;
     recipe_account.assert_signer_authority(authority)?;
 
-    // Check: wisdom_feature_pda and its content.
+    // Collect the experience.
     let wisdom_feature_account = WisdomFeature::get(wisdom_feature_pda)?;
-
-    // Mint the experience.
     collect_experience_logic(
         recipe_account.accumulated_experience,
         &wisdom_feature_account.experience_mint,

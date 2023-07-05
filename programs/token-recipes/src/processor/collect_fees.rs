@@ -21,7 +21,7 @@ pub(crate) fn collect_fees<'a>(accounts: &'a [AccountInfo<'a>]) -> ProgramResult
     let mut recipe_account = Recipe::get_writable(recipe)?;
     recipe_account.assert_signer_authority(authority)?;
 
-    // Check: fees_feature_pda and its content.
+    // Get the fees feature content.
     let fees_feature_account = FeesFeature::get(fees_feature_pda)?;
 
     // Collect the lamports.
@@ -34,7 +34,7 @@ pub(crate) fn collect_fees<'a>(accounts: &'a [AccountInfo<'a>]) -> ProgramResult
         admin_fees_destination,
     )?;
 
-    // Mint the shards.
+    // Collect the shards.
     collect_shards(
         recipe_account.accumulated_shards,
         &fees_feature_account.shard_mint,

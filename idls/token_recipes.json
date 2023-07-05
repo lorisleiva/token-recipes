@@ -311,6 +311,48 @@
           "isMut": true,
           "isSigner": false,
           "desc": "The account that receives the rent fees"
+        },
+        {
+          "name": "adminFeesDestination",
+          "isMut": true,
+          "isSigner": false,
+          "desc": "The account that receives admin fees"
+        },
+        {
+          "name": "feesFeaturePda",
+          "isMut": false,
+          "isSigner": false,
+          "desc": "The fees feature PDA storing the valid shard mint"
+        },
+        {
+          "name": "shardsMint",
+          "isMut": true,
+          "isSigner": false,
+          "desc": "The mint account of shard tokens"
+        },
+        {
+          "name": "shardsToken",
+          "isMut": true,
+          "isSigner": false,
+          "desc": "The shards token account of the authority"
+        },
+        {
+          "name": "wisdomFeaturePda",
+          "isMut": false,
+          "isSigner": false,
+          "desc": "The wisdom feature PDA storing the valid experience mint"
+        },
+        {
+          "name": "experienceMint",
+          "isMut": true,
+          "isSigner": false,
+          "desc": "The mint account of experience tokens"
+        },
+        {
+          "name": "experienceToken",
+          "isMut": true,
+          "isSigner": false,
+          "desc": "The experience token account of the authority"
         }
       ],
       "args": [],
