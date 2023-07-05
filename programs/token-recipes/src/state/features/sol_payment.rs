@@ -1,7 +1,9 @@
 use crate::{
     assertions::assert_mint_account,
     error::TokenRecipesError,
-    state::{features::UnlockFeatureContext, key::Key, recipe::Recipe},
+    state::{
+        features::UnlockFeatureContext, ingredient_input::IngredientInput, key::Key, recipe::Recipe,
+    },
     utils::burn_tokens,
 };
 use borsh::{BorshDeserialize, BorshSerialize};
@@ -171,8 +173,15 @@ impl SolPaymentFeature {
 
 /// Asserts that the recipe does not request more SOL than allowed by the feature level.
 /// Make sure to use AFTER the recipe was updated.
-pub fn assert_valid_sol_payment(recipe: &Recipe) -> ProgramResult {
-    let sol_amount = 0 as u64; // TODO
+pub fn assert_valid_sol_payment_inputs(recipe: &Recipe) -> ProgramResult {
+    let sol_amount = recipe
+        .inputs
+        .iter()
+        .map(|i| match i {
+            IngredientInput::TransferSol { lamports, .. } => *lamports,
+            _ => 0,
+        })
+        .sum::<u64>();
 
     match recipe.feature_levels.sol_payment {
         0 => assert_max_sol_payment(sol_amount, 0),

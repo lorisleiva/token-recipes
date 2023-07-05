@@ -4,6 +4,7 @@ use crate::{
     state::{
         features::{
             additional_outputs::assert_valid_additional_outputs,
+            sol_payment::assert_valid_sol_payment_inputs,
             transfer_inputs::assert_valid_transfer_inputs,
         },
         ingredient_input::IngredientInput,
@@ -99,6 +100,7 @@ pub(crate) fn add_ingredient(
 
     assert_valid_additional_outputs(&recipe_account)?;
     assert_valid_transfer_inputs(&recipe_account)?;
+    assert_valid_sol_payment_inputs(&recipe_account)?;
 
     Ok(())
 }

@@ -62,7 +62,7 @@ test(unlockMacro, 1, 10, 'mintSkill4', 1, 10, 'invalid-mint');
 test(unlockMacro, 1, 0, 'mintSkill5', 1, 11);
 test(unlockMacro, 1, 11, 'mintSkill5', 1, 11, 'max-level-reached');
 
-test.skip('it cannot add transfer sol inputs by default', async (t) => {
+test('it cannot add transfer sol inputs by default', async (t) => {
   // Given a mint account.
   const umi = await createUmi();
   const mint = generateSigner(umi);
