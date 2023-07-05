@@ -213,10 +213,11 @@ pub fn asserts_can_set_fees(recipe: &Recipe) -> ProgramResult {
 
 pub fn collect_fees<'a>(
     accumulated_admin_fees: u64,
-    base: &'a Pubkey,
+    expected_admin_fees_destination: &Pubkey,
+    base: &Pubkey,
     recipe: &'a AccountInfo<'a>,
     authority: &'a AccountInfo<'a>,
-    fee_destination: &'a AccountInfo<'a>,
+    admin_fees_destination: &'a AccountInfo<'a>,
 ) -> ProgramResult {
     // Rent.
     let rent = Rent::get()?;
@@ -234,14 +235,25 @@ pub fn collect_fees<'a>(
         .checked_sub(accumulated_admin_fees)
         .ok_or::<ProgramError>(TokenRecipesError::NumericalOverflow.into())?;
 
+    // Prepare seeds.
     let mut seeds = Recipe::seeds(base);
     let bump = assert_pda("recipe", recipe, &crate::id(), &Recipe::seeds(base))?;
     let bump = &[bump];
     seeds.push(bump);
+
+    // Transfer to the recipe authority.
     transfer_lamports(recipe, authority, authority_fees, Some(&[&seeds]))?;
+
+    // Transfer to the admin destination.
+    assert_writable("admin_fees_destination", admin_fees_destination)?;
+    assert_same_pubkeys(
+        "admin_fees_destination",
+        admin_fees_destination,
+        &expected_admin_fees_destination,
+    )?;
     transfer_lamports(
         recipe,
-        fee_destination,
+        admin_fees_destination,
         accumulated_admin_fees,
         Some(&[&seeds]),
     )
@@ -249,13 +261,13 @@ pub fn collect_fees<'a>(
 
 pub fn collect_shards<'a>(
     accumulated_shards: u64,
+    expected_shards_mint: &Pubkey,
     authority: &'a AccountInfo<'a>,
     shards_mint: &'a AccountInfo<'a>,
     shards_token: &'a AccountInfo<'a>,
     fees_feature_pda: &'a AccountInfo<'a>,
 ) -> ProgramResult {
     // Check: fees_feature_pda.
-    let fees_feature_account = FeesFeature::get(fees_feature_pda)?;
     let bump = assert_pda(
         "fees_feature_pda",
         fees_feature_pda,
@@ -264,7 +276,7 @@ pub fn collect_shards<'a>(
     )?;
 
     // Check: shards_mint
-    assert_same_pubkeys("shards_mint", shards_mint, &fees_feature_account.shard_mint)?;
+    assert_same_pubkeys("shards_mint", shards_mint, &expected_shards_mint)?;
     assert_writable("shards_mint", shards_mint)?;
     let shards_mint_account = assert_mint_account("shards_mint", shards_mint)?;
 

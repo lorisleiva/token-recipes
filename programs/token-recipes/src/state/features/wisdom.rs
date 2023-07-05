@@ -127,13 +127,13 @@ pub fn get_experience_per_craft(recipe: &Recipe) -> u64 {
 
 pub fn collect_experience<'a>(
     accumulated_experience: u64,
+    expected_experience_mint: &Pubkey,
     authority: &'a AccountInfo<'a>,
     experience_mint: &'a AccountInfo<'a>,
     experience_token: &'a AccountInfo<'a>,
     wisdom_feature_pda: &'a AccountInfo<'a>,
 ) -> ProgramResult {
     // Check: wisdom_feature_pda.
-    let wisdom_feature_account = WisdomFeature::get(wisdom_feature_pda)?;
     let bump = assert_pda(
         "wisdom_feature_pda",
         wisdom_feature_pda,
@@ -145,7 +145,7 @@ pub fn collect_experience<'a>(
     assert_same_pubkeys(
         "experience_mint",
         experience_mint,
-        &wisdom_feature_account.experience_mint,
+        &expected_experience_mint,
     )?;
     assert_writable("experience_mint", experience_mint)?;
     let experience_mint_account = assert_mint_account("experience_mint", experience_mint)?;

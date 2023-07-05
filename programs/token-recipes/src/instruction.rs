@@ -98,6 +98,7 @@ pub enum TokenRecipesInstruction {
     },
 
     /// Delete a recipe.
+    /// TODO: collect fees and experience too.
     #[account(0, writable, name="recipe", desc = "The address of the recipe account")]
     #[account(1, signer, name="authority", desc = "The authority of the recipe account")]
     #[account(2, writable, name="payer", desc = "The account that receives the rent fees")]
@@ -122,6 +123,30 @@ pub enum TokenRecipesInstruction {
     #[account(5, writable, name="token", desc = "The token account linking the mint and owner accounts")]
     #[account(6, name="token_program", desc = "The token program")]
     UnlockFeature,
+
+    /// Set the fees of a recipe once a certain level is reached on the fees feature.
+    #[account(0, writable, name="recipe", desc = "The address of the recipe account")]
+    #[account(1, signer, name="authority", desc = "The authority of the recipe account")]
+    SetFees {
+        fees: u64,
+    },
+
+    /// Collect the accumulated fees and shards of a recipe.
+    #[account(0, writable, name="recipe", desc = "The address of the recipe account")]
+    #[account(1, signer, name="authority", desc = "The authority of the recipe account")]
+    #[account(2, writable, name="admin_fees_destination", desc = "The account that receives admin fees")]
+    #[account(3, name="fees_feature_pda", desc = "The fees feature PDA storing the valid shard mint")]
+    #[account(4, writable, name="shards_mint", desc = "The mint account of shard tokens")]
+    #[account(5, writable, name="shards_token", desc = "The shards token account of the authority")]
+    CollectFees,
+
+    /// Collect the accumulated experience of a recipe.
+    #[account(0, writable, name="recipe", desc = "The address of the recipe account")]
+    #[account(1, signer, name="authority", desc = "The authority of the recipe account")]
+    #[account(2, name="wisdom_feature_pda", desc = "The wisdom feature PDA storing the valid experience mint")]
+    #[account(3, writable, name="experience_mint", desc = "The mint account of experience tokens")]
+    #[account(4, writable, name="experience_token", desc = "The experience token account of the authority")]
+    CollectExperience,
 }
 
 pub fn create_recipe(recipe: &Pubkey, authority: &Pubkey, payer: &Pubkey) -> Instruction {
