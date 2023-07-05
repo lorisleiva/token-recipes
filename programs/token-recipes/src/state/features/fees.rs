@@ -2,13 +2,13 @@ use crate::{
     assertions::assert_mint_account,
     error::TokenRecipesError,
     state::{features::UnlockFeatureContext, key::Key, recipe::Recipe},
-    utils::burn_tokens,
+    utils::{burn_tokens, mint_tokens, transfer_lamports},
 };
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
-    pubkey::Pubkey,
+    pubkey::Pubkey, rent::Rent, sysvar::Sysvar,
 };
 
 /// Base fees for crafting.
@@ -203,3 +203,39 @@ pub fn asserts_can_set_fees(recipe: &Recipe) -> ProgramResult {
 }
 
 // TODO: Function that collects fees and shards.
+pub fn collect_fees_and_shards<'a>(
+    accumulated_admin_fees: u64,
+    recipe: &'a AccountInfo<'a>,
+    authority: &'a AccountInfo<'a>,
+    fee_destination: &'a AccountInfo<'a>,
+) -> ProgramResult {
+    // Rent.
+    let rent = Rent::get()?;
+    let rent_exempt_reserve = rent.minimum_balance(recipe.data_len());
+
+    // Recipe lamports.
+    let recipe_lamports = recipe.lamports();
+    let recipe_lamports_minus_rent =
+        recipe_lamports
+            .checked_sub(rent_exempt_reserve)
+            .ok_or::<ProgramError>(TokenRecipesError::NumericalOverflow.into())?;
+
+    // Fees.
+    let authority_fees = recipe_lamports_minus_rent
+        .checked_sub(accumulated_admin_fees)
+        .ok_or::<ProgramError>(TokenRecipesError::NumericalOverflow.into())?;
+
+    transfer_lamports(recipe, authority, authority_fees, None)?; // TODO: Sign as recipe PDA.
+    transfer_lamports(recipe, fee_destination, accumulated_admin_fees, None) // TODO: Sign as recipe PDA.
+}
+
+pub fn collect_shards<'a>(
+    accumulated_shards: u64,
+    mint: &'a AccountInfo<'a>,
+    token: &'a AccountInfo<'a>,
+    feature_pda: &'a AccountInfo<'a>,
+) -> ProgramResult {
+    // TODO: Check mint and token accounts and get real decimals.
+    // TODO: Sign as feature PDA.
+    mint_tokens(token, mint, feature_pda, accumulated_shards, 0, None)
+}
