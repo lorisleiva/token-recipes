@@ -82,7 +82,7 @@ test('it can add multiple outputs when unlocked', async (t) => {
 
   // And a recipe that unlocked additional outputs and that has one output ingredient.
   const recipe = await createRecipe(umi, {
-    features: [['additionalOutputs', 1]],
+    features: { additionalOutputs: 1 },
     outputs: [
       ingredientOutput('MintToken', { mint: mintA.publicKey, amount: 1 }),
     ],
@@ -126,7 +126,7 @@ test('it can craft a recipe with multiple outputs', async (t) => {
   // and uses 5 mint A and outputs 1 mint B and 2 mint C.
   const recipe = await createRecipe(umi, {
     active: true,
-    features: [['additionalOutputs', 1]],
+    features: { additionalOutputs: 1 },
     inputs: [ingredientInput('BurnToken', { mint: mintA, amount: 5 })],
     outputs: [
       ingredientOutput('MintToken', { mint: mintB, amount: 1 }),

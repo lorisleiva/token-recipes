@@ -70,7 +70,7 @@ test('it can add a transfer token ingredient input when unlocked', async (t) => 
   const mint = generateSigner(umi);
   await createMint(umi, { mint }).sendAndConfirm(umi);
   const recipe = await createRecipe(umi, {
-    features: [['transferInputs', 1]],
+    features: { transferInputs: 1 },
   });
 
   // When we add that mint as a transfer token input ingredient.
@@ -118,7 +118,7 @@ test('it can craft a recipe with a transfer token input', async (t) => {
   const destination = generateSigner(umi).publicKey;
   const recipe = await createRecipe(umi, {
     active: true,
-    features: [['transferInputs', 1]],
+    features: { transferInputs: 1 },
     inputs: [
       ingredientInput('TransferToken', { mint: mintA, amount: 2, destination }),
       ingredientInput('BurnToken', { mint: mintB, amount: 7 }),

@@ -287,38 +287,6 @@ test('it can add a specific amount of an ingredient input and output', async (t)
   });
 });
 
-test('it can add a max supply to an ingredient output', async (t) => {
-  // Given an empty recipe and a mint account.
-  const umi = await createUmi();
-  const recipe = generateSigner(umi);
-  const mint = generateSigner(umi);
-  await createRecipe(umi, { recipe })
-    .add(createMint(umi, { mint }))
-    .sendAndConfirm(umi);
-
-  // When we add that mint as an ingredient output with a max supply.
-  await addIngredient(umi, {
-    recipe: recipe.publicKey,
-    mint: mint.publicKey,
-    ingredientType: IngredientType.MintTokenWithMaxSupplyOutput,
-    maxSupply: 100,
-  }).sendAndConfirm(umi);
-
-  // Then the recipe account stores the max supply for that ingredient.
-  t.like(await fetchRecipe(umi, recipe.publicKey), <Recipe>{
-    status: RecipeStatus.Paused,
-    inputs: [] as Array<IngredientInput>,
-    outputs: <Array<IngredientOutput>>[
-      {
-        __kind: 'MintTokenWithMaxSupply',
-        mint: mint.publicKey,
-        amount: 1n,
-        maxSupply: 100n,
-      },
-    ],
-  });
-});
-
 test('it cannot add an ingredient as the wrong authority', async (t) => {
   // Given an empty recipe owned by authority A.
   const umi = await createUmi();

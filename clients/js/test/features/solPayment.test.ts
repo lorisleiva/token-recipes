@@ -95,7 +95,7 @@ test('it can add a transfer sol ingredient input when unlocked', async (t) => {
   const mint = generateSigner(umi);
   await createMint(umi, { mint }).sendAndConfirm(umi);
   const recipe = await createRecipe(umi, {
-    features: [['solPayment', 1]],
+    features: { solPayment: 1 },
   });
 
   // When we add that mint as a transfer sol input ingredient.
@@ -134,7 +134,7 @@ test('it can craft a recipe with a transfer sol input', async (t) => {
   const lamports = sol(2).basisPoints;
   const recipe = await createRecipe(umi, {
     active: true,
-    features: [['solPayment', 2]],
+    features: { solPayment: 2 },
     inputs: [ingredientInput('TransferSol', { destination, lamports })],
     outputs: [ingredientOutput('MintToken', { mint: outputMint, amount: 1 })],
   });

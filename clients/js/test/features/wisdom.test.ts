@@ -68,7 +68,7 @@ test.skip('it adds more experience to the recipe when crafting when unlocked', a
   // And given the recipe has unlocked the wisdom feature to level 1.
   const recipe = await createRecipe(umi, {
     active: true,
-    features: [['wisdom', 1]],
+    features: { wisdom: 1 },
     inputs: [ingredientInput('BurnToken', { mint: inputMint, amount: 5 })],
     outputs: [ingredientOutput('MintToken', { mint: outputMint, amount: 1 })],
   });

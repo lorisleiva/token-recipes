@@ -93,7 +93,7 @@ export const createRecipe = async (
     active?: boolean;
     inputs?: Array<IngredientInputArgs>;
     outputs?: Array<IngredientOutputArgs>;
-    features?: Array<[keyof FeatureLevels, number]>;
+    features?: Partial<Record<keyof FeatureLevels, number>>;
   } = {}
 ): Promise<PublicKey> => {
   const recipe = input.recipe ?? generateSigner(umi);
@@ -105,7 +105,7 @@ export const createRecipe = async (
     payer,
   });
 
-  input.features?.forEach(([feature, level]) => {
+  Object.entries(input.features ?? {}).forEach(([feature, level]) => {
     builder = builder.add(
       setFeatureLevelBuilder(umi, recipe.publicKey, feature, level)
     );

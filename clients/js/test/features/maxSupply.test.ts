@@ -57,7 +57,7 @@ test('it can add max supply outputs when unlocked', async (t) => {
 
   // And a recipe that unlocked max supply outputs.
   const recipe = await createRecipe(umi, {
-    features: [['maxSupply', 1]],
+    features: { maxSupply: 1 },
   });
 
   // When we add a max supply output ingredient.
@@ -99,7 +99,7 @@ test('it cannot craft a recipe if an output has reached its maximum supply', asy
   // And given that recipe has unlocked max supply outputs.
   const recipe = await createRecipe(umi, {
     active: true,
-    features: [['maxSupply', 1]],
+    features: { maxSupply: 1 },
     inputs: [ingredientInput('BurnToken', { mint: mintA, amount: 2 })],
     outputs: [
       ingredientOutput('MintTokenWithMaxSupply', {
