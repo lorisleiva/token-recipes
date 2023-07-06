@@ -302,7 +302,7 @@
         },
         {
           "name": "authority",
-          "isMut": false,
+          "isMut": true,
           "isSigner": true,
           "desc": "The authority of the recipe account"
         },
@@ -510,7 +510,7 @@
         },
         {
           "name": "authority",
-          "isMut": false,
+          "isMut": true,
           "isSigner": true,
           "desc": "The authority of the recipe account"
         },

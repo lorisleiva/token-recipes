@@ -99,7 +99,7 @@ pub enum TokenRecipesInstruction {
 
     /// Delete a recipe.
     #[account(0, writable, name="recipe", desc = "The address of the recipe account")]
-    #[account(1, signer, name="authority", desc = "The authority of the recipe account")]
+    #[account(1, writable, signer, name="authority", desc = "The authority of the recipe account")]
     #[account(2, writable, name="payer", desc = "The account that receives the rent fees and pays for potential associated token account storage fees")]
     #[account(3, writable, name="admin_fees_destination", desc = "The account that receives admin fees")]
     #[account(4, name="fees_feature_pda", desc = "The fees feature PDA storing the valid shard mint")]
@@ -142,7 +142,7 @@ pub enum TokenRecipesInstruction {
 
     /// Collect the accumulated fees and shards of a recipe.
     #[account(0, writable, name="recipe", desc = "The address of the recipe account")]
-    #[account(1, signer, name="authority", desc = "The authority of the recipe account")]
+    #[account(1, writable, signer, name="authority", desc = "The authority of the recipe account")]
     #[account(2, writable, name="admin_fees_destination", desc = "The account that receives admin fees")]
     #[account(3, name="fees_feature_pda", desc = "The fees feature PDA storing the valid shard mint")]
     #[account(4, writable, name="shards_mint", desc = "The mint account of shard tokens")]

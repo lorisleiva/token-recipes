@@ -109,8 +109,8 @@ export function deleteRecipe(
     resolvedAccounts,
     'authority',
     input.authority
-      ? ([input.authority, false] as const)
-      : ([context.identity, false] as const)
+      ? ([input.authority, true] as const)
+      : ([context.identity, true] as const)
   );
   addObjectProperty(
     resolvedAccounts,

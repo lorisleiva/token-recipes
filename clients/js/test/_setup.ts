@@ -93,14 +93,19 @@ export const createMintWithHolders = async (
 export const createInputOutputMints = async (
   umi: Umi,
   holder: PublicKeyInput,
-  inputTokens: number | bigint = 100,
-  outputTokens: number | bigint = 0
+  options: {
+    authority?: Signer;
+    inputTokens?: number | bigint;
+    outputTokens?: number | bigint;
+  } = {}
 ) => {
   const [inputMint] = await createMintWithHolders(umi, {
-    holders: [{ owner: publicKey(holder), amount: inputTokens }],
+    mintAuthority: options.authority,
+    holders: [{ owner: publicKey(holder), amount: options.inputTokens ?? 100 }],
   });
   const [outputMint] = await createMintWithHolders(umi, {
-    holders: [{ owner: publicKey(holder), amount: outputTokens }],
+    mintAuthority: options.authority,
+    holders: [{ owner: publicKey(holder), amount: options.outputTokens ?? 0 }],
   });
   return [inputMint, outputMint];
 };
@@ -126,7 +131,9 @@ export const createRecipe = async (
   });
 
   Object.entries(input.features ?? {}).forEach(([feature, level]) => {
-    builder = builder.add(setFeatureLevelBuilder(umi, recipe, feature, level));
+    builder = builder.add(
+      setFeatureLevelBuilder(umi, recipe, feature, level, authority)
+    );
   });
 
   input.inputs?.forEach((ingredientInput) => {
@@ -342,7 +349,8 @@ export const setFeatureLevelBuilder = (
   umi: Umi,
   recipe: PublicKey,
   feature: string,
-  level: number
+  level: number,
+  authority?: Signer
 ) => {
   const featureConfig = featureConfigs[feature];
   const featurePda = featureConfig.pdaFactory(umi);
@@ -350,16 +358,25 @@ export const setFeatureLevelBuilder = (
   let { mint, ata, builder } = mintFeatureBuilder(
     umi,
     `${featureConfig.seedPrefix}-${featureConfig.maxBurnSeed}`,
-    level
+    level,
+    authority?.publicKey
   );
   for (let i = 0; i < level; i += 1) {
-    builder = builder.add(unlockFeature(umi, { recipe, featurePda, mint }));
+    builder = builder.add(
+      unlockFeature(umi, {
+        recipe,
+        featurePda,
+        mint,
+        authority,
+        owner: authority,
+      })
+    );
   }
   builder = builder.add(
     closeToken(umi, {
       account: ata,
       destination: umi.identity.publicKey,
-      owner: umi.identity,
+      owner: authority ?? umi.identity,
     })
   );
 

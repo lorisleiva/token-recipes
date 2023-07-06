@@ -19,9 +19,13 @@ import {
 test('it can collect the accumulated fees and shards of a recipe', async (t) => {
   // Given an recipe with accumulated fees and shards.
   const umi = await createUmi();
+  const authority = generateSigner(umi);
   const crafter = generateSigner(umi);
-  const [inputMint, outputMint] = await createInputOutputMints(umi, crafter);
+  const [inputMint, outputMint] = await createInputOutputMints(umi, crafter, {
+    authority,
+  });
   const recipe = await createRecipe(umi, {
+    authority,
     active: true,
     features: { fees: 1 },
     inputs: [ingredientInput('BurnToken', { mint: inputMint, amount: 2 })],
@@ -40,8 +44,9 @@ test('it can collect the accumulated fees and shards of a recipe', async (t) => 
     accumulatedShards: multiplyAmount(BASE_FEES, 0.9).basisPoints,
   });
 
-  // When
+  // When the authority collects the fees.
   await collectFees(umi, {
+    authority,
     recipe,
     ...collectingAccounts(umi),
   }).sendAndConfirm(umi);
