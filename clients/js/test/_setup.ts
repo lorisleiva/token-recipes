@@ -276,7 +276,7 @@ export const featureConfigs: Record<string, FeatureConfig> = {
   },
 };
 
-export const collectingAccounts = (
+export const getCollectingAccounts = (
   umi: Umi
 ): {
   adminFeesDestination: PublicKey;

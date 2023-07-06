@@ -1,4 +1,17 @@
-import { generateSigner, multiplyAmount } from '@metaplex-foundation/umi';
+import {
+  Token,
+  fetchToken,
+  findAssociatedTokenPda,
+} from '@metaplex-foundation/mpl-toolbox';
+import {
+  addAmounts,
+  assertAccountExists,
+  generateSigner,
+  isEqualToAmount,
+  lamports,
+  multiplyAmount,
+  subtractAmounts,
+} from '@metaplex-foundation/umi';
 import test from 'ava';
 import {
   BASE_FEES,
@@ -11,9 +24,9 @@ import {
 } from '../src';
 import {
   createInputOutputMints,
-  createUmi,
   createRecipe,
-  collectingAccounts,
+  createUmi,
+  getCollectingAccounts,
 } from './_setup';
 
 test('it can collect the accumulated fees and shards of a recipe', async (t) => {
@@ -44,23 +57,66 @@ test('it can collect the accumulated fees and shards of a recipe', async (t) => 
     accumulatedShards: multiplyAmount(BASE_FEES, 0.9).basisPoints,
   });
 
+  // And given we keep track of the authority and admin balance before collecting.
+  const collectingAccounts = getCollectingAccounts(umi);
+  const [authorityBalance, adminBalance] = await Promise.all([
+    umi.rpc.getBalance(authority.publicKey),
+    umi.rpc.getBalance(collectingAccounts.adminFeesDestination),
+  ]);
+
   // When the authority collects the fees.
   await collectFees(umi, {
     authority,
     recipe,
-    ...collectingAccounts(umi),
+    ...collectingAccounts,
   }).sendAndConfirm(umi);
 
-  // Then the admin destination account received the admin fees.
-
-  // And the recipe authority received the rest of the fees.
-
-  // And shards were minted to the recipe authority.
-
-  // And the accumulated fees and shards were reset.
-  t.like(await fetchRecipe(umi, recipe), <Recipe>{
+  // Then the accumulated fees and shards were reset.
+  const [newRecipe, newAuthorityBalance, newAdminBalance] = await Promise.all([
+    fetchRecipe(umi, recipe),
+    umi.rpc.getBalance(authority.publicKey),
+    umi.rpc.getBalance(collectingAccounts.adminFeesDestination),
+  ]);
+  t.like(newRecipe, <Recipe>{
     accumulatedAdminFees: 0n,
     accumulatedShards: 0n,
     accumulatedExperience: originalRecipe.accumulatedExperience,
+  });
+
+  // And the recipe's lamports only have the rent exempt balance.
+  const rawRecipe = await umi.rpc.getAccount(recipe);
+  t.true(rawRecipe.exists);
+  assertAccountExists(rawRecipe);
+  const recipeRent = await umi.rpc.getRent(rawRecipe.data.length);
+  t.true(isEqualToAmount(newRecipe.header.lamports, recipeRent));
+
+  // And the recipe authority received the rest of the fees.
+  const expectedAdminFees = lamports(originalRecipe.accumulatedAdminFees);
+  t.true(
+    isEqualToAmount(
+      newAdminBalance,
+      addAmounts(adminBalance, expectedAdminFees)
+    )
+  );
+
+  // And the admin destination account received the admin fees.
+  const expectedAuthorityFees = subtractAmounts(
+    originalRecipe.header.lamports,
+    addAmounts(recipeRent, expectedAdminFees)
+  );
+  t.true(
+    isEqualToAmount(
+      newAuthorityBalance,
+      addAmounts(authorityBalance, expectedAuthorityFees)
+    )
+  );
+
+  // And shards were minted to the recipe authority.
+  const ata = findAssociatedTokenPda(umi, {
+    mint: collectingAccounts.shardsMint,
+    owner: authority.publicKey,
+  });
+  t.like(await fetchToken(umi, ata), <Token>{
+    amount: originalRecipe.accumulatedShards,
   });
 });
