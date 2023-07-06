@@ -53,23 +53,23 @@ test(unlockMacro, 1, 5, 'mintSkill3', 1, 11);
 test(unlockMacro, 1, 11, 'mintSkill3', 1, 11, 'max-level-reached');
 
 const takeFeesMacro = test.macro({
-  title: (providedTitle, level: number | [number, SolAmount]) => {
+  title: (providedTitle, init: number | [number, SolAmount]) => {
     if (providedTitle) return providedTitle;
-    const custom = Array.isArray(level)
-      ? ` with custom fees ${displayAmount(level[1])}`
+    const level = Array.isArray(init) ? init[0] : init;
+    const custom = Array.isArray(init)
+      ? ` with custom fees ${displayAmount(init[1])}`
       : '';
-    level = Array.isArray(level) ? level[0] : level;
     return `it takes fees when crafting a level ${level} recipe${custom}`;
   },
   exec: async (
     t,
-    level: number | [number, SolAmount],
+    init: number | [number, SolAmount],
     expectedFees: SolAmount,
     expectedAdminFees: SolAmount,
     expectedShards: SolAmount
   ) => {
     // Given an active recipe with the fees feature at level X.
-    level = Array.isArray(level) ? level[0] : level;
+    const level = Array.isArray(init) ? init[0] : init;
     const umi = await createUmi();
     const crafter = generateSigner(umi);
     const [inputMint, outputMint] = await createInputOutputMints(umi, crafter);
@@ -80,10 +80,10 @@ const takeFeesMacro = test.macro({
       outputs: [ingredientOutput('MintToken', { mint: outputMint, amount: 1 })],
     });
 
-    if (Array.isArray(level)) {
+    if (Array.isArray(init)) {
       await setFees(umi, {
         recipe,
-        fees: level[1].basisPoints,
+        fees: init[1].basisPoints,
       }).sendAndConfirm(umi);
     }
 
