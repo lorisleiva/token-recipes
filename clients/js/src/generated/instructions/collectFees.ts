@@ -46,6 +46,8 @@ export type CollectFeesInstructionAccounts = {
   systemProgram?: PublicKey | Pda;
   /** The token program */
   tokenProgram?: PublicKey | Pda;
+  /** The associated token program */
+  ataProgram?: PublicKey | Pda;
 };
 
 // Data.
@@ -156,6 +158,19 @@ export function collectFees(
           false,
         ] as const)
   );
+  addObjectProperty(
+    resolvedAccounts,
+    'ataProgram',
+    input.ataProgram
+      ? ([input.ataProgram, false] as const)
+      : ([
+          context.programs.getPublicKey(
+            'splAssociatedToken',
+            'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL'
+          ),
+          false,
+        ] as const)
+  );
 
   addAccountMeta(keys, signers, resolvedAccounts.recipe, false);
   addAccountMeta(keys, signers, resolvedAccounts.authority, false);
@@ -166,6 +181,7 @@ export function collectFees(
   addAccountMeta(keys, signers, resolvedAccounts.payer, false);
   addAccountMeta(keys, signers, resolvedAccounts.systemProgram, false);
   addAccountMeta(keys, signers, resolvedAccounts.tokenProgram, false);
+  addAccountMeta(keys, signers, resolvedAccounts.ataProgram, false);
 
   // Data.
   const data = getCollectFeesInstructionDataSerializer().serialize({});

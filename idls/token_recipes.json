@@ -365,6 +365,12 @@
           "isMut": false,
           "isSigner": false,
           "desc": "The token program"
+        },
+        {
+          "name": "ataProgram",
+          "isMut": false,
+          "isSigner": false,
+          "desc": "The associated token program"
         }
       ],
       "args": [],
@@ -549,6 +555,12 @@
           "isMut": false,
           "isSigner": false,
           "desc": "The token program"
+        },
+        {
+          "name": "ataProgram",
+          "isMut": false,
+          "isSigner": false,
+          "desc": "The associated token program"
         }
       ],
       "args": [],
@@ -601,6 +613,12 @@
           "isMut": false,
           "isSigner": false,
           "desc": "The token program"
+        },
+        {
+          "name": "ataProgram",
+          "isMut": false,
+          "isSigner": false,
+          "desc": "The associated token program"
         }
       ],
       "args": [],

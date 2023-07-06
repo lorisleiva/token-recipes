@@ -42,6 +42,8 @@ export type CollectExperienceInstructionAccounts = {
   payer?: Signer;
   /** The token program */
   tokenProgram?: PublicKey | Pda;
+  /** The associated token program */
+  ataProgram?: PublicKey | Pda;
 };
 
 // Data.
@@ -147,6 +149,19 @@ export function collectExperience(
           false,
         ] as const)
   );
+  addObjectProperty(
+    resolvedAccounts,
+    'ataProgram',
+    input.ataProgram
+      ? ([input.ataProgram, false] as const)
+      : ([
+          context.programs.getPublicKey(
+            'splAssociatedToken',
+            'ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL'
+          ),
+          false,
+        ] as const)
+  );
 
   addAccountMeta(keys, signers, resolvedAccounts.recipe, false);
   addAccountMeta(keys, signers, resolvedAccounts.authority, false);
@@ -155,6 +170,7 @@ export function collectExperience(
   addAccountMeta(keys, signers, resolvedAccounts.experienceToken, false);
   addAccountMeta(keys, signers, resolvedAccounts.payer, false);
   addAccountMeta(keys, signers, resolvedAccounts.tokenProgram, false);
+  addAccountMeta(keys, signers, resolvedAccounts.ataProgram, false);
 
   // Data.
   const data = getCollectExperienceInstructionDataSerializer().serialize({});
