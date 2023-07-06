@@ -220,6 +220,8 @@ pub fn collect_fees<'a>(
     authority: &'a AccountInfo<'a>,
     admin_fees_destination: &'a AccountInfo<'a>,
 ) -> ProgramResult {
+    msg!("Collecting fees...");
+
     // Rent.
     let rent = Rent::get()?;
     let rent_exempt_reserve = rent.minimum_balance(recipe.data_len());
@@ -268,6 +270,8 @@ pub fn collect_shards<'a>(
     shards_token: &'a AccountInfo<'a>,
     fees_feature_pda: &'a AccountInfo<'a>,
 ) -> ProgramResult {
+    msg!("Collecting shards...");
+
     // Check: fees_feature_pda.
     let bump = assert_pda(
         "fees_feature_pda",

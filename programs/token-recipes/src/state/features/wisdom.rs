@@ -133,6 +133,8 @@ pub fn collect_experience<'a>(
     experience_token: &'a AccountInfo<'a>,
     wisdom_feature_pda: &'a AccountInfo<'a>,
 ) -> ProgramResult {
+    msg!("Collecting experience...");
+
     // Check: wisdom_feature_pda.
     let bump = assert_pda(
         "wisdom_feature_pda",
