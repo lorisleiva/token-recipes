@@ -6,6 +6,7 @@ import {
   fetchToken,
 } from '@metaplex-foundation/mpl-toolbox';
 import {
+  addAmounts,
   generateSigner,
   isEqualToAmount,
   sol,
@@ -13,6 +14,7 @@ import {
 } from '@metaplex-foundation/umi';
 import test from 'ava';
 import {
+  BASE_FEES,
   IngredientInput,
   IngredientType,
   Recipe,
@@ -158,7 +160,7 @@ test('it can craft a recipe with a transfer sol input', async (t) => {
     isEqualToAmount(
       newPayerBalance,
       subtractAmounts(payerBalance, sol(2)),
-      sol(0.01)
+      addAmounts(BASE_FEES, sol(0.01)) // recipe fees and tx fees.
     )
   );
 
