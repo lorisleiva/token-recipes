@@ -87,6 +87,21 @@ export const createMintWithHolders = async (
   return [mint.publicKey, ...atas];
 };
 
+export const createInputOutputMints = async (
+  umi: Umi,
+  holder: PublicKeyInput,
+  inputTokens: number | bigint = 100,
+  outputTokens: number | bigint = 0
+) => {
+  const [inputMint] = await createMintWithHolders(umi, {
+    holders: [{ owner: publicKey(holder), amount: inputTokens }],
+  });
+  const [outputMint] = await createMintWithHolders(umi, {
+    holders: [{ owner: publicKey(holder), amount: outputTokens }],
+  });
+  return [inputMint, outputMint];
+};
+
 export const createRecipe = async (
   umi: Umi,
   input: Omit<Partial<Parameters<typeof baseCreateRecipe>[1]>, 'authority'> & {

@@ -1,10 +1,16 @@
 use crate::{
     assertions::{assert_same_pubkeys, assert_signer, assert_writable},
-    state::{features::wisdom::get_experience_per_craft, recipe::Recipe},
+    error::TokenRecipesError,
+    state::{
+        features::{fees::get_fees_and_shards_per_craft, wisdom::get_experience_per_craft},
+        recipe::Recipe,
+    },
+    utils::transfer_lamports,
 };
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
     entrypoint::ProgramResult,
+    program_error::ProgramError,
     system_program,
 };
 
@@ -42,28 +48,52 @@ pub(crate) fn craft<'a>(accounts: &'a [AccountInfo<'a>], quantity: u64) -> Progr
         &spl_associated_token_account::id(),
     )?;
 
-    // Ingredient inputs.
+    // Craft ingredient inputs.
     recipe_account
         .inputs
         .iter()
         .map(|input| input.craft(account_info_iter, owner, payer, quantity))
         .collect::<ProgramResult>()?;
 
-    // Ingredient outputs.
+    // Craft ingredient outputs.
     recipe_account
         .outputs
         .iter()
         .map(|output| output.craft(account_info_iter, owner, payer, quantity))
         .collect::<ProgramResult>()?;
 
-    // TODO: Handle fees and shards.
+    // Take fees.
+    let (total_fees, admin_fees, shards) = get_fees_and_shards_per_craft(&recipe_account)?;
+    if total_fees > 0 {
+        transfer_lamports(payer, recipe, total_fees, None)?;
+    }
 
-    // Recipe experience.
-    recipe_account.accumulated_experience += get_experience_per_craft(&recipe_account);
+    // Update admin fees and shards.
+    recipe_account.accumulated_admin_fees = recipe_account
+        .accumulated_admin_fees
+        .checked_add(admin_fees)
+        .ok_or::<ProgramError>(TokenRecipesError::NumericalOverflow.into())?;
+    recipe_account.accumulated_shards =
+        recipe_account
+            .accumulated_shards
+            .checked_add(shards)
+            .ok_or::<ProgramError>(TokenRecipesError::NumericalOverflow.into())?;
 
-    // Recipe statistics.
-    recipe_account.total_crafts += 1;
-    recipe_account.total_crafts_with_quantity += quantity;
+    // Update experience.
+    recipe_account.accumulated_experience = recipe_account
+        .accumulated_experience
+        .checked_add(get_experience_per_craft(&recipe_account))
+        .ok_or::<ProgramError>(TokenRecipesError::NumericalOverflow.into())?;
+
+    // Update statistics.
+    recipe_account.total_crafts = recipe_account
+        .total_crafts
+        .checked_add(1)
+        .ok_or::<ProgramError>(TokenRecipesError::NumericalOverflow.into())?;
+    recipe_account.total_crafts_with_quantity = recipe_account
+        .total_crafts_with_quantity
+        .checked_add(quantity)
+        .ok_or::<ProgramError>(TokenRecipesError::NumericalOverflow.into())?;
 
     // Save recipe.
     recipe_account.save(recipe)?;

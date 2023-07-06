@@ -192,6 +192,7 @@ pub fn get_fees_and_shards_per_craft(recipe: &Recipe) -> Result<(u64, u64, u64),
 
     let shards = match recipe.feature_levels.fees {
         0 => 0,
+        _ if total_fees < BASE_FEES => 0,
         _ => admin_fees,
     };
 
