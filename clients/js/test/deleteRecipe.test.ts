@@ -1,8 +1,28 @@
-import { createMint } from '@metaplex-foundation/mpl-toolbox';
-import { generateSigner } from '@metaplex-foundation/umi';
+import {
+  Token,
+  createMint,
+  fetchToken,
+  findAssociatedTokenPda,
+} from '@metaplex-foundation/mpl-toolbox';
+import {
+  addAmounts,
+  generateSigner,
+  isEqualToAmount,
+  lamports,
+  multiplyAmount,
+  subtractAmounts,
+} from '@metaplex-foundation/umi';
 import test from 'ava';
-import { deleteRecipe, ingredientInput, ingredientOutput } from '../src';
-import { getCollectingAccounts, createRecipe, createUmi } from './_setup';
+import {
+  BASE_FEES,
+  Recipe,
+  craft,
+  deleteRecipe,
+  fetchRecipe,
+  ingredientInput,
+  ingredientOutput,
+} from '../src';
+import { createRecipe, createUmi, getCollectingAccounts } from './_setup';
 
 test('it can delete a recipe', async (t) => {
   // Given an empty recipe account.
@@ -64,5 +84,86 @@ test('it cannot delete a recipe that is not empty', async (t) => {
   // Then we expect a program error.
   await t.throwsAsync(promise, {
     name: 'RecipeMustBeEmptyBeforeItCanBeDeleted',
+  });
+});
+
+test('it collects fees, shards and experience when deleting a recipe', async (t) => {
+  // Given an empty recipe with accumulated fees, shards and experience.
+  const umi = await createUmi();
+  const authority = generateSigner(umi);
+  const crafter = generateSigner(umi);
+  const recipe = await createRecipe(umi, {
+    authority,
+    active: true,
+    features: { fees: 1, wisdom: 1 },
+  });
+  await craft(umi, { recipe, owner: crafter, quantity: 2 }).sendAndConfirm(umi);
+  const originalRecipe = await fetchRecipe(umi, recipe);
+  t.like(originalRecipe, <Recipe>{
+    accumulatedAdminFees: multiplyAmount(BASE_FEES, 0.9).basisPoints,
+    accumulatedShards: multiplyAmount(BASE_FEES, 0.9).basisPoints,
+    accumulatedExperience: 125n,
+  });
+
+  // And given we keep track of the authority and admin balance before collecting.
+  const collectingAccounts = getCollectingAccounts(umi);
+  const [authorityBalance, adminBalance] = await Promise.all([
+    umi.rpc.getBalance(authority.publicKey),
+    umi.rpc.getBalance(collectingAccounts.adminFeesDestination),
+  ]);
+
+  // When the authority deletes the recipe.
+  await deleteRecipe(umi, {
+    authority,
+    recipe,
+    ...collectingAccounts,
+  }).sendAndConfirm(umi);
+
+  // Then the recipe account was deleted.
+  const [recipeExists, newAuthorityBalance, newAdminBalance] =
+    await Promise.all([
+      umi.rpc.accountExists(recipe),
+      umi.rpc.getBalance(authority.publicKey),
+      umi.rpc.getBalance(collectingAccounts.adminFeesDestination),
+    ]);
+  t.false(recipeExists);
+
+  // And the admin destination account received the admin fees.
+  const expectedAdminFees = lamports(originalRecipe.accumulatedAdminFees);
+  t.true(
+    isEqualToAmount(
+      newAdminBalance,
+      addAmounts(adminBalance, expectedAdminFees)
+    )
+  );
+
+  // And the recipe authority received the rest of the fees.
+  const expectedAuthorityFees = subtractAmounts(
+    originalRecipe.header.lamports,
+    expectedAdminFees
+  );
+  t.true(
+    isEqualToAmount(
+      newAuthorityBalance,
+      addAmounts(authorityBalance, expectedAuthorityFees)
+    )
+  );
+
+  // And shards were minted to the recipe authority.
+  const shardsAta = findAssociatedTokenPda(umi, {
+    mint: collectingAccounts.shardsMint,
+    owner: authority.publicKey,
+  });
+  t.like(await fetchToken(umi, shardsAta), <Token>{
+    amount: originalRecipe.accumulatedShards,
+  });
+
+  // And experience was minted to the recipe authority.
+  const experienceAta = findAssociatedTokenPda(umi, {
+    mint: collectingAccounts.experienceMint,
+    owner: authority.publicKey,
+  });
+  t.like(await fetchToken(umi, experienceAta), <Token>{
+    amount: originalRecipe.accumulatedExperience,
   });
 });

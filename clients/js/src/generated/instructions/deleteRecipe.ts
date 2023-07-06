@@ -30,10 +30,10 @@ import { addAccountMeta, addObjectProperty } from '../shared';
 export type DeleteRecipeInstructionAccounts = {
   /** The address of the recipe account */
   recipe: PublicKey | Pda;
-  /** The authority of the recipe account */
+  /** The authority of the recipe account, it will receive the storage fees and the potential recipe fees */
   authority?: Signer;
-  /** The account that receives the rent fees and pays for potential associated token account storage fees */
-  payer?: PublicKey | Pda;
+  /** The account paying for the storage fees, in case an associated token account needs to be created */
+  payer?: Signer;
   /** The account that receives admin fees */
   adminFeesDestination: PublicKey | Pda;
   /** The fees feature PDA storing the valid shard mint */
@@ -117,7 +117,7 @@ export function deleteRecipe(
     'payer',
     input.payer
       ? ([input.payer, true] as const)
-      : ([context.payer.publicKey, true] as const)
+      : ([context.payer, true] as const)
   );
   addObjectProperty(
     resolvedAccounts,

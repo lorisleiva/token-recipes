@@ -304,13 +304,13 @@
           "name": "authority",
           "isMut": true,
           "isSigner": true,
-          "desc": "The authority of the recipe account"
+          "desc": "The authority of the recipe account, it will receive the storage fees and the potential recipe fees"
         },
         {
           "name": "payer",
           "isMut": true,
-          "isSigner": false,
-          "desc": "The account that receives the rent fees and pays for potential associated token account storage fees"
+          "isSigner": true,
+          "desc": "The account paying for the storage fees, in case an associated token account needs to be created"
         },
         {
           "name": "adminFeesDestination",

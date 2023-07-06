@@ -90,7 +90,7 @@ test('it can collect the accumulated fees and shards of a recipe', async (t) => 
   const recipeRent = await umi.rpc.getRent(rawRecipe.data.length);
   t.true(isEqualToAmount(newRecipe.header.lamports, recipeRent));
 
-  // And the recipe authority received the rest of the fees.
+  // And the admin destination account received the admin fees.
   const expectedAdminFees = lamports(originalRecipe.accumulatedAdminFees);
   t.true(
     isEqualToAmount(
@@ -99,7 +99,7 @@ test('it can collect the accumulated fees and shards of a recipe', async (t) => 
     )
   );
 
-  // And the admin destination account received the admin fees.
+  // And the recipe authority received the rest of the fees.
   const expectedAuthorityFees = subtractAmounts(
     originalRecipe.header.lamports,
     addAmounts(recipeRent, expectedAdminFees)

@@ -89,5 +89,5 @@ pub(crate) fn delete_recipe<'a>(accounts: &'a [AccountInfo<'a>]) -> ProgramResul
     )?;
 
     // Delete the account.
-    close_account(recipe, payer)
+    close_account(recipe, authority)
 }

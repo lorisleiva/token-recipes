@@ -99,8 +99,8 @@ pub enum TokenRecipesInstruction {
 
     /// Delete a recipe.
     #[account(0, writable, name="recipe", desc = "The address of the recipe account")]
-    #[account(1, writable, signer, name="authority", desc = "The authority of the recipe account")]
-    #[account(2, writable, name="payer", desc = "The account that receives the rent fees and pays for potential associated token account storage fees")]
+    #[account(1, writable, signer, name="authority", desc = "The authority of the recipe account, it will receive the storage fees and the potential recipe fees")]
+    #[account(2, writable, signer, name="payer", desc = "The account paying for the storage fees, in case an associated token account needs to be created")]
     #[account(3, writable, name="admin_fees_destination", desc = "The account that receives admin fees")]
     #[account(4, name="fees_feature_pda", desc = "The fees feature PDA storing the valid shard mint")]
     #[account(5, writable, name="shards_mint", desc = "The mint account of shard tokens")]
