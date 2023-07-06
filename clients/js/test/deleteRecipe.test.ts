@@ -1,14 +1,8 @@
 import { createMint } from '@metaplex-foundation/mpl-toolbox';
-import { Umi, generateSigner } from '@metaplex-foundation/umi';
+import { generateSigner } from '@metaplex-foundation/umi';
 import test from 'ava';
 import { deleteRecipe, ingredientInput, ingredientOutput } from '../src';
-import { createRecipe, createUmi, seededSigner } from './_setup';
-
-const collectingAccounts = (umi: Umi) => ({
-  adminFeesDestination: seededSigner(umi, 'FEES-adminDestination').publicKey,
-  shardsMint: seededSigner(umi, 'FEES-shardMint').publicKey,
-  experienceMint: seededSigner(umi, 'WISD-experienceMint').publicKey,
-});
+import { collectingAccounts, createRecipe, createUmi } from './_setup';
 
 test('it can delete a recipe', async (t) => {
   // Given an empty recipe account.

@@ -269,6 +269,18 @@ export const featureConfigs: Record<string, FeatureConfig> = {
   },
 };
 
+export const collectingAccounts = (
+  umi: Umi
+): {
+  adminFeesDestination: PublicKey;
+  shardsMint: PublicKey;
+  experienceMint: PublicKey;
+} => ({
+  adminFeesDestination: seededSigner(umi, 'FEES-adminDestination').publicKey,
+  shardsMint: seededSigner(umi, 'FEES-shardMint').publicKey,
+  experienceMint: seededSigner(umi, 'WISD-experienceMint').publicKey,
+});
+
 export const mintFeature = async (
   umi: Umi,
   seed: string,
