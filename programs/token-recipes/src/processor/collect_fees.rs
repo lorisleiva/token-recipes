@@ -46,15 +46,6 @@ pub(crate) fn collect_fees<'a>(accounts: &'a [AccountInfo<'a>]) -> ProgramResult
     // Get the fees feature content.
     let fees_feature_account = FeesFeature::get(fees_feature_pda)?;
 
-    // Collect the lamports.
-    collect_fees_logic(
-        recipe_account.accumulated_admin_fees,
-        &fees_feature_account.admin_destination,
-        recipe,
-        authority,
-        admin_fees_destination,
-    )?;
-
     // Collect the shards.
     collect_shards(
         recipe_account.accumulated_shards,
@@ -64,6 +55,15 @@ pub(crate) fn collect_fees<'a>(accounts: &'a [AccountInfo<'a>]) -> ProgramResult
         shards_token,
         fees_feature_pda,
         payer,
+    )?;
+
+    // Collect the lamports.
+    collect_fees_logic(
+        recipe_account.accumulated_admin_fees,
+        &fees_feature_account.admin_destination,
+        recipe,
+        authority,
+        admin_fees_destination,
     )?;
 
     // Update the recipe.

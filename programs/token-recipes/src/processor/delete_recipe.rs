@@ -57,13 +57,15 @@ pub(crate) fn delete_recipe<'a>(accounts: &'a [AccountInfo<'a>]) -> ProgramResul
     let fees_feature_account = FeesFeature::get(fees_feature_pda)?;
     let wisdom_feature_account = WisdomFeature::get(wisdom_feature_pda)?;
 
-    // Collect the lamports.
-    collect_fees(
-        recipe_account.accumulated_admin_fees,
-        &fees_feature_account.admin_destination,
-        recipe,
+    // Collect the experience.
+    collect_experience(
+        recipe_account.accumulated_experience,
+        &wisdom_feature_account.experience_mint,
         authority,
-        admin_fees_destination,
+        experience_mint,
+        experience_token,
+        wisdom_feature_pda,
+        payer,
     )?;
 
     // Collect the shards.
@@ -77,15 +79,13 @@ pub(crate) fn delete_recipe<'a>(accounts: &'a [AccountInfo<'a>]) -> ProgramResul
         payer,
     )?;
 
-    // Collect the experience.
-    collect_experience(
-        recipe_account.accumulated_experience,
-        &wisdom_feature_account.experience_mint,
+    // Collect the lamports.
+    collect_fees(
+        recipe_account.accumulated_admin_fees,
+        &fees_feature_account.admin_destination,
+        recipe,
         authority,
-        experience_mint,
-        experience_token,
-        wisdom_feature_pda,
-        payer,
+        admin_fees_destination,
     )?;
 
     // Delete the account.
