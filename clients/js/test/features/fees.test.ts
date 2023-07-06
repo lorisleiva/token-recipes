@@ -140,4 +140,41 @@ test(takeFeesMacro, 11, BASE_FEES, sol(0), sol(0));
 test(takeFeesMacro, [11, highFees], highFees, sol(0), sol(0));
 test(takeFeesMacro, [11, lowFees], lowFees, sol(0), sol(0));
 
-// TODO: crafting multiple times does not override accumulated fees
+test('crafting multiple times does not override accumulated fees', async (t) => {
+  // Given an active recipe with the fees feature at level 1.
+  const umi = await createUmi();
+  const crafter = generateSigner(umi);
+  const [inputMint, outputMint] = await createInputOutputMints(umi, crafter);
+  const recipe = await createRecipe(umi, {
+    active: true,
+    features: { fees: 1 },
+    inputs: [ingredientInput('BurnToken', { mint: inputMint, amount: 2 })],
+    outputs: [ingredientOutput('MintToken', { mint: outputMint, amount: 1 })],
+  });
+
+  // When the crafter sends the craft instruction twice.
+  await craft(umi, {
+    recipe,
+    owner: crafter,
+    inputs: [{ __kind: 'BurnToken', mint: inputMint }],
+    outputs: [{ __kind: 'MintToken', mint: outputMint }],
+    quantity: 2,
+  })
+    .add(
+      craft(umi, {
+        recipe,
+        owner: crafter,
+        inputs: [{ __kind: 'BurnToken', mint: inputMint }],
+        outputs: [{ __kind: 'MintToken', mint: outputMint }],
+        quantity: 2,
+      })
+    )
+    .sendAndConfirm(umi);
+
+  // Then the recipe kept track of the accumulated admin fees and shards
+  // and did not override them.
+  t.like(await fetchRecipe(umi, recipe), <Recipe>{
+    accumulatedAdminFees: p(BASE_FEES, 90).basisPoints * 2n,
+    accumulatedShards: p(BASE_FEES, 90).basisPoints * 2n,
+  });
+});
