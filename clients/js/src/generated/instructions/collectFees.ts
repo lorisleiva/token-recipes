@@ -40,6 +40,8 @@ export type CollectFeesInstructionAccounts = {
   shardsMint: PublicKey | Pda;
   /** The shards token account of the authority */
   shardsToken?: PublicKey | Pda;
+  /** The account paying for the storage fees, in case an associated token account needs to be created */
+  payer?: Signer;
   /** The system program */
   systemProgram?: PublicKey | Pda;
   /** The token program */
@@ -76,7 +78,7 @@ export function getCollectFeesInstructionDataSerializer(
 
 // Instruction.
 export function collectFees(
-  context: Pick<Context, 'programs' | 'eddsa' | 'identity'>,
+  context: Pick<Context, 'programs' | 'eddsa' | 'identity' | 'payer'>,
   input: CollectFeesInstructionAccounts
 ): TransactionBuilder {
   const signers: Signer[] = [];
@@ -123,6 +125,13 @@ export function collectFees(
   );
   addObjectProperty(
     resolvedAccounts,
+    'payer',
+    input.payer
+      ? ([input.payer, true] as const)
+      : ([context.payer, true] as const)
+  );
+  addObjectProperty(
+    resolvedAccounts,
     'systemProgram',
     input.systemProgram
       ? ([input.systemProgram, false] as const)
@@ -154,6 +163,7 @@ export function collectFees(
   addAccountMeta(keys, signers, resolvedAccounts.feesFeaturePda, false);
   addAccountMeta(keys, signers, resolvedAccounts.shardsMint, false);
   addAccountMeta(keys, signers, resolvedAccounts.shardsToken, false);
+  addAccountMeta(keys, signers, resolvedAccounts.payer, false);
   addAccountMeta(keys, signers, resolvedAccounts.systemProgram, false);
   addAccountMeta(keys, signers, resolvedAccounts.tokenProgram, false);
 

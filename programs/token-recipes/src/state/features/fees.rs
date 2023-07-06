@@ -1,7 +1,7 @@
 use crate::{
     assertions::{
         assert_account_key, assert_mint_account, assert_pda, assert_program_owner,
-        assert_same_pubkeys, assert_token_account, assert_writable,
+        assert_same_pubkeys, assert_token_account_or_create_ata, assert_writable,
     },
     error::TokenRecipesError,
     state::{features::UnlockFeatureContext, key::Key, recipe::Recipe},
@@ -257,6 +257,7 @@ pub fn collect_shards<'a>(
     shards_mint: &'a AccountInfo<'a>,
     shards_token: &'a AccountInfo<'a>,
     fees_feature_pda: &'a AccountInfo<'a>,
+    payer: &'a AccountInfo<'a>,
 ) -> ProgramResult {
     msg!("Collecting shards...");
 
@@ -274,10 +275,15 @@ pub fn collect_shards<'a>(
     let shards_mint_account = assert_mint_account("shards_mint", shards_mint)?;
 
     // Check: shards_token.
-    assert_writable("shards_token", shards_token)?;
-    let shards_token_account = assert_token_account("shards_token", shards_token)?;
-    assert_same_pubkeys("shards_mint", shards_mint, &shards_token_account.mint)?;
-    assert_same_pubkeys("authority", authority, &shards_token_account.owner)?;
+    assert_token_account_or_create_ata(
+        "shards_token",
+        shards_token,
+        "shards_mint",
+        shards_mint,
+        "authority",
+        authority,
+        payer,
+    )?;
 
     // Mint shards.
     let mut seeds = FeesFeature::seeds();

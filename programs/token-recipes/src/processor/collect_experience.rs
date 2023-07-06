@@ -1,5 +1,5 @@
 use crate::{
-    assertions::assert_same_pubkeys,
+    assertions::{assert_same_pubkeys, assert_signer, assert_writable},
     state::{
         features::wisdom::{collect_experience as collect_experience_logic, WisdomFeature},
         recipe::Recipe,
@@ -18,11 +18,16 @@ pub(crate) fn collect_experience<'a>(accounts: &'a [AccountInfo<'a>]) -> Program
     let wisdom_feature_pda = next_account_info(account_info_iter)?;
     let experience_mint = next_account_info(account_info_iter)?;
     let experience_token = next_account_info(account_info_iter)?;
+    let payer = next_account_info(account_info_iter)?;
     let token_program = next_account_info(account_info_iter)?;
 
     // Check: recipe and authority.
     let mut recipe_account = Recipe::get_writable(recipe)?;
     recipe_account.assert_signer_authority(authority)?;
+
+    // Check: payer.
+    assert_signer("payer", payer)?;
+    assert_writable("payer", payer)?;
 
     // Check: programs.
     assert_same_pubkeys("token_program", token_program, &spl_token::id())?;
@@ -36,6 +41,7 @@ pub(crate) fn collect_experience<'a>(accounts: &'a [AccountInfo<'a>]) -> Program
         experience_mint,
         experience_token,
         wisdom_feature_pda,
+        payer,
     )?;
 
     // Update the recipe.

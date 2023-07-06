@@ -68,6 +68,7 @@ pub(crate) fn delete_recipe<'a>(accounts: &'a [AccountInfo<'a>]) -> ProgramResul
         shards_mint,
         shards_token,
         fees_feature_pda,
+        payer,
     )?;
 
     // Collect the experience.
@@ -78,6 +79,7 @@ pub(crate) fn delete_recipe<'a>(accounts: &'a [AccountInfo<'a>]) -> ProgramResul
         experience_mint,
         experience_token,
         wisdom_feature_pda,
+        payer,
     )?;
 
     // Delete the account.

@@ -1,14 +1,14 @@
 use crate::{
     assertions::{
         assert_account_key, assert_mint_account, assert_pda, assert_program_owner,
-        assert_same_pubkeys, assert_token_account, assert_writable,
+        assert_same_pubkeys, assert_token_account_or_create_ata, assert_writable,
     },
     error::TokenRecipesError,
     state::{
         delegated_ingredient::DelegatedIngredient, ingredient_record::IngredientRecord, key::Key,
         recipe::Recipe,
     },
-    utils::{create_associated_token_account, mint_tokens},
+    utils::mint_tokens,
 };
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{
@@ -110,8 +110,8 @@ impl IngredientOutput {
     pub fn craft<'a, I: Iterator<Item = &'a AccountInfo<'a>>>(
         &self,
         account_info_iter: &mut I,
-        owner: &AccountInfo<'a>,
-        payer: &AccountInfo<'a>,
+        owner: &'a AccountInfo<'a>,
+        payer: &'a AccountInfo<'a>,
         quantity: u64,
     ) -> ProgramResult {
         match self {
@@ -194,8 +194,8 @@ impl IngredientOutput {
 
 fn next_output_mint_and_token<'a, I: Iterator<Item = &'a AccountInfo<'a>>>(
     account_info_iter: &mut I,
-    owner: &AccountInfo<'a>,
-    payer: &AccountInfo<'a>,
+    owner: &'a AccountInfo<'a>,
+    payer: &'a AccountInfo<'a>,
     quantity: u64,
     mint: &Pubkey,
     amount: &u64,
@@ -234,24 +234,15 @@ fn next_output_mint_and_token<'a, I: Iterator<Item = &'a AccountInfo<'a>>>(
     let output_mint_account = assert_mint_account("output_mint", output_mint)?;
 
     // Check: ingredient token.
-    if output_token.data_is_empty() {
-        assert_pda(
-            "output_token",
-            output_token,
-            &spl_associated_token_account::id(),
-            &[
-                owner.key.as_ref(),
-                spl_token::id().as_ref(),
-                output_mint.key.as_ref(),
-            ],
-        )?;
-        create_associated_token_account(output_token, output_mint, owner, payer)?;
-    } else {
-        assert_writable("output_token", output_token)?;
-        let output_token_account = assert_token_account("output_token", output_token)?;
-        assert_same_pubkeys("output_mint", output_mint, &output_token_account.mint)?;
-        assert_same_pubkeys("owner", owner, &output_token_account.owner)?;
-    }
+    assert_token_account_or_create_ata(
+        "output_token",
+        output_token,
+        "output_mint",
+        output_mint,
+        "owner",
+        owner,
+        payer,
+    )?;
 
     // Compute the total amount of tokens required.
     let multiplied_amount = amount

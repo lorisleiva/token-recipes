@@ -1,11 +1,11 @@
 use crate::{
     assertions::{
-        assert_enough_tokens, assert_mint_account, assert_pda, assert_same_pubkeys,
-        assert_token_account, assert_writable,
+        assert_enough_tokens, assert_mint_account, assert_same_pubkeys, assert_token_account,
+        assert_token_account_or_create_ata, assert_writable,
     },
     error::TokenRecipesError,
     state::{ingredient_record::IngredientRecord, recipe::IngredientType, recipe::Recipe},
-    utils::{burn_tokens, create_associated_token_account, transfer_lamports, transfer_tokens},
+    utils::{burn_tokens, transfer_lamports, transfer_tokens},
 };
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{
@@ -109,8 +109,8 @@ impl IngredientInput {
     pub fn craft<'a, I: Iterator<Item = &'a AccountInfo<'a>>>(
         &self,
         account_info_iter: &mut I,
-        owner: &AccountInfo<'a>,
-        payer: &AccountInfo<'a>,
+        owner: &'a AccountInfo<'a>,
+        payer: &'a AccountInfo<'a>,
         quantity: u64,
     ) -> ProgramResult {
         match self {
@@ -141,38 +141,15 @@ impl IngredientInput {
                 assert_same_pubkeys("input_destination", input_destination, &destination)?;
 
                 // Check: input_destination_token.
-                if input_destination_token.data_is_empty() {
-                    assert_pda(
-                        "input_destination_token",
-                        input_destination_token,
-                        &spl_associated_token_account::id(),
-                        &[
-                            input_destination.key.as_ref(),
-                            spl_token::id().as_ref(),
-                            input_mint.key.as_ref(),
-                        ],
-                    )?;
-                    create_associated_token_account(
-                        input_destination_token,
-                        input_mint,
-                        input_destination,
-                        payer,
-                    )?;
-                } else {
-                    assert_writable("input_destination_token", input_destination_token)?;
-                    let input_destination_token_account =
-                        assert_token_account("input_destination_token", input_destination_token)?;
-                    assert_same_pubkeys(
-                        "input_mint",
-                        input_mint,
-                        &input_destination_token_account.mint,
-                    )?;
-                    assert_same_pubkeys(
-                        "input_destination",
-                        input_destination,
-                        &input_destination_token_account.owner,
-                    )?;
-                }
+                assert_token_account_or_create_ata(
+                    "input_destination_token",
+                    input_destination_token,
+                    "input_mint",
+                    input_mint,
+                    "input_destination",
+                    input_destination,
+                    payer,
+                )?;
 
                 transfer_tokens(
                     input_mint,

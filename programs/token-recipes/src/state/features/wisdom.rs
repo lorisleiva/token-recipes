@@ -1,7 +1,7 @@
 use crate::{
     assertions::{
         assert_account_key, assert_mint_account, assert_pda, assert_program_owner,
-        assert_same_pubkeys, assert_token_account, assert_writable,
+        assert_same_pubkeys, assert_token_account_or_create_ata, assert_writable,
     },
     error::TokenRecipesError,
     state::{
@@ -132,6 +132,7 @@ pub fn collect_experience<'a>(
     experience_mint: &'a AccountInfo<'a>,
     experience_token: &'a AccountInfo<'a>,
     wisdom_feature_pda: &'a AccountInfo<'a>,
+    payer: &'a AccountInfo<'a>,
 ) -> ProgramResult {
     msg!("Collecting experience...");
 
@@ -153,14 +154,15 @@ pub fn collect_experience<'a>(
     let experience_mint_account = assert_mint_account("experience_mint", experience_mint)?;
 
     // Check: experience_token.
-    assert_writable("experience_token", experience_token)?;
-    let experience_token_account = assert_token_account("experience_token", experience_token)?;
-    assert_same_pubkeys(
+    assert_token_account_or_create_ata(
+        "experience_token",
+        experience_token,
         "experience_mint",
         experience_mint,
-        &experience_token_account.mint,
+        "authority",
+        authority,
+        payer,
     )?;
-    assert_same_pubkeys("authority", authority, &experience_token_account.owner)?;
 
     // Mint experience.
     let mut seeds = WisdomFeature::seeds();

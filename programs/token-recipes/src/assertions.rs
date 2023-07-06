@@ -1,4 +1,4 @@
-use crate::{error::TokenRecipesError, state::key::Key};
+use crate::{error::TokenRecipesError, state::key::Key, utils::create_associated_token_account};
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, msg, program_error::ProgramError,
     program_pack::Pack, pubkey::Pubkey,
@@ -208,4 +208,35 @@ pub fn assert_token_account(
     assert_program_owner(account_name, account, &spl_token::id())?;
     assert_data_size(account_name, account, 165)?;
     Account::unpack(&account.data.borrow())
+}
+
+/// Assert that a given account is a token account
+/// or create a new one if it is an associated token account.
+pub fn assert_token_account_or_create_ata<'a>(
+    account_name: &str,
+    account: &'a AccountInfo<'a>,
+    mint_name: &str,
+    mint: &'a AccountInfo<'a>,
+    owner_name: &str,
+    owner: &'a AccountInfo<'a>,
+    payer: &'a AccountInfo<'a>,
+) -> ProgramResult {
+    assert_writable(account_name, account)?;
+    if account.data_is_empty() {
+        assert_pda(
+            account_name,
+            account,
+            &spl_associated_token_account::id(),
+            &[
+                owner.key.as_ref(),
+                spl_token::id().as_ref(),
+                mint.key.as_ref(),
+            ],
+        )?;
+        create_associated_token_account(account, mint, owner, payer)
+    } else {
+        let parsed_account = assert_token_account(account_name, account)?;
+        assert_same_pubkeys(mint_name, mint, &parsed_account.mint)?;
+        assert_same_pubkeys(owner_name, owner, &parsed_account.owner)
+    }
 }

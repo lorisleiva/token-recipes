@@ -32,7 +32,7 @@ export type DeleteRecipeInstructionAccounts = {
   recipe: PublicKey | Pda;
   /** The authority of the recipe account */
   authority?: Signer;
-  /** The account that receives the rent fees */
+  /** The account that receives the rent fees and pays for potential associated token account storage fees */
   payer?: PublicKey | Pda;
   /** The account that receives admin fees */
   adminFeesDestination: PublicKey | Pda;
