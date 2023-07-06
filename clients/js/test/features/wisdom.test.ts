@@ -20,6 +20,9 @@ test(unlockMacro, 1, 0, 'mintBurn2', 0, 1);
 test(unlockMacro, 1, 5, 'mintBurn2', 0, 6);
 test(unlockMacro, 1, 6, 'mintBurn2', 1, 6, 'max-level-reached');
 
+// take experience macro.
+// Check level 10 and custom fees < base fees + level 11.
+
 test('it adds experience to the recipe when crafting by default', async (t) => {
   // Given an output mint and output mint such that the craft owns 10 input tokens.
   const umi = await createUmi();

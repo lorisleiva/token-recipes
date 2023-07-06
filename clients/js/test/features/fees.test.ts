@@ -1,5 +1,7 @@
 import {
   SolAmount,
+  displayAmount,
+  divideAmount,
   generateSigner,
   isEqualToAmount,
   multiplyAmount,
@@ -53,8 +55,10 @@ test(unlockMacro, 1, 11, 'mintSkill3', 1, 11, 'max-level-reached');
 const takeFeesMacro = test.macro({
   title: (providedTitle, level: number | [number, SolAmount]) => {
     if (providedTitle) return providedTitle;
+    const custom = Array.isArray(level)
+      ? ` with custom fees ${displayAmount(level[1])}`
+      : '';
     level = Array.isArray(level) ? level[0] : level;
-    const custom = Array.isArray(level) ? ` with custom fees` : '';
     return `it takes fees when crafting a level ${level} recipe${custom}`;
   },
   exec: async (
@@ -113,11 +117,27 @@ const takeFeesMacro = test.macro({
   },
 });
 
+const highFees = multiplyAmount(BASE_FEES, 2);
+const lowFees = divideAmount(BASE_FEES, 2);
 const p = (amount: SolAmount, percentage: number) =>
   multiplyAmount(amount, percentage / 100);
 
 // level | [level, customFees], expectedFees, expectedAdminFees, expectedShards
 test(takeFeesMacro, 0, BASE_FEES, BASE_FEES, sol(0));
-test(takeFeesMacro, 1, BASE_FEES, p(BASE_FEES, 90), p(BASE_FEES, 10));
+test(takeFeesMacro, 1, BASE_FEES, p(BASE_FEES, 90), p(BASE_FEES, 90));
+test(takeFeesMacro, 2, BASE_FEES, p(BASE_FEES, 80), p(BASE_FEES, 80));
+test(takeFeesMacro, 3, BASE_FEES, p(BASE_FEES, 70), p(BASE_FEES, 70));
+test(takeFeesMacro, 4, BASE_FEES, p(BASE_FEES, 60), p(BASE_FEES, 60));
+test(takeFeesMacro, 5, BASE_FEES, p(BASE_FEES, 50), p(BASE_FEES, 50));
+test(takeFeesMacro, 6, BASE_FEES, p(BASE_FEES, 40), p(BASE_FEES, 40));
+test(takeFeesMacro, 7, BASE_FEES, p(BASE_FEES, 30), p(BASE_FEES, 30));
+test(takeFeesMacro, 8, BASE_FEES, p(BASE_FEES, 20), p(BASE_FEES, 20));
+test(takeFeesMacro, 9, BASE_FEES, p(BASE_FEES, 10), p(BASE_FEES, 10));
+test(takeFeesMacro, 10, BASE_FEES, p(BASE_FEES, 10), p(BASE_FEES, 10));
+test(takeFeesMacro, [10, highFees], highFees, p(highFees, 10), p(highFees, 10));
+test(takeFeesMacro, [10, lowFees], lowFees, p(lowFees, 10), sol(0));
+test(takeFeesMacro, 11, BASE_FEES, sol(0), sol(0));
+test(takeFeesMacro, [11, highFees], highFees, sol(0), sol(0));
+test(takeFeesMacro, [11, lowFees], lowFees, sol(0), sol(0));
 
 // TODO: crafting multiple times does not override accumulated fees
