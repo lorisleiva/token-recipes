@@ -55,7 +55,6 @@ pub(crate) fn delete_recipe<'a>(accounts: &'a [AccountInfo<'a>]) -> ProgramResul
     collect_fees(
         recipe_account.accumulated_admin_fees,
         &fees_feature_account.admin_destination,
-        &recipe_account.base,
         recipe,
         authority,
         admin_fees_destination,

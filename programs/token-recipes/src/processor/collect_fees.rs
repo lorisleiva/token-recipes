@@ -39,7 +39,6 @@ pub(crate) fn collect_fees<'a>(accounts: &'a [AccountInfo<'a>]) -> ProgramResult
     collect_fees_logic(
         recipe_account.accumulated_admin_fees,
         &fees_feature_account.admin_destination,
-        &recipe_account.base,
         recipe,
         authority,
         admin_fees_destination,

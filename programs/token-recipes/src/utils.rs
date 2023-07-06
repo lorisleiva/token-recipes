@@ -2,12 +2,15 @@ use solana_program::{
     account_info::AccountInfo,
     entrypoint::ProgramResult,
     program::{invoke, invoke_signed},
+    program_error::ProgramError,
     pubkey::Pubkey,
     rent::Rent,
     system_instruction,
     sysvar::Sysvar,
 };
 use spl_token::instruction::{set_authority, AuthorityType};
+
+use crate::error::TokenRecipesError;
 
 /// Create a new account from the given size.
 #[inline(always)]
@@ -94,6 +97,24 @@ pub fn transfer_lamports<'a>(
         &[from.clone(), to.clone()],
         signer_seeds.unwrap_or(&[]),
     )
+}
+
+pub fn transfer_lamports_from_pdas<'a>(
+    from: &AccountInfo<'a>,
+    to: &AccountInfo<'a>,
+    lamports: u64,
+) -> ProgramResult {
+    **from.lamports.borrow_mut() = from
+        .lamports()
+        .checked_sub(lamports)
+        .ok_or::<ProgramError>(TokenRecipesError::NumericalOverflow.into())?;
+
+    **to.lamports.borrow_mut() = to
+        .lamports()
+        .checked_add(lamports)
+        .ok_or::<ProgramError>(TokenRecipesError::NumericalOverflow.into())?;
+
+    Ok(())
 }
 
 /// Transfer mint authority.

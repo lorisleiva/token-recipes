@@ -5,7 +5,7 @@ use crate::{
     },
     error::TokenRecipesError,
     state::{features::UnlockFeatureContext, key::Key, recipe::Recipe},
-    utils::{burn_tokens, mint_tokens, transfer_lamports},
+    utils::{burn_tokens, mint_tokens, transfer_lamports_from_pdas},
 };
 use borsh::{BorshDeserialize, BorshSerialize};
 use shank::ShankAccount;
@@ -215,7 +215,6 @@ pub fn asserts_can_set_fees(recipe: &Recipe) -> ProgramResult {
 pub fn collect_fees<'a>(
     accumulated_admin_fees: u64,
     expected_admin_fees_destination: &Pubkey,
-    base: &Pubkey,
     recipe: &'a AccountInfo<'a>,
     authority: &'a AccountInfo<'a>,
     admin_fees_destination: &'a AccountInfo<'a>,
@@ -238,14 +237,8 @@ pub fn collect_fees<'a>(
         .checked_sub(accumulated_admin_fees)
         .ok_or::<ProgramError>(TokenRecipesError::NumericalOverflow.into())?;
 
-    // Prepare seeds.
-    let mut seeds = Recipe::seeds(base);
-    let bump = assert_pda("recipe", recipe, &crate::id(), &Recipe::seeds(base))?;
-    let bump = &[bump];
-    seeds.push(bump);
-
     // Transfer to the recipe authority.
-    transfer_lamports(recipe, authority, authority_fees, Some(&[&seeds]))?;
+    transfer_lamports_from_pdas(recipe, authority, authority_fees)?;
 
     // Transfer to the admin destination.
     assert_writable("admin_fees_destination", admin_fees_destination)?;
@@ -254,12 +247,7 @@ pub fn collect_fees<'a>(
         admin_fees_destination,
         &expected_admin_fees_destination,
     )?;
-    transfer_lamports(
-        recipe,
-        admin_fees_destination,
-        accumulated_admin_fees,
-        Some(&[&seeds]),
-    )
+    transfer_lamports_from_pdas(recipe, admin_fees_destination, accumulated_admin_fees)
 }
 
 pub fn collect_shards<'a>(
