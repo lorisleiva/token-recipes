@@ -55,8 +55,6 @@ export const setupFeatures = async () => {
     mintSkill3: seededSigner(umi, 'FEES-mintSkill3').publicKey,
   };
   mints.push(
-    seededSigner(umi, 'FEES-adminDestination'),
-    seededSigner(umi, 'FEES-shardMint'),
     seededSigner(umi, 'FEES-mintBurn1'),
     seededSigner(umi, 'FEES-mintBurn2'),
     seededSigner(umi, 'FEES-mintBurn3'),
@@ -71,7 +69,13 @@ export const setupFeatures = async () => {
     featurePda: feesFeaturePda,
     payer,
     feature: feature('Fees', [feesFeature]),
-  });
+  }).add(
+    createMint(umi, {
+      mint: seededSigner(umi, 'FEES-shardMint'),
+      mintAuthority: feesFeaturePda,
+      freezeAuthority: feesFeaturePda,
+    })
+  );
 
   // Additional outputs.
   const [additionalOutputsFeaturePda] = findAdditionalOutputsFeaturePda(umi);
@@ -190,7 +194,6 @@ export const setupFeatures = async () => {
     mintBurn2: seededSigner(umi, 'WISD-mintBurn2').publicKey,
   };
   mints.push(
-    seededSigner(umi, 'WISD-experienceMint'),
     seededSigner(umi, 'WISD-mintBurn1'),
     seededSigner(umi, 'WISD-mintBurn2')
   );
@@ -199,7 +202,13 @@ export const setupFeatures = async () => {
     featurePda: wisdomFeaturePda,
     payer,
     feature: feature('Wisdom', [wisdomFeature]),
-  });
+  }).add(
+    createMint(umi, {
+      mint: seededSigner(umi, 'WISD-experienceMint'),
+      mintAuthority: wisdomFeaturePda,
+      freezeAuthority: wisdomFeaturePda,
+    })
+  );
 
   // Mints.
   const mintBuilders = mints.map((mint) =>
