@@ -38,6 +38,8 @@ export type CollectExperienceInstructionAccounts = {
   experienceMint: PublicKey | Pda;
   /** The experience token account of the authority */
   experienceToken?: PublicKey | Pda;
+  /** The token program */
+  tokenProgram?: PublicKey | Pda;
 };
 
 // Data.
@@ -123,12 +125,26 @@ export function collectExperience(
           true,
         ] as const)
   );
+  addObjectProperty(
+    resolvedAccounts,
+    'tokenProgram',
+    input.tokenProgram
+      ? ([input.tokenProgram, false] as const)
+      : ([
+          context.programs.getPublicKey(
+            'splToken',
+            'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+          ),
+          false,
+        ] as const)
+  );
 
   addAccountMeta(keys, signers, resolvedAccounts.recipe, false);
   addAccountMeta(keys, signers, resolvedAccounts.authority, false);
   addAccountMeta(keys, signers, resolvedAccounts.wisdomFeaturePda, false);
   addAccountMeta(keys, signers, resolvedAccounts.experienceMint, false);
   addAccountMeta(keys, signers, resolvedAccounts.experienceToken, false);
+  addAccountMeta(keys, signers, resolvedAccounts.tokenProgram, false);
 
   // Data.
   const data = getCollectExperienceInstructionDataSerializer().serialize({});

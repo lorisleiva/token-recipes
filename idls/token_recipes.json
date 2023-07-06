@@ -353,6 +353,18 @@
           "isMut": true,
           "isSigner": false,
           "desc": "The experience token account of the authority"
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "desc": "The system program"
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false,
+          "desc": "The token program"
         }
       ],
       "args": [],
@@ -519,6 +531,18 @@
           "isMut": true,
           "isSigner": false,
           "desc": "The shards token account of the authority"
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false,
+          "desc": "The system program"
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false,
+          "desc": "The token program"
         }
       ],
       "args": [],
@@ -559,6 +583,12 @@
           "isMut": true,
           "isSigner": false,
           "desc": "The experience token account of the authority"
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false,
+          "desc": "The token program"
         }
       ],
       "args": [],

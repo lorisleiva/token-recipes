@@ -40,6 +40,10 @@ export type CollectFeesInstructionAccounts = {
   shardsMint: PublicKey | Pda;
   /** The shards token account of the authority */
   shardsToken?: PublicKey | Pda;
+  /** The system program */
+  systemProgram?: PublicKey | Pda;
+  /** The token program */
+  tokenProgram?: PublicKey | Pda;
 };
 
 // Data.
@@ -117,6 +121,32 @@ export function collectFees(
           true,
         ] as const)
   );
+  addObjectProperty(
+    resolvedAccounts,
+    'systemProgram',
+    input.systemProgram
+      ? ([input.systemProgram, false] as const)
+      : ([
+          context.programs.getPublicKey(
+            'splSystem',
+            '11111111111111111111111111111111'
+          ),
+          false,
+        ] as const)
+  );
+  addObjectProperty(
+    resolvedAccounts,
+    'tokenProgram',
+    input.tokenProgram
+      ? ([input.tokenProgram, false] as const)
+      : ([
+          context.programs.getPublicKey(
+            'splToken',
+            'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+          ),
+          false,
+        ] as const)
+  );
 
   addAccountMeta(keys, signers, resolvedAccounts.recipe, false);
   addAccountMeta(keys, signers, resolvedAccounts.authority, false);
@@ -124,6 +154,8 @@ export function collectFees(
   addAccountMeta(keys, signers, resolvedAccounts.feesFeaturePda, false);
   addAccountMeta(keys, signers, resolvedAccounts.shardsMint, false);
   addAccountMeta(keys, signers, resolvedAccounts.shardsToken, false);
+  addAccountMeta(keys, signers, resolvedAccounts.systemProgram, false);
+  addAccountMeta(keys, signers, resolvedAccounts.tokenProgram, false);
 
   // Data.
   const data = getCollectFeesInstructionDataSerializer().serialize({});

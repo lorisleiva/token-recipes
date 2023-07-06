@@ -108,6 +108,8 @@ pub enum TokenRecipesInstruction {
     #[account(7, name="wisdom_feature_pda", desc = "The wisdom feature PDA storing the valid experience mint")]
     #[account(8, writable, name="experience_mint", desc = "The mint account of experience tokens")]
     #[account(9, writable, name="experience_token", desc = "The experience token account of the authority")]
+    #[account(10, name="system_program", desc = "The system program")]
+    #[account(11, name="token_program", desc = "The token program")]
     DeleteRecipe,
 
     /// [ADMIN ONLY] Set a feature on the program.
@@ -144,6 +146,8 @@ pub enum TokenRecipesInstruction {
     #[account(3, name="fees_feature_pda", desc = "The fees feature PDA storing the valid shard mint")]
     #[account(4, writable, name="shards_mint", desc = "The mint account of shard tokens")]
     #[account(5, writable, name="shards_token", desc = "The shards token account of the authority")]
+    #[account(6, name="system_program", desc = "The system program")]
+    #[account(7, name="token_program", desc = "The token program")]
     CollectFees,
 
     /// Collect the accumulated experience of a recipe.
@@ -152,6 +156,7 @@ pub enum TokenRecipesInstruction {
     #[account(2, name="wisdom_feature_pda", desc = "The wisdom feature PDA storing the valid experience mint")]
     #[account(3, writable, name="experience_mint", desc = "The mint account of experience tokens")]
     #[account(4, writable, name="experience_token", desc = "The experience token account of the authority")]
+    #[account(5, name="token_program", desc = "The token program")]
     CollectExperience,
 }
 

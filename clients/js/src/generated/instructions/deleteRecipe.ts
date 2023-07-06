@@ -48,6 +48,10 @@ export type DeleteRecipeInstructionAccounts = {
   experienceMint: PublicKey | Pda;
   /** The experience token account of the authority */
   experienceToken?: PublicKey | Pda;
+  /** The system program */
+  systemProgram?: PublicKey | Pda;
+  /** The token program */
+  tokenProgram?: PublicKey | Pda;
 };
 
 // Data.
@@ -153,6 +157,32 @@ export function deleteRecipe(
           true,
         ] as const)
   );
+  addObjectProperty(
+    resolvedAccounts,
+    'systemProgram',
+    input.systemProgram
+      ? ([input.systemProgram, false] as const)
+      : ([
+          context.programs.getPublicKey(
+            'splSystem',
+            '11111111111111111111111111111111'
+          ),
+          false,
+        ] as const)
+  );
+  addObjectProperty(
+    resolvedAccounts,
+    'tokenProgram',
+    input.tokenProgram
+      ? ([input.tokenProgram, false] as const)
+      : ([
+          context.programs.getPublicKey(
+            'splToken',
+            'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+          ),
+          false,
+        ] as const)
+  );
 
   addAccountMeta(keys, signers, resolvedAccounts.recipe, false);
   addAccountMeta(keys, signers, resolvedAccounts.authority, false);
@@ -164,6 +194,8 @@ export function deleteRecipe(
   addAccountMeta(keys, signers, resolvedAccounts.wisdomFeaturePda, false);
   addAccountMeta(keys, signers, resolvedAccounts.experienceMint, false);
   addAccountMeta(keys, signers, resolvedAccounts.experienceToken, false);
+  addAccountMeta(keys, signers, resolvedAccounts.systemProgram, false);
+  addAccountMeta(keys, signers, resolvedAccounts.tokenProgram, false);
 
   // Data.
   const data = getDeleteRecipeInstructionDataSerializer().serialize({});
