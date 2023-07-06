@@ -1,14 +1,22 @@
-import { generateSigner } from '@metaplex-foundation/umi';
+import {
+  SolAmount,
+  displayAmount,
+  divideAmount,
+  generateSigner,
+  multiplyAmount,
+} from '@metaplex-foundation/umi';
 import test from 'ava';
 import {
+  BASE_FEES,
   Recipe,
   craft,
   fetchRecipe,
   ingredientInput,
   ingredientOutput,
+  setFees,
 } from '../../src';
 import { getUnlockFeatureMacro } from '../_macros';
-import { createMintWithHolders, createRecipe, createUmi } from '../_setup';
+import { createInputOutputMints, createRecipe, createUmi } from '../_setup';
 
 const unlockMacro = getUnlockFeatureMacro('wisdom');
 
@@ -20,76 +28,126 @@ test(unlockMacro, 1, 0, 'mintBurn2', 0, 1);
 test(unlockMacro, 1, 5, 'mintBurn2', 0, 6);
 test(unlockMacro, 1, 6, 'mintBurn2', 1, 6, 'max-level-reached');
 
-// take experience macro.
-// Check level 10 and custom fees < base fees + level 11.
+const gainExperienceMacro = test.macro({
+  title: (
+    providedTitle,
+    init: number | [number, number] | [number, number, SolAmount],
+    expectedExperience: number | bigint
+  ) => {
+    if (providedTitle) return providedTitle;
+    const wisdomLevel = Array.isArray(init) ? init[0] : init;
+    const feeLevel = Array.isArray(init) ? init[1] : undefined;
+    const customFee =
+      Array.isArray(init) && init.length === 3 ? init[2] : undefined;
+    const custom = customFee
+      ? ` with custom fees ${displayAmount(customFee)}`
+      : '';
+    const fee = feeLevel ? ` and fees level ${feeLevel}${custom}` : '';
+    return `it gains ${expectedExperience} experience when crafting a recipe with wisdom level ${wisdomLevel}${fee}`;
+  },
+  exec: async (
+    t,
+    init: number | [number, number] | [number, number, SolAmount],
+    expectedExperience: number | bigint
+  ) => {
+    // Given an active recipe with predefined wisdom and fees levels.
+    const wisdomLevel = Array.isArray(init) ? init[0] : init;
+    const feeLevel = Array.isArray(init) ? init[1] : undefined;
+    const umi = await createUmi();
+    const crafter = generateSigner(umi);
+    const [inputMint, outputMint] = await createInputOutputMints(umi, crafter);
+    const recipe = await createRecipe(umi, {
+      active: true,
+      features: { wisdom: wisdomLevel, fees: feeLevel ?? 0 },
+      inputs: [ingredientInput('BurnToken', { mint: inputMint, amount: 2 })],
+      outputs: [ingredientOutput('MintToken', { mint: outputMint, amount: 1 })],
+    });
 
-test('it adds experience to the recipe when crafting by default', async (t) => {
-  // Given an output mint and output mint such that the craft owns 10 input tokens.
-  const umi = await createUmi();
-  const crafter = generateSigner(umi);
-  const [inputMint] = await createMintWithHolders(umi, {
-    holders: [{ owner: crafter.publicKey, amount: 10 }],
-  });
-  const [outputMint] = await createMintWithHolders(umi, {
-    holders: [{ owner: crafter.publicKey, amount: 0 }],
-  });
+    // And potentially custom fees.
+    const customFee =
+      Array.isArray(init) && init.length === 3 ? init[2] : undefined;
+    if (customFee) {
+      await setFees(umi, {
+        recipe,
+        fees: customFee.basisPoints,
+      }).sendAndConfirm(umi);
+    }
 
-  // And a new recipe with no accumulated experience that uses these mints as ingredients.
-  const recipe = await createRecipe(umi, {
-    active: true,
-    inputs: [ingredientInput('BurnToken', { mint: inputMint, amount: 5 })],
-    outputs: [ingredientOutput('MintToken', { mint: outputMint, amount: 1 })],
-  });
-  t.like(await fetchRecipe(umi, recipe), <Recipe>{ accumulatedExperience: 0n });
+    // And given that recipe has no accumulated experience.
+    t.like(await fetchRecipe(umi, recipe), <Recipe>{
+      accumulatedExperience: 0n,
+    });
 
-  // When the crafter crafts the recipe.
-  await craft(umi, {
-    recipe,
-    owner: crafter,
-    inputs: [{ __kind: 'BurnToken', mint: inputMint }],
-    outputs: [{ __kind: 'MintToken', mint: outputMint }],
-    quantity: 2,
-  }).sendAndConfirm(umi);
+    // When the crafter crafts the recipe.
+    await craft(umi, {
+      recipe,
+      owner: crafter,
+      inputs: [{ __kind: 'BurnToken', mint: inputMint }],
+      outputs: [{ __kind: 'MintToken', mint: outputMint }],
+      quantity: 42,
+    }).sendAndConfirm(umi);
 
-  // Then the recipe has accumulated experience regardless of the quantity.
-  t.like(await fetchRecipe(umi, recipe), <Recipe>{
-    accumulatedExperience: 100n,
-  });
+    // Then the recipe kept track of the accumulated experience, regardless of the quantity.
+    t.like(await fetchRecipe(umi, recipe), <Recipe>{
+      accumulatedExperience: BigInt(expectedExperience),
+    });
+  },
 });
 
-test('it adds more experience to the recipe when crafting when unlocked', async (t) => {
-  // Given an output mint and output mint such that the craft owns 10 input tokens.
+const highFees = multiplyAmount(BASE_FEES, 2);
+const lowFees = divideAmount(BASE_FEES, 2);
+
+// wisdomLevel | [wisdomLevel, feesLevel, customFees], expectedExperience
+test(gainExperienceMacro, 0, 100);
+test(gainExperienceMacro, 1, 125);
+test(gainExperienceMacro, 2, 150);
+test(gainExperienceMacro, 3, 175);
+test(gainExperienceMacro, 4, 200);
+test(gainExperienceMacro, 5, 250);
+test(gainExperienceMacro, 6, 300);
+test(gainExperienceMacro, [4, 10], 200);
+test(gainExperienceMacro, [4, 10, BASE_FEES], 200);
+test(gainExperienceMacro, [4, 10, highFees], 200);
+test(gainExperienceMacro, [4, 10, lowFees], 0);
+test(gainExperienceMacro, [4, 11], 0);
+test(gainExperienceMacro, [4, 11, BASE_FEES], 0);
+test(gainExperienceMacro, [4, 11, highFees], 0);
+test(gainExperienceMacro, [4, 11, lowFees], 0);
+
+test('crafting multiple times does not override accumulated experience', async (t) => {
+  // Given an active recipe with the wisdom feature at level 1.
   const umi = await createUmi();
   const crafter = generateSigner(umi);
-  const [inputMint] = await createMintWithHolders(umi, {
-    holders: [{ owner: crafter.publicKey, amount: 10 }],
-  });
-  const [outputMint] = await createMintWithHolders(umi, {
-    holders: [{ owner: crafter.publicKey, amount: 0 }],
-  });
-
-  // And a new recipe with no accumulated experience that uses these mints as ingredients.
-  // And given the recipe has unlocked the wisdom feature to level 1.
+  const [inputMint, outputMint] = await createInputOutputMints(umi, crafter);
   const recipe = await createRecipe(umi, {
     active: true,
     features: { wisdom: 1 },
-    inputs: [ingredientInput('BurnToken', { mint: inputMint, amount: 5 })],
+    inputs: [ingredientInput('BurnToken', { mint: inputMint, amount: 2 })],
     outputs: [ingredientOutput('MintToken', { mint: outputMint, amount: 1 })],
   });
-  t.like(await fetchRecipe(umi, recipe), <Recipe>{ accumulatedExperience: 0n });
 
-  // When the crafter crafts the recipe.
+  // When the crafter sends the craft instruction twice.
   await craft(umi, {
     recipe,
     owner: crafter,
     inputs: [{ __kind: 'BurnToken', mint: inputMint }],
     outputs: [{ __kind: 'MintToken', mint: outputMint }],
     quantity: 2,
-  }).sendAndConfirm(umi);
+  })
+    .add(
+      craft(umi, {
+        recipe,
+        owner: crafter,
+        inputs: [{ __kind: 'BurnToken', mint: inputMint }],
+        outputs: [{ __kind: 'MintToken', mint: outputMint }],
+        quantity: 2,
+      })
+    )
+    .sendAndConfirm(umi);
 
-  // Then the recipe has accumulated more experience.
-  // Still regardless of the quantity.
+  // Then the recipe kept track of the accumulated experience
+  // and did not override them.
   t.like(await fetchRecipe(umi, recipe), <Recipe>{
-    accumulatedExperience: 125n,
+    accumulatedExperience: 125n * 2n,
   });
 });
