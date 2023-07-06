@@ -160,8 +160,9 @@ pub enum TokenRecipesInstruction {
     #[account(3, writable, name="experience_mint", desc = "The mint account of experience tokens")]
     #[account(4, writable, name="experience_token", desc = "The experience token account of the authority")]
     #[account(5, writable, signer, name="payer", desc = "The account paying for the storage fees, in case an associated token account needs to be created")]
-    #[account(6, name="token_program", desc = "The token program")]
-    #[account(7, name="ata_program", desc = "The associated token program")]
+    #[account(6, name="system_program", desc = "The system program")]
+    #[account(7, name="token_program", desc = "The token program")]
+    #[account(8, name="ata_program", desc = "The associated token program")]
     CollectExperience,
 }
 

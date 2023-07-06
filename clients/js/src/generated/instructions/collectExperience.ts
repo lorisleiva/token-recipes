@@ -40,6 +40,8 @@ export type CollectExperienceInstructionAccounts = {
   experienceToken?: PublicKey | Pda;
   /** The account paying for the storage fees, in case an associated token account needs to be created */
   payer?: Signer;
+  /** The system program */
+  systemProgram?: PublicKey | Pda;
   /** The token program */
   tokenProgram?: PublicKey | Pda;
   /** The associated token program */
@@ -138,6 +140,19 @@ export function collectExperience(
   );
   addObjectProperty(
     resolvedAccounts,
+    'systemProgram',
+    input.systemProgram
+      ? ([input.systemProgram, false] as const)
+      : ([
+          context.programs.getPublicKey(
+            'splSystem',
+            '11111111111111111111111111111111'
+          ),
+          false,
+        ] as const)
+  );
+  addObjectProperty(
+    resolvedAccounts,
     'tokenProgram',
     input.tokenProgram
       ? ([input.tokenProgram, false] as const)
@@ -169,6 +184,7 @@ export function collectExperience(
   addAccountMeta(keys, signers, resolvedAccounts.experienceMint, false);
   addAccountMeta(keys, signers, resolvedAccounts.experienceToken, false);
   addAccountMeta(keys, signers, resolvedAccounts.payer, false);
+  addAccountMeta(keys, signers, resolvedAccounts.systemProgram, false);
   addAccountMeta(keys, signers, resolvedAccounts.tokenProgram, false);
   addAccountMeta(keys, signers, resolvedAccounts.ataProgram, false);
 
