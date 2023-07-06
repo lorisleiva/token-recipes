@@ -18,6 +18,7 @@ import {
   defaultPublicKey,
   generateSigner,
   publicKey,
+  sol,
   transactionBuilderGroup,
 } from '@metaplex-foundation/umi';
 import { createUmi as baseCreateUmi } from '@metaplex-foundation/umi-bundle-tests';
@@ -42,6 +43,8 @@ import {
   tokenRecipes,
   unlockFeature,
 } from '../src';
+
+export const TX_FEE_TOLERANCE = sol(0.00001);
 
 export const createUmi = async () =>
   (await baseCreateUmi()).use(tokenRecipes());

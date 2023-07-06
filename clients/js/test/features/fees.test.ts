@@ -1,8 +1,24 @@
-import { displayAmount, generateSigner } from '@metaplex-foundation/umi';
+import {
+  generateSigner,
+  isEqualToAmount,
+  subtractAmounts,
+} from '@metaplex-foundation/umi';
 import test from 'ava';
-import { craft, ingredientInput, ingredientOutput } from '../../src';
+import {
+  BASE_FEES,
+  Recipe,
+  craft,
+  fetchRecipe,
+  ingredientInput,
+  ingredientOutput,
+} from '../../src';
 import { getUnlockFeatureMacro } from '../_macros';
-import { createInputOutputMints, createRecipe, createUmi } from '../_setup';
+import {
+  TX_FEE_TOLERANCE,
+  createInputOutputMints,
+  createRecipe,
+  createUmi,
+} from '../_setup';
 
 const unlockMacro = getUnlockFeatureMacro('fees');
 
@@ -30,7 +46,7 @@ test(unlockMacro, 1, 0, 'mintSkill3', 1, 11);
 test(unlockMacro, 1, 5, 'mintSkill3', 1, 11);
 test(unlockMacro, 1, 11, 'mintSkill3', 1, 11, 'max-level-reached');
 
-test.only('it takes fees when crafting a level 0 recipe', async (t) => {
+test('it takes fees when crafting a level 0 recipe', async (t) => {
   // Given an active recipe with the fees feature at level 0.
   const umi = await createUmi();
   const crafter = generateSigner(umi);
@@ -41,7 +57,7 @@ test.only('it takes fees when crafting a level 0 recipe', async (t) => {
     outputs: [ingredientOutput('MintToken', { mint: outputMint, amount: 1 })],
   });
 
-  // And
+  // And given we keep track of the payer's balance before crafting.
   const payerBalance = await umi.rpc.getBalance(umi.payer.publicKey);
 
   // When the crafter crafts the recipe.
@@ -50,15 +66,22 @@ test.only('it takes fees when crafting a level 0 recipe', async (t) => {
     owner: crafter,
     inputs: [{ __kind: 'BurnToken', mint: inputMint }],
     outputs: [{ __kind: 'MintToken', mint: outputMint }],
-    quantity: 1,
+    quantity: 42,
   }).sendAndConfirm(umi);
 
-  // Then.
+  // Then the payer paid for the base fees once, regardless of the quantity.
   const newPayerBalance = await umi.rpc.getBalance(umi.payer.publicKey);
-  console.log({
-    payerBalance: displayAmount(payerBalance),
-    newPayerBalance: displayAmount(newPayerBalance),
-  });
+  t.true(
+    isEqualToAmount(
+      newPayerBalance,
+      subtractAmounts(payerBalance, BASE_FEES),
+      TX_FEE_TOLERANCE
+    )
+  );
 
-  t.pass();
+  // And the recipe kept track of the accumulated admin fees and shards.
+  t.like(await fetchRecipe(umi, recipe), <Recipe>{
+    accumulatedAdminFees: BASE_FEES.basisPoints,
+    accumulatedShards: 0n,
+  });
 });
