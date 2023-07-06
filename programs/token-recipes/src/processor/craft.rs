@@ -35,13 +35,9 @@ pub(crate) fn craft<'a>(accounts: &'a [AccountInfo<'a>], quantity: u64) -> Progr
     assert_signer("payer", payer)?;
     assert_writable("payer", payer)?;
 
-    // Check: system_program.
+    // Check: programs.
     assert_same_pubkeys("system_program", system_program, &system_program::id())?;
-
-    // Check: token_program.
     assert_same_pubkeys("token_program", token_program, &spl_token::id())?;
-
-    // Check: ata_program.
     assert_same_pubkeys(
         "ata_program",
         ata_program,

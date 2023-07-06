@@ -110,6 +110,7 @@ pub enum TokenRecipesInstruction {
     #[account(9, writable, name="experience_token", desc = "The experience token account of the authority")]
     #[account(10, name="system_program", desc = "The system program")]
     #[account(11, name="token_program", desc = "The token program")]
+    #[account(12, name="ata_program", desc = "The associated token program")]
     DeleteRecipe,
 
     /// [ADMIN ONLY] Set a feature on the program.
@@ -149,6 +150,7 @@ pub enum TokenRecipesInstruction {
     #[account(6, writable, signer, name="payer", desc = "The account paying for the storage fees, in case an associated token account needs to be created")]
     #[account(7, name="system_program", desc = "The system program")]
     #[account(8, name="token_program", desc = "The token program")]
+    #[account(9, name="ata_program", desc = "The associated token program")]
     CollectFees,
 
     /// Collect the accumulated experience of a recipe.
@@ -159,6 +161,7 @@ pub enum TokenRecipesInstruction {
     #[account(4, writable, name="experience_token", desc = "The experience token account of the authority")]
     #[account(5, writable, signer, name="payer", desc = "The account paying for the storage fees, in case an associated token account needs to be created")]
     #[account(6, name="token_program", desc = "The token program")]
+    #[account(7, name="ata_program", desc = "The associated token program")]
     CollectExperience,
 }
 

@@ -31,6 +31,7 @@ pub(crate) fn delete_recipe<'a>(accounts: &'a [AccountInfo<'a>]) -> ProgramResul
     let experience_token = next_account_info(account_info_iter)?;
     let system_program = next_account_info(account_info_iter)?;
     let token_program = next_account_info(account_info_iter)?;
+    let ata_program = next_account_info(account_info_iter)?;
 
     // Check: recipe.
     let recipe_account = Recipe::get_writable(recipe)?;
@@ -46,6 +47,11 @@ pub(crate) fn delete_recipe<'a>(accounts: &'a [AccountInfo<'a>]) -> ProgramResul
     // Check: programs.
     assert_same_pubkeys("system_program", system_program, &system_program::id())?;
     assert_same_pubkeys("token_program", token_program, &spl_token::id())?;
+    assert_same_pubkeys(
+        "ata_program",
+        ata_program,
+        &spl_associated_token_account::id(),
+    )?;
 
     // Get the features content.
     let fees_feature_account = FeesFeature::get(fees_feature_pda)?;

@@ -20,6 +20,7 @@ pub(crate) fn collect_experience<'a>(accounts: &'a [AccountInfo<'a>]) -> Program
     let experience_token = next_account_info(account_info_iter)?;
     let payer = next_account_info(account_info_iter)?;
     let token_program = next_account_info(account_info_iter)?;
+    let ata_program = next_account_info(account_info_iter)?;
 
     // Check: recipe and authority.
     let mut recipe_account = Recipe::get_writable(recipe)?;
@@ -31,6 +32,11 @@ pub(crate) fn collect_experience<'a>(accounts: &'a [AccountInfo<'a>]) -> Program
 
     // Check: programs.
     assert_same_pubkeys("token_program", token_program, &spl_token::id())?;
+    assert_same_pubkeys(
+        "ata_program",
+        ata_program,
+        &spl_associated_token_account::id(),
+    )?;
 
     // Collect the experience.
     let wisdom_feature_account = WisdomFeature::get(wisdom_feature_pda)?;
