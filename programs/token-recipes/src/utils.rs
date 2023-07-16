@@ -49,19 +49,25 @@ pub fn realloc_account<'a>(
     funding_account: &AccountInfo<'a>,
     system_program: &AccountInfo<'a>,
     new_size: usize,
+    refund: bool,
 ) -> ProgramResult {
     let rent = Rent::get()?;
+    let old_minimum_balance = rent.minimum_balance(target_account.data_len());
     let new_minimum_balance = rent.minimum_balance(new_size);
-    let lamports_diff = new_minimum_balance.saturating_sub(target_account.lamports());
+    let lamports_diff = new_minimum_balance.abs_diff(old_minimum_balance);
 
-    invoke(
-        &system_instruction::transfer(funding_account.key, target_account.key, lamports_diff),
-        &[
-            funding_account.clone(),
-            target_account.clone(),
-            system_program.clone(),
-        ],
-    )?;
+    if new_minimum_balance > old_minimum_balance {
+        invoke(
+            &system_instruction::transfer(funding_account.key, target_account.key, lamports_diff),
+            &[
+                funding_account.clone(),
+                target_account.clone(),
+                system_program.clone(),
+            ],
+        )?;
+    } else if refund {
+        transfer_lamports_from_pdas(target_account, funding_account, lamports_diff)?;
+    }
 
     target_account.realloc(new_size, false)
 }

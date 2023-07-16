@@ -146,7 +146,7 @@ impl Recipe {
     ) -> ProgramResult {
         self.inputs.push(ingredient.clone());
         let new_size = recipe.data_len() + ingredient.len();
-        realloc_account(recipe, payer, system_program, new_size)?;
+        realloc_account(recipe, payer, system_program, new_size, true)?;
         self.save(recipe)
     }
 
@@ -159,7 +159,7 @@ impl Recipe {
     ) -> ProgramResult {
         self.outputs.push(ingredient.clone());
         let new_size = recipe.data_len() + ingredient.len();
-        realloc_account(recipe, payer, system_program, new_size)?;
+        realloc_account(recipe, payer, system_program, new_size, true)?;
         self.save(recipe)
     }
 
@@ -175,7 +175,7 @@ impl Recipe {
                 let ingredient = ingredient.clone();
                 self.inputs.remove(index);
                 let new_size = recipe.data_len() - ingredient.len();
-                realloc_account(recipe, payer, system_program, new_size)?;
+                realloc_account(recipe, payer, system_program, new_size, true)?;
                 self.save(recipe)?;
                 Ok(ingredient)
             }
@@ -201,7 +201,7 @@ impl Recipe {
                 let ingredient = ingredient.clone();
                 self.outputs.remove(index);
                 let new_size = recipe.data_len() - ingredient.len();
-                realloc_account(recipe, payer, system_program, new_size)?;
+                realloc_account(recipe, payer, system_program, new_size, true)?;
                 self.save(recipe)?;
                 Ok(ingredient)
             }

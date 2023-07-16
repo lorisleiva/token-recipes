@@ -1,5 +1,8 @@
+import { createMint } from '@metaplex-foundation/mpl-toolbox';
 import {
   SolAmount,
+  addAmounts,
+  assertAccountExists,
   displayAmount,
   divideAmount,
   generateSigner,
@@ -11,8 +14,11 @@ import {
 import test from 'ava';
 import {
   BASE_FEES,
+  IngredientType,
   Recipe,
+  addIngredient,
   craft,
+  deserializeRecipe,
   fetchRecipe,
   ingredientInput,
   ingredientOutput,
@@ -176,5 +182,54 @@ test('crafting multiple times does not override accumulated fees', async (t) => 
   t.like(await fetchRecipe(umi, recipe), <Recipe>{
     accumulatedAdminFees: p(BASE_FEES, 90).basisPoints * 2n,
     accumulatedShards: p(BASE_FEES, 90).basisPoints * 2n,
+  });
+});
+
+test('reallocating after crafting does not use fees', async (t) => {
+  // Given an active recipe with the fees feature at level 5.
+  const umi = await createUmi();
+  const crafter = generateSigner(umi);
+  const [inputMint, outputMint] = await createInputOutputMints(umi, crafter);
+  const recipe = await createRecipe(umi, {
+    active: true,
+    features: { fees: 5 },
+    inputs: [ingredientInput('BurnToken', { mint: inputMint, amount: 2 })],
+    outputs: [ingredientOutput('MintToken', { mint: outputMint, amount: 1 })],
+  });
+
+  // And fees are accumulated after crafting.
+  await craft(umi, {
+    recipe,
+    owner: crafter,
+    inputs: [{ __kind: 'BurnToken', mint: inputMint }],
+    outputs: [{ __kind: 'MintToken', mint: outputMint }],
+  }).sendAndConfirm(umi);
+  const rawRecipe = await umi.rpc.getAccount(recipe);
+  assertAccountExists(rawRecipe);
+  const rent = await umi.rpc.getRent(rawRecipe.data.length);
+  t.like(deserializeRecipe(rawRecipe), <Recipe>{
+    header: { lamports: addAmounts(rent, BASE_FEES) },
+    accumulatedAdminFees: p(BASE_FEES, 50).basisPoints,
+  });
+
+  // When we add an ingredient to the recipe, therefore allocating more space.
+  const mint = generateSigner(umi);
+  await createMint(umi, { mint }).sendAndConfirm(umi);
+  await addIngredient(umi, {
+    recipe,
+    mint: mint.publicKey,
+    ingredientType: IngredientType.BurnTokenInput,
+  }).sendAndConfirm(umi);
+
+  // Then the rent went up.
+  const newRawRecipe = await umi.rpc.getAccount(recipe);
+  assertAccountExists(newRawRecipe);
+  const newRent = await umi.rpc.getRent(newRawRecipe.data.length);
+  t.true(newRent.basisPoints > rent.basisPoints);
+
+  // But the recipe still has the correct accumulated fees.
+  t.like(deserializeRecipe(newRawRecipe), <Recipe>{
+    header: { lamports: addAmounts(newRent, BASE_FEES) },
+    accumulatedAdminFees: p(BASE_FEES, 50).basisPoints,
   });
 });
