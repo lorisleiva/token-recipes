@@ -1,6 +1,4 @@
-import { samePublicKey } from '@metaplex-foundation/umi';
 import test from 'ava';
-import { TOKEN_RECIPES_PROGRAM_ID } from '../src';
 import { createUmi } from './_setup';
 
 test('it registers the program', async (t) => {
@@ -11,5 +9,5 @@ test('it registers the program', async (t) => {
   const program = umi.programs.get('tokenRecipes');
 
   // Then we expect it to be the same as the program ID constant.
-  t.true(samePublicKey(program.publicKey, TOKEN_RECIPES_PROGRAM_ID));
+  t.true(program.publicKey === 'C7zZZJpLzAehgidrbwdpBwN6RZCJo98qb55Zjep1a28T');
 });

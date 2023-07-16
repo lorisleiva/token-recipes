@@ -148,7 +148,7 @@ export function getIngredientRecordGpaBuilder(
 ) {
   const programId = context.programs.getPublicKey(
     'tokenRecipes',
-    'C7zZZJpLzAehgidrbwdpBwN6RZCJo98qb55Zjep1a28T'
+    '6EgVKvZu2V6cpZzarvDHuyeJwa1NB2ujj8hXY98pQpLE'
   );
   return gpaBuilder(context, programId)
     .registerFields<{
@@ -184,7 +184,7 @@ export function findIngredientRecordPda(
 ): Pda {
   const programId = context.programs.getPublicKey(
     'tokenRecipes',
-    'C7zZZJpLzAehgidrbwdpBwN6RZCJo98qb55Zjep1a28T'
+    '6EgVKvZu2V6cpZzarvDHuyeJwa1NB2ujj8hXY98pQpLE'
   );
   return context.eddsa.findPda(programId, [
     string({ size: 'variable' }).serialize('ingredient_record'),
