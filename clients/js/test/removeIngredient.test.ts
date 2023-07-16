@@ -1,5 +1,12 @@
 import { Mint, createMint, fetchMint } from '@metaplex-foundation/mpl-toolbox';
-import { generateSigner, some } from '@metaplex-foundation/umi';
+import {
+  addAmounts,
+  assertAccountExists,
+  generateSigner,
+  isEqualToAmount,
+  some,
+  subtractAmounts,
+} from '@metaplex-foundation/umi';
 import test from 'ava';
 import {
   DelegatedIngredient,
@@ -17,7 +24,7 @@ import {
   findIngredientRecordPda,
   removeIngredient,
 } from '../src';
-import { createRecipe, createUmi } from './_setup';
+import { TX_FEE_TOLERANCE, createRecipe, createUmi } from './_setup';
 
 test('it can remove an ingredient input', async (t) => {
   // Given a recipe with an ingredient input.
@@ -276,4 +283,65 @@ test('it cannot remove an ingredient that is not in the recipe', async (t) => {
 
   // Then we expect a program error.
   await t.throwsAsync(promise, { name: 'MissingIngredient' });
+});
+
+test('it gives some storage fees back when removing an ingredient', async (t) => {
+  // Given a recipe with an ingredient input.
+  const umi = await createUmi();
+  const recipe = await createRecipe(umi);
+  const mint = generateSigner(umi);
+  await createMint(umi, { mint })
+    .add(
+      addIngredient(umi, {
+        recipe,
+        mint: mint.publicKey,
+        ingredientType: IngredientType.BurnTokenInput,
+      })
+    )
+    .sendAndConfirm(umi);
+
+  // And given the recipe, ingredient record and payer have the following balances.
+  const rawRecipe = await umi.rpc.getAccount(recipe);
+  assertAccountExists(rawRecipe);
+  const recipeRent = await umi.rpc.getRent(rawRecipe.data.length);
+  const recipeBalance = rawRecipe.lamports;
+  const payerBalance = await umi.rpc.getBalance(umi.payer.publicKey);
+  const [ingredientRecord] = findIngredientRecordPda(umi, {
+    recipe,
+    mint: mint.publicKey,
+  });
+  const ingredientRecordBalance = await umi.rpc.getBalance(ingredientRecord);
+
+  // When we remove that ingredient input.
+  await removeIngredient(umi, {
+    recipe,
+    mint: mint.publicKey,
+    ingredientType: IngredientType.BurnTokenInput,
+  }).sendAndConfirm(umi);
+
+  // And given we refetch all the rent and balances.
+  const newRawRecipe = await umi.rpc.getAccount(recipe);
+  assertAccountExists(newRawRecipe);
+  const newRecipeRent = await umi.rpc.getRent(newRawRecipe.data.length);
+  const newRecipeBalance = newRawRecipe.lamports;
+  const newPayerBalance = await umi.rpc.getBalance(umi.payer.publicKey);
+
+  // Then the rent and recipe balance went down.
+  t.true(recipeRent.basisPoints > newRecipeRent.basisPoints);
+  t.true(recipeBalance.basisPoints > newRecipeBalance.basisPoints);
+  const rentDiff = subtractAmounts(recipeRent, newRecipeRent);
+  t.true(
+    isEqualToAmount(newRecipeBalance, subtractAmounts(recipeBalance, rentDiff))
+  );
+
+  // And the payer balance went up.
+  t.true(payerBalance.basisPoints < newPayerBalance.basisPoints);
+  const expectedSolBack = addAmounts(ingredientRecordBalance, rentDiff);
+  t.true(
+    isEqualToAmount(
+      newPayerBalance,
+      addAmounts(payerBalance, expectedSolBack),
+      TX_FEE_TOLERANCE
+    )
+  );
 });
